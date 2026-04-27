@@ -1,34 +1,35 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Helper to get config from environment or fallback to imported file
 const getFirebaseConfig = () => {
   const env = import.meta.env;
-  if (env.VITE_FIREBASE_API_KEY) {
+  if (env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_API_KEY.length > 10) {
+    // Sanitize common typos in manual entry
+    let key = env.VITE_FIREBASE_API_KEY.trim();
+    if (key.startsWith('Alza')) key = 'AIza' + key.slice(4); // Fix l vs I
+    
     return {
-      apiKey: env.VITE_FIREBASE_API_KEY,
-      authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: env.VITE_FIREBASE_PROJECT_ID,
-      storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: env.VITE_FIREBASE_APP_ID,
-      firestoreDatabaseId: env.VITE_FIREBASE_DATABASE_ID
+      apiKey: key,
+      authDomain: env.VITE_FIREBASE_AUTH_DOMAIN?.trim() || firebaseConfig.authDomain,
+      projectId: env.VITE_FIREBASE_PROJECT_ID?.trim() || firebaseConfig.projectId,
+      storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET?.trim() || firebaseConfig.storageBucket,
+      messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim() || firebaseConfig.messagingSenderId,
+      appId: env.VITE_FIREBASE_APP_ID?.trim() || firebaseConfig.appId,
+      firestoreDatabaseId: (env.VITE_FIREBASE_DATABASE_ID?.trim()) || firebaseConfig.firestoreDatabaseId
     };
   }
   return firebaseConfig;
 };
 
 const finalConfig = getFirebaseConfig();
-console.log("Using Firebase Project:", finalConfig.projectId);
 const app = initializeApp(finalConfig);
 
 // If firestoreDatabaseId is provided, use it. Otherwise defaults to (default)
 export const db = getFirestore(app, (finalConfig as any).firestoreDatabaseId);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 export enum OperationType {
   CREATE = 'create',
@@ -77,7 +78,7 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
+export const loginWithEmail = (email: string, pass: string) => signInWithEmailAndPassword(auth, email, pass);
 
 // Connection test
 async function testConnection() {
