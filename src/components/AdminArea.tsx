@@ -21,7 +21,8 @@ import {
   Clock,
   Calendar,
   CreditCard,
-  User as UserIcon
+  User as UserIcon,
+  ArrowUpRight
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { auth, db, signInWithGoogle, handleFirestoreError, OperationType } from '../lib/firebase';
@@ -196,15 +197,24 @@ export default function AdminArea() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth State Changed - User:", user?.email);
       setUser(user);
       if (user) {
         try {
-          const adminDoc = await getDoc(doc(db, 'admins', user.uid));
+          const adminDocRef = doc(db, 'admins', user.uid);
+          console.log("Checking admin status for UID:", user.uid);
+          const adminDoc = await getDoc(adminDocRef);
+          
           // Bootstrap admin: if the doc doesn't exist but the email matches the owner
-          const isOwnerEmail = user.email === 'hello@liegepaschoalini.design';
+          const ownerEmail = 'hello@liegepaschoalini.design';
+          const isOwnerEmail = user.email === ownerEmail;
+          
+          console.log("Admin Doc exists:", adminDoc.exists());
+          console.log("Email matches owner:", isOwnerEmail);
+          
           setIsAdmin(adminDoc.exists() || isOwnerEmail);
-        } catch (error) {
-          console.error("Error checking admin status:", error);
+        } catch (error: any) {
+          console.error("Error checking admin status:", error.code, error.message);
           setIsAdmin(false);
         }
       } else {
@@ -521,12 +531,42 @@ export default function AdminArea() {
             <p className="text-white/40 uppercase tracking-widest text-xs">Restricted access for Holanbra administrators only.</p>
           </div>
           {!user ? (
-            <button 
-              onClick={signInWithGoogle}
-              className="w-full py-4 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px]"
-            >
-              Sign in with Google
-            </button>
+            <div className="space-y-6">
+              <button 
+                onClick={async () => {
+                  try {
+                    await signInWithGoogle();
+                  } catch (err: any) {
+                    console.error("Login Error:", err);
+                    if (err.code === 'auth/popup-blocked') {
+                      alert("Pop-up blocked! Please allow pop-ups for this site or open the app in a new tab.");
+                    } else if (err.code === 'auth/popup-closed-by-user') {
+                      // Silently ignore or show small hint
+                    } else {
+                      alert("Login failed: " + err.message + "\n\nTry opening the app in a new tab if this persists.");
+                    }
+                  }
+                }}
+                className="w-full py-4 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px]"
+              >
+                Sign in with Google
+              </button>
+              
+              <div className="pt-4 border-t border-white/5">
+                <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3">Login Troubleshooting</p>
+                <div className="flex flex-col gap-2">
+                  <a 
+                    href={window.location.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-amber-500/70 hover:text-amber-500 flex items-center justify-center gap-2 transition-colors uppercase tracking-widest font-bold"
+                  >
+                    Open in New Tab <ArrowUpRight size={12} />
+                  </a>
+                  <p className="text-[8px] text-white/20 italic">Popups may be blocked inside the editor iframe.</p>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">

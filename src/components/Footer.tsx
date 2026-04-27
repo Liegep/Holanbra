@@ -19,6 +19,7 @@ export default function Footer() {
           <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
             <li><a href="#" className="hover:text-amber-400 transition-colors">Home</a></li>
             <li><a href="#" className="hover:text-amber-400 transition-colors">Properties</a></li>
+            <li><a href="http://www.holanbra.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Web Site</a></li>
             <li><Link to="/covenant" className="hover:text-amber-400 transition-colors">Covenant</Link></li>
             <li><Link to="/admin" className="hover:text-amber-400 transition-colors">Admin Area</Link></li>
           </ul>

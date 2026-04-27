@@ -20,6 +20,7 @@ export default function Navbar() {
     { name: 'About', path: '/#about', icon: Users },
     { name: 'Properties', path: '/#imoveis', icon: Layers },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon },
+    { name: 'Web Site', path: 'http://www.holanbra.com', icon: Home, external: true },
     { name: 'Services', path: '/#servicos', icon: Paintbrush },
     { name: 'Team', path: '/#team', icon: Users },
     { name: 'Covenant', path: '/covenant', icon: FileText },
@@ -44,16 +45,28 @@ export default function Navbar() {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
-            <Link 
-              key={link.name} 
-              to={link.path}
-              className={cn(
-                "text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400",
-                location.pathname === link.path ? "text-white" : "text-white/60"
-              )}
-            >
-              {link.name}
-            </Link>
+            link.external ? (
+              <a 
+                key={link.name} 
+                href={link.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 text-white/60"
+              >
+                {link.name}
+              </a>
+            ) : (
+              <Link 
+                key={link.name} 
+                to={link.path}
+                className={cn(
+                  "text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400",
+                  location.pathname === link.path ? "text-white" : "text-white/60"
+                )}
+              >
+                {link.name}
+              </Link>
+            )
           ))}
           <Link 
             to="/resident" 
@@ -84,15 +97,29 @@ export default function Navbar() {
           >
             <div className="flex flex-col gap-6">
               {navLinks.map((link) => (
-                <Link 
-                  key={link.name} 
-                  to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
-                >
-                  <link.icon size={20} />
-                  {link.name}
-                </Link>
+                link.external ? (
+                  <a 
+                    key={link.name} 
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
+                  >
+                    <link.icon size={20} />
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link 
+                    key={link.name} 
+                    to={link.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
+                  >
+                    <link.icon size={20} />
+                    {link.name}
+                  </Link>
+                )
               ))}
               <div className="h-[1px] bg-white/10 my-2" />
               <Link 

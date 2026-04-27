@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
@@ -190,20 +191,33 @@ export default function Properties() {
                 <p className="text-[10px] font-mono tracking-widest text-white/60 uppercase">
                   {property.location} | PRIMA OCEAN
                 </p>
-                <div className="flex items-center gap-4 pt-2">
-                  <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
-                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
+                <div className="flex flex-col gap-3 pt-2">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
+                      L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(property.slurl, '_blank');
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+                    >
+                      <MapPin size={12} />
+                      Teleport
+                    </button>
                   </div>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(property.slurl, '_blank');
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
-                  >
-                    <MapPin size={12} />
-                    Teleport
-                  </button>
+                  
+                  {property.status === 'available' && (
+                    <Link 
+                      to="/resident"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
+                    >
+                      <Key size={12} />
+                      Rent Now
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -288,13 +302,25 @@ export default function Properties() {
                         </p>
                       )}
                     </div>
-                    <button 
-                      onClick={() => window.open(selectedProperty.slurl, '_blank')}
-                      className="mb-1 flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
-                    >
-                      <MapPin size={14} />
-                      Teleport to Location
-                    </button>
+                    <div className="flex flex-col gap-2 mb-1">
+                      <button 
+                        onClick={() => window.open(selectedProperty.slurl, '_blank')}
+                        className="flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
+                      >
+                        <MapPin size={14} />
+                        Teleport to Location
+                      </button>
+                      
+                      {selectedProperty.status === 'available' && (
+                        <Link 
+                          to="/resident"
+                          className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
+                        >
+                          <Key size={14} />
+                          Rent This Property
+                        </Link>
+                      )}
+                    </div>
                   </div>
                   <button 
                     onClick={() => setSelectedProperty(null)}
