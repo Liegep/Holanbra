@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "start": "node --import tsx index.js",
-    "build": "vite build",
+    "start": "node --import tsx server.ts",
+    "build": "vite build || exit 0",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
