@@ -7,7 +7,32 @@ import sharp from "sharp";
 import fs from "fs";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, where, getDocs, updateDoc, doc, serverTimestamp, getDoc, setDoc } from "firebase/firestore";
-import firebaseConfig from "./firebase-applet-config.json" assert { type: "json" };
+
+// Helper to get config from env or fallback to file for local dev
+const getFirebaseConfig = () => {
+  if (process.env.VITE_FIREBASE_API_KEY) {
+    return {
+      apiKey: process.env.VITE_FIREBASE_API_KEY,
+      authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.VITE_FIREBASE_APP_ID,
+      firestoreDatabaseId: process.env.VITE_FIREBASE_DATABASE_ID || ""
+    };
+  }
+  
+  try {
+    // Standard import for local AI Studio environment
+    const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), "firebase-applet-config.json"), "utf8"));
+    return config;
+  } catch (e) {
+    console.warn("No Firebase config found in environment or file.");
+    return {};
+  }
+};
+
+const firebaseConfig = getFirebaseConfig();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

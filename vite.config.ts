@@ -7,6 +7,9 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      chunkSizeWarningLimit: 2000,
+    },
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
@@ -15,20 +18,9 @@ export default defineConfig(({mode}) => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    // --- ADICIONE ESTA PARTE ABAIXO PARA CORRIGIR O ERRO DA HOSTINGER ---
-    build: {
-      chunkSizeWarningLimit: 2000, // Aumenta o limite para não dar erro de arquivo grande
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            // Separa o Firebase em um arquivo próprio para não confundir o servidor
-            'firebase-vendor': ['firebase/app', 'firebase/firestore'],
-          },
-        },
-      },
-    },
-    // -------------------------------------------------------------------
     server: {
+      // HMR is disabled in AI Studio via DISABLE_HMR env var.
+      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
