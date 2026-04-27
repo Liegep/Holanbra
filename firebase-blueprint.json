@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "Property": {
+      "title": "Property",
+      "description": "A real estate property listing",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the property" },
+        "casperletId": { "type": "string", "description": "CasperLet device key" },
+        "price": { "type": "number", "description": "Weekly rental price in L$" },
+        "slurl": { "type": "string", "description": "Second Life URL" },
+        "status": { "type": "string", "enum": ["available", "rented", "reserved"] },
+        "description": { "type": "string" },
+        "image": { "type": "string", "description": "Main cover image URL" },
+        "gallery": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["image", "video"] },
+              "url": { "type": "string" }
+            }
+          }
+        },
+        "location": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "status", "image"]
+    },
+    "GalleryImage": {
+      "title": "Gallery Image",
+      "description": "A standalone photo for the sims gallery",
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "caption": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["url", "createdAt"]
+    },
+    "TeamMember": {
+      "title": "Team Member",
+      "description": "A staff member or creator",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "bio": { "type": "string" },
+        "image": { "type": "string" },
+        "icon": { "type": "string" },
+        "slProfile": { "type": "string" },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "role", "bio", "image"]
+    }
+  },
+  "firestore": {
+    "/properties/{propertyId}": {
+      "schema": "Property",
+      "description": "Collection of all property listings"
+    },
+    "/gallery/{imageId}": {
+      "schema": "GalleryImage",
+      "description": "Collection of community/scenery photos"
+    },
+    "/team/{memberId}": {
+      "schema": "TeamMember",
+      "description": "Collection of team members"
+    }
+  }
+}
