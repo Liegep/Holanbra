@@ -19,12 +19,22 @@ const getFirebaseConfig = () => {
     const config = {
       apiKey: key,
       authDomain: env.VITE_FIREBASE_AUTH_DOMAIN?.trim() || firebaseConfig.authDomain,
-      projectId: env.VITE_FIREBASE_PROJECT_ID?.trim() || firebaseConfig.projectId,
+      projectId: (env.VITE_FIREBASE_PROJECT_ID?.trim() && !env.VITE_FIREBASE_PROJECT_ID.startsWith('gen-lang')) 
+        ? env.VITE_FIREBASE_PROJECT_ID.trim() 
+        : "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e",
       storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET?.trim() || firebaseConfig.storageBucket,
       messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim() || firebaseConfig.messagingSenderId,
       appId: env.VITE_FIREBASE_APP_ID?.trim() || firebaseConfig.appId,
       firestoreDatabaseId: (env.VITE_FIREBASE_DATABASE_ID?.trim()) || firebaseConfig.firestoreDatabaseId
     };
+    
+    // Safety check for authDomain and storageBucket fallback
+    if (config.authDomain.startsWith('gen-lang')) {
+      config.authDomain = `${config.projectId}.firebaseapp.com`;
+    }
+    if (config.storageBucket.startsWith('gen-lang')) {
+      config.storageBucket = `${config.projectId}.firebasestorage.app`;
+    }
     console.log("Firebase Config (from env):", { ...config, apiKey: '***' + config.apiKey.slice(-4) });
     return config;
   }
