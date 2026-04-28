@@ -1,55 +1,30 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
+import { getFirestore, doc, getDocFromServer, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Helper to get config from environment or fallback to imported file
-const getFirebaseConfig = () => {
-  const env = (import.meta as any).env;
-  console.log("Environment check - API Key present:", !!env.VITE_FIREBASE_API_KEY);
-  
-  if (env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_API_KEY.length > 10) {
-    // Sanitize common typos in manual entry
-    let key = env.VITE_FIREBASE_API_KEY.trim();
-    if (key.toLowerCase().startsWith('alza')) {
-       console.log("Fixing API Key prefix typo (l vs I)");
-       key = 'AIza' + key.slice(4);
-    }
-    
-    const config = {
-      apiKey: key,
-      authDomain: env.VITE_FIREBASE_AUTH_DOMAIN?.trim() || firebaseConfig.authDomain,
-      projectId: (env.VITE_FIREBASE_PROJECT_ID?.trim() && !env.VITE_FIREBASE_PROJECT_ID.startsWith('gen-lang')) 
-        ? env.VITE_FIREBASE_PROJECT_ID.trim() 
-        : "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e",
-      storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET?.trim() || firebaseConfig.storageBucket,
-      messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim() || firebaseConfig.messagingSenderId,
-      appId: env.VITE_FIREBASE_APP_ID?.trim() || firebaseConfig.appId,
-      firestoreDatabaseId: (env.VITE_FIREBASE_DATABASE_ID?.trim()) || firebaseConfig.firestoreDatabaseId
-    };
-    
-    // Safety check for authDomain and storageBucket fallback
-    if (config.authDomain.startsWith('gen-lang')) {
-      config.authDomain = `${config.projectId}.firebaseapp.com`;
-    }
-    if (config.storageBucket.startsWith('gen-lang')) {
-      config.storageBucket = `${config.projectId}.firebasestorage.app`;
-    }
-    console.log("Firebase Config (from env):", { ...config, apiKey: '***' + config.apiKey.slice(-4) });
-    return config;
-  }
-  console.log("Firebase Config (from file):", { ...firebaseConfig, apiKey: '***' + firebaseConfig.apiKey.slice(-4) });
-  return firebaseConfig;
+// Hardcoded configuration as requested to prevent environment variable errors
+const firebaseConfig = {
+  apiKey: "AIzaSyC5mcwNnfJnhMHpjayfwtn8byn0mj86pqs",
+  authDomain: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.firebaseapp.com",
+  projectId: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e",
+  storageBucket: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.appspot.com",
+  messagingSenderId: "586275517087",
+  appId: "1:586275517087:web:aded5d70fa0223a32328aa",
+  firestoreDatabaseId: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e"
 };
 
-const finalConfig = getFirebaseConfig();
-const app = initializeApp(finalConfig);
-
-// If firestoreDatabaseId is provided, use it. Otherwise defaults to (default)
-const dbId = (finalConfig as any).firestoreDatabaseId || '(default)';
-console.log("Initializing Firestore with Database ID:", dbId);
-export const db = getFirestore(app, dbId);
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+export const signInWithGoogle = () => signInWithPopup(auth, googleProvider);
 
 export enum OperationType {
   CREATE = 'create',
@@ -100,6 +75,25 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export const loginWithEmail = (email: string, pass: string) => signInWithEmailAndPassword(auth, email, pass);
 
+export const registerWithEmail = async (email: string, pass: string) => {
+  const result = await createUserWithEmailAndPassword(auth, email, pass);
+  const user = result.user;
+  
+  // Create user profile in Firestore
+  const adminEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
+  const role = adminEmails.map(e => e.toLowerCase()).includes(email.toLowerCase()) ? 'admin' : 'user';
+  
+  await setDoc(doc(db, 'users', user.uid), {
+    email: user.email,
+    uid: user.uid,
+    role: role,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+
+  return result;
+};
+
 // Connection test
 async function testConnection() {
   try {
@@ -108,9 +102,6 @@ async function testConnection() {
     console.log("Firebase connection established successfully.");
   } catch (error: any) {
     console.error("Firebase Connection Error:", error.code, error.message);
-    if (error.message.includes('the client is offline')) {
-      console.error("SDK reports offline. This often means the project/database ID is incorrect or mismatch with rules.");
-    }
   }
 }
 testConnection();

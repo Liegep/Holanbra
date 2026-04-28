@@ -11,10 +11,10 @@ service cloud.firestore {
     function isAdmin() { 
       return isSignedIn() && (
         exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" ||
-        request.auth.token.email.matches("(?i)hello@liegepaschoalini.design") ||
-        request.auth.token.email.matches("(?i)slmariew@gmail.com") ||
-        request.auth.token.email.matches("(?i)victoriaholanbra@gmail.com")
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == "admin") ||
+        request.auth.token.email.matches("(?i)hello@liegepaschoalini\\.design") ||
+        request.auth.token.email.matches("(?i)slmariew@gmail\\.com") ||
+        request.auth.token.email.matches("(?i)victoriaholanbra@gmail\\.com")
       );
     }
 
@@ -30,7 +30,7 @@ service cloud.firestore {
 
     match /properties/{propertyId} {
       allow get, list: if true;
-      allow create, update: if isEmailVerified() && isValidProperty(incoming());
+      allow create, update: if isAdmin() && isValidProperty(incoming());
       allow delete: if isAdmin();
     }
 
@@ -47,6 +47,13 @@ service cloud.firestore {
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
     }
 
     match /admins/{adminId} {

@@ -40,27 +40,25 @@ import {
   getDoc
 } from 'firebase/firestore';
 
-function AdminLoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleLogin = async () => {
     setLoading(true);
     setError('');
     try {
-      await loginWithEmail(email, password);
+      const { signInWithGoogle } = await import('../lib/firebase');
+      await signInWithGoogle();
     } catch (err: any) {
-      console.error("Login failed:", err);
+      console.error("Google login failed:", err);
       let msg = err.message || 'Login failed';
-      if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
-        msg = "Email login is not enabled in Firebase Console. Please enable it under Authentication > Sign-in method.";
-      } else if (err.code === 'auth/invalid-email' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-        msg = "Invalid email or password. Please verify your credentials.";
+      if (err.code === 'auth/popup-blocked') {
+        msg = "The login popup was blocked by your browser. Please allow popups for this site.";
+      } else if (err.code === 'auth/cancelled-popup-request') {
+        msg = "Login process was cancelled.";
       } else if (err.code === 'auth/api-key-not-valid') {
-        msg = "Invalid API Key. Please check the VITE_FIREBASE_API_KEY environment variable.";
+        msg = "Invalid API Key. Please verify the Firebase configuration.";
       }
       setError(msg);
     } finally {
@@ -69,40 +67,62 @@ function AdminLoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2 text-left">
-        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Email</label>
-        <input 
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-          placeholder="admin@holanbra.com"
-        />
+    <div className="space-y-6">
+      <div className="bg-white/5 border border-white/10 p-8 rounded-3xl text-center space-y-6">
+        <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto">
+          <LogIn className="text-amber-500" size={32} />
+        </div>
+        
+        <div className="space-y-2">
+          <h3 className="text-white font-bold uppercase tracking-widest text-sm">Secure Access</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest leading-relaxed">
+            Use your professional Google account to access the administrative panel.
+          </p>
+        </div>
+
+        {error && (
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+            <p className="text-red-500 text-[10px] uppercase font-bold tracking-widest leading-relaxed">{error}</p>
+          </div>
+        )}
+
+        <button 
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full py-4 rounded-xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-gray-200 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="animate-spin" size={16} />
+          ) : (
+            <>
+              <svg className="w-4 h-4" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              Login with Google
+            </>
+          )}
+        </button>
       </div>
-      <div className="space-y-2 text-left">
-        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Password</label>
-        <input 
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-          placeholder="••••••••"
-        />
-      </div>
-      {error && (
-        <p className="text-red-500 text-[10px] uppercase font-bold tracking-widest">{error}</p>
-      )}
-      <button 
-        type="submit"
-        disabled={loading}
-        className="w-full py-4 rounded-xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
-      >
-        {loading ? <Loader2 className="animate-spin" size={16} /> : 'Login'}
-      </button>
-    </form>
+      
+      <p className="text-center text-[10px] text-white/20 uppercase tracking-widest font-medium">
+        Authorized emails only: <br/> slmariew@gmail.com | liegepaschoalini.design
+      </p>
+    </div>
   );
 }
 
@@ -267,23 +287,45 @@ export default function AdminArea() {
       setUser(user);
       if (user) {
         try {
-          // Check for 'role' field in users collection
+          const userEmail = user.email?.toLowerCase();
+          console.log("Verifying admin status for:", userEmail);
+
+          // Hardcoded whitelist (unconditional admins)
+          const adminEmails = [
+            'hello@liegepaschoalini.design', 
+            'slmariew@gmail.com', 
+            'victoriaholanbra@gmail.com'
+          ];
+          const isWhitelisted = userEmail && adminEmails.includes(userEmail);
+
+          // Sync profile to Firestore
           const userDocRef = doc(db, 'users', user.uid);
           const userDoc = await getDoc(userDocRef);
+          
+          if (!userDoc.exists() && isWhitelisted) {
+            console.log("Creating initial admin profile for whitelisted user");
+            await setDoc(userDocRef, {
+              email: user.email,
+              uid: user.uid,
+              role: 'admin',
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            }, { merge: true });
+          }
+
           const hasAdminRole = userDoc.exists() && userDoc.data()?.role === 'admin';
 
-          // Check legacy admins collection
-          const adminDocRef = doc(db, 'admins', user.uid);
-          const adminDoc = await getDoc(adminDocRef);
+          // Final decision
+          const finalIsAdmin = !!isWhitelisted || hasAdminRole;
+          console.log("Admin verification result:", { isWhitelisted, hasAdminRole, finalIsAdmin });
           
-          // Hardcoded whitelist (whitelisting slmariew@gmail.com explicitly)
-          const ownerEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com'];
-          const isOwnerEmail = user.email && ownerEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
-          
-          setIsAdmin(adminDoc.exists() || hasAdminRole || !!isOwnerEmail);
+          setIsAdmin(finalIsAdmin);
         } catch (error: any) {
           console.error("Error checking admin status:", error.code, error.message);
-          setIsAdmin(false);
+          // If Firestore check fails, still allow if whitelisted
+          const userEmail = user.email?.toLowerCase();
+          const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
+          setIsAdmin(!!(userEmail && whitelist.includes(userEmail)));
         }
       } else {
         setIsAdmin(false);
@@ -599,7 +641,7 @@ export default function AdminArea() {
             <p className="text-white/40 uppercase tracking-widest text-xs">Restricted access for Holanbra administrators only.</p>
           </div>
           {!user ? (
-            <AdminLoginForm />
+            <AdminAuthForm />
           ) : (
             <div className="space-y-4">
               <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">

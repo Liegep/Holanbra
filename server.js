@@ -6,8 +6,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import multer from "multer";
-import sharp from "sharp";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,61 +13,83 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 async function startServer() {
+  const multer = (await import('multer')).default;
+  const sharp = (await import('sharp')).default;
+
   const app = express();
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // 1. Configuração Firebase (Using the keys you already have)
+  // Error handling middleware
+  app.use((err, req, res, next) => {
+    console.error("Express error:", err);
+    res.status(500).send("Internal Server Error");
+  });
+
+  // 0. Logging middleware
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  });
+
+  // Health check route
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // 1. Vite Middleware (Moved early for dev robustness)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("Starting Vite in middleware mode...");
+    try {
+      const { createServer: createViteServer } = await import('vite');
+      const vite = await createViteServer({
+        server: { 
+          middlewareMode: true,
+          hmr: false 
+        },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+      console.log("Vite middleware attached.");
+    } catch (e) {
+      console.error("Failed to start Vite middleware:", e);
+    }
+  }
+
+  // 2. Firebase Configuration
   const firebaseConfig = {
-    apiKey: process.env.VITE_FIREBASE_API_KEY,
-    authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.firebaseapp.com",
-    projectId: (process.env.VITE_FIREBASE_PROJECT_ID && !process.env.VITE_FIREBASE_PROJECT_ID.startsWith('gen-lang')) 
-      ? process.env.VITE_FIREBASE_PROJECT_ID 
-      : "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e",
-    storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.firebasestorage.app",
-    messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.VITE_FIREBASE_APP_ID
+    apiKey: "AIzaSyC5mcwNnfJnhMHpjayfwtn8byn0mj86pqs",
+    authDomain: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.firebaseapp.com",
+    projectId: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e",
+    storageBucket: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e.appspot.com",
+    messagingSenderId: "586275517087",
+    appId: "1:586275517087:web:aded5d70fa0223a32328aa",
+    firestoreDatabaseId: "ai-studio-a67ed34f-6f84-4e0f-ae53-5ee58939e52e"
   };
 
-  // Initialize Firebase with Client SDK as requested
+  console.log("Configuring Firebase with Project ID:", firebaseConfig.projectId);
+
   const appFirebase = initializeApp(firebaseConfig);
-  const db = getFirestore(appFirebase);
-  console.log("✅ Servidor conectado ao Firebase via Client SDK");
+  const db = getFirestore(appFirebase, firebaseConfig.firestoreDatabaseId);
+  console.log("✅ Firebase initialized");
 
   // Helper for security
   const validateSlToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const secretToken = process.env.SL_SECRET_TOKEN;
-
-    if (!secretToken) {
-      return next(); // Skip if not configured
-    }
-
-    if (authHeader === `Bearer ${secretToken}` || req.headers['x-sl-token'] === secretToken) {
-      return next();
-    }
-
+    if (!secretToken) return next();
+    if (authHeader === `Bearer ${secretToken}` || req.headers['x-sl-token'] === secretToken) return next();
     return res.status(401).json({ error: 'Não autorizado' });
   };
 
-  // 2. Rota para o Second Life (CasperLet Sync)
+  // API Routes
   app.post('/api/casperlet/sync', async (req, res) => {
-    const authHeader = req.headers['authorization'];
-    const secretToken = process.env.SL_SECRET_TOKEN;
-
-    if (secretToken && authHeader !== `Bearer ${secretToken}`) {
-      return res.status(401).json({ error: 'Não autorizado' });
-    }
-
     try {
       const { unit_name, price, status, tenant, casperletId } = req.body;
-      
-      // We use unit_name or casperletId as the document ID
       const docId = unit_name || casperletId;
       if (!docId) return res.status(400).json({ error: 'Missing unit_name or casperletId' });
 
-      // Salva os dados no Firestore
       await setDoc(doc(db, 'properties', docId), {
         price: price ? Number(price) : 0,
         status: status || "available",
@@ -80,25 +100,7 @@ async function startServer() {
 
       res.status(200).json({ success: true });
     } catch (err) {
-      console.error("Erro no Sync:", err);
       res.status(500).json({ error: err.message });
-    }
-  });
-
-  // 2.1 Additional Second Life Routes (Registration and Status)
-  app.post('/api/sl/register', validateSlToken, async (req, res) => {
-    const { slId, slName, status, callbackUrl } = req.body;
-    try {
-      await setDoc(doc(db, "settings", "sl_config"), {
-        slId,
-        slName,
-        status: status || "online",
-        callbackUrl: callbackUrl || null,
-        lastSeen: serverTimestamp()
-      }, { merge: true });
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
     }
   });
 
@@ -106,28 +108,20 @@ async function startServer() {
     try {
       const slDoc = await getDoc(doc(db, "settings", "sl_config"));
       const data = slDoc.exists() ? slDoc.data() : { status: "offline", slName: "Victoria Holanbra" };
-      res.json({ 
-        status: data.status, 
-        managers: [{ slName: data.slName, status: data.status, slId: data.slId }] 
-      });
+      res.json({ status: data.status, managers: [{ slName: data.slName, status: data.status, slId: data.slId }] });
     } catch (error) {
       res.json({ status: "offline", managers: [] });
     }
   });
 
-  // 2.2 Upload logic (Essential for Admin Panel)
   const upload = multer({ dest: 'uploads/' });
   app.post("/api/upload", upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     const isVideo = req.file.mimetype.startsWith('video/');
     const outputPath = `uploads/${req.file.filename}${isVideo ? (path.extname(req.file.originalname) || '.mp4') : '.webp'}`;
-    
     try {
       if (!isVideo) {
-        await sharp(req.file.path)
-          .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true })
-          .webp({ quality: 75 })
-          .toFile(outputPath);
+        await sharp(req.file.path).resize(1920, 1080, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 75 }).toFile(outputPath);
         fs.unlinkSync(req.file.path);
       } else {
         fs.renameSync(req.file.path, outputPath);
@@ -140,32 +134,17 @@ async function startServer() {
 
   app.use('/uploads', express.static('uploads'));
 
-  // 3. Servir o Front-end (Design)
-  if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
+  if (process.env.NODE_ENV === 'production') {
     const distPath = path.join(__dirname, 'dist');
     if (fs.existsSync(distPath)) {
       app.use(express.static(distPath));
-      app.get('*', (req, res) => {
-        res.sendFile(path.join(distPath, 'index.html'));
-      });
-    } else {
-      app.get('/', (req, res) => {
-        res.send('Aguardando build... se o erro persistir, clique em Reimplantar na Hostinger.');
-      });
+      app.get('*', (req, res) => res.sendFile(path.join(distPath, 'index.html')));
     }
   }
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor voando na porta ${PORT}`);
+  app.listen(3000, '0.0.0.0', () => {
+    console.log(`🚀 Server listening on port 3000`);
   });
 }
 
-startServer();
+startServer().catch(err => console.error("FATAL:", err));
