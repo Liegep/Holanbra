@@ -267,18 +267,20 @@ export default function AdminArea() {
       setUser(user);
       if (user) {
         try {
+          // Check for 'role' field in users collection
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          const hasAdminRole = userDoc.exists() && userDoc.data()?.role === 'admin';
+
+          // Check legacy admins collection
           const adminDocRef = doc(db, 'admins', user.uid);
-          console.log("Checking admin status for UID:", user.uid);
           const adminDoc = await getDoc(adminDocRef);
           
-          // Bootstrap admin: if the doc doesn't exist but the email matches the owner
+          // Hardcoded whitelist (whitelisting slmariew@gmail.com explicitly)
           const ownerEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com'];
           const isOwnerEmail = user.email && ownerEmails.map(e => e.toLowerCase()).includes(user.email.toLowerCase());
           
-          console.log("Admin Doc exists:", adminDoc.exists());
-          console.log("Email matches owner:", isOwnerEmail);
-          
-          setIsAdmin(adminDoc.exists() || !!isOwnerEmail);
+          setIsAdmin(adminDoc.exists() || hasAdminRole || !!isOwnerEmail);
         } catch (error: any) {
           console.error("Error checking admin status:", error.code, error.message);
           setIsAdmin(false);
