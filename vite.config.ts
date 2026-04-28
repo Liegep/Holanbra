@@ -12,7 +12,10 @@ export default defineConfig(({mode}) => {
       chunkSizeWarningLimit: 2000,
     },
     define: {
-      'process.env': process.env,
+      'process.env': Object.keys(process.env).filter(key => key.startsWith('VITE_')).reduce((obj, key) => {
+        obj[key] = process.env[key];
+        return obj;
+      }, {}),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
     resolve: {

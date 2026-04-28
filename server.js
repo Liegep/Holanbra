@@ -35,7 +35,7 @@ const db = getFirestore(appFirebase);
 console.log("✅ Servidor conectado ao Firebase via Client SDK");
 
 // Helper for security
-const validateSlToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+const validateSlToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const secretToken = process.env.SL_SECRET_TOKEN;
 
@@ -76,7 +76,7 @@ app.post('/api/casperlet/sync', async (req, res) => {
     }, { merge: true });
 
     res.status(200).json({ success: true });
-  } catch (err: any) {
+  } catch (err) {
     console.error("Erro no Sync:", err);
     res.status(500).json({ error: err.message });
   }
@@ -94,7 +94,7 @@ app.post('/api/sl/register', validateSlToken, async (req, res) => {
       lastSeen: serverTimestamp()
     }, { merge: true });
     res.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
@@ -150,7 +150,7 @@ if (fs.existsSync(distPath)) {
   });
 }
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor voando na porta ${PORT}`);
 });
