@@ -1,6 +1,6 @@
 import express from 'express';
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,23 +14,20 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// 1. Configuração do Firebase Admin
+// 1. Configuração Firebase (Usando as chaves que você JÁ TEM)
 const firebaseConfig = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.VITE_FIREBASE_APP_ID
 };
 
-try {
-  if (firebaseConfig.projectId) {
-    initializeApp({ credential: cert(firebaseConfig) });
-    console.log("✅ Firebase Admin Conectado");
-  }
-} catch (e) {
-  console.error("❌ Erro ao iniciar Firebase:", e.message);
-}
-
-const db = getFirestore();
+// Inicializa o Firebase sem precisar do arquivo JSON bloqueado
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
+console.log("✅ Servidor conectado ao Firebase via Client SDK");
 
 // 2. Rota para o Second Life
 app.post('/api/casperlet/sync', async (req, res) => {
@@ -43,9 +40,9 @@ app.post('/api/casperlet/sync', async (req, res) => {
 
   try {
     const { unit_name, price, status, tenant } = req.body;
-    const propertyRef = db.collection('properties').doc(unit_name);
     
-    await propertyRef.set({
+    // Salva os dados no Firestore
+    await setDoc(doc(db, 'properties', unit_name), {
       price: Number(price),
       status: status,
       tenant: tenant || "Disponível",
@@ -54,11 +51,12 @@ app.post('/api/casperlet/sync', async (req, res) => {
 
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error("Erro no Sync:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 3. Servir o Front-end (Design do AI Studio)
+// 3. Servir o Front-end (Design)
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
@@ -67,11 +65,11 @@ if (fs.existsSync(distPath)) {
   });
 } else {
   app.get('/', (req, res) => {
-    res.send('Aguardando conclusão do build do design...');
+    res.send('Aguardando build... se o erro persistir, clique em Reimplantar na Hostinger.');
   });
 }
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🌐 Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor voando na porta ${PORT}`);
 });
