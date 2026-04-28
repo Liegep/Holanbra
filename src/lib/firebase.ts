@@ -5,13 +5,18 @@ import firebaseConfig from '../../firebase-applet-config.json';
 
 // Helper to get config from environment or fallback to imported file
 const getFirebaseConfig = () => {
-  const env = import.meta.env;
+  const env = (import.meta as any).env;
+  console.log("Environment check - API Key present:", !!env.VITE_FIREBASE_API_KEY);
+  
   if (env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_API_KEY.length > 10) {
     // Sanitize common typos in manual entry
     let key = env.VITE_FIREBASE_API_KEY.trim();
-    if (key.startsWith('Alza')) key = 'AIza' + key.slice(4); // Fix l vs I
+    if (key.toLowerCase().startsWith('alza')) {
+       console.log("Fixing API Key prefix typo (l vs I)");
+       key = 'AIza' + key.slice(4);
+    }
     
-    return {
+    const config = {
       apiKey: key,
       authDomain: env.VITE_FIREBASE_AUTH_DOMAIN?.trim() || firebaseConfig.authDomain,
       projectId: env.VITE_FIREBASE_PROJECT_ID?.trim() || firebaseConfig.projectId,
@@ -20,7 +25,10 @@ const getFirebaseConfig = () => {
       appId: env.VITE_FIREBASE_APP_ID?.trim() || firebaseConfig.appId,
       firestoreDatabaseId: (env.VITE_FIREBASE_DATABASE_ID?.trim()) || firebaseConfig.firestoreDatabaseId
     };
+    console.log("Firebase Config (from env):", { ...config, apiKey: '***' + config.apiKey.slice(-4) });
+    return config;
   }
+  console.log("Firebase Config (from file):", { ...firebaseConfig, apiKey: '***' + firebaseConfig.apiKey.slice(-4) });
   return firebaseConfig;
 };
 
@@ -28,7 +36,9 @@ const finalConfig = getFirebaseConfig();
 const app = initializeApp(finalConfig);
 
 // If firestoreDatabaseId is provided, use it. Otherwise defaults to (default)
-export const db = getFirestore(app, (finalConfig as any).firestoreDatabaseId);
+const dbId = (finalConfig as any).firestoreDatabaseId || '(default)';
+console.log("Initializing Firestore with Database ID:", dbId);
+export const db = getFirestore(app, dbId);
 export const auth = getAuth(app);
 
 export enum OperationType {
