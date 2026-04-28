@@ -57,8 +57,14 @@ export default function Team() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set a safety timeout to stop loading state even if Firestore hangs
+    const timeoutSignal = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+
     const q = query(collection(db, 'team'), orderBy('order', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
+      clearTimeout(timeoutSignal);
       const members = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -66,16 +72,18 @@ export default function Team() {
       setTeam(members);
       setLoading(false);
     }, (error) => {
+      clearTimeout(timeoutSignal);
       console.error("Error fetching team:", error);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timeoutSignal);
+    };
   }, []);
 
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
-
-  if (loading) return null;
 
   return (
     <section id="team" className="py-32 px-6 bg-background-light relative overflow-hidden">

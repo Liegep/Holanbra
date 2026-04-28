@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Paintbrush, Sparkles, Layout } from 'lucide-react';
+import { Paintbrush, Sparkles, Layout, ArrowUpRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export default function Decoration() {
@@ -169,5 +169,3 @@ export default function Decoration() {
     </section>
   );
 }
-
-import { ArrowUpRight } from 'lucide-react';
