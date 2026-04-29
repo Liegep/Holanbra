@@ -60,8 +60,7 @@ export default function Team() {
       setLoading(true);
       const { data, error } = await supabase
         .from('team')
-        .select('*')
-        .order('order', { ascending: true });
+        .select('*');
       
       if (data) {
         setTeam(data.map(m => ({ ...m, slProfile: m.sl_profile })));

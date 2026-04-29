@@ -37,8 +37,7 @@ export default function Properties() {
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (error) {
         console.error(error);
@@ -56,8 +55,7 @@ export default function Properties() {
             ...p,
             casperletId: p.casperlet_id,
             image: p.image_url,
-            gallery: galleryList,
-            date: p.created_at
+            gallery: galleryList
           };
         });
         setProperties(propertyList);
@@ -85,16 +83,12 @@ export default function Properties() {
       return typeMatch && statusMatch && priceMatch;
     })
     .sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      
       switch (filter.sortBy) {
         case 'price-low': return a.price - b.price;
         case 'price-high': return b.price - a.price;
         case 'name-az': return a.name.localeCompare(b.name);
         case 'name-za': return b.name.localeCompare(a.name);
-        case 'oldest': return dateA - dateB;
-        default: return dateB - dateA;
+        default: return 0;
       }
     });
 
@@ -161,8 +155,6 @@ export default function Properties() {
                 onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
                 className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
               >
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
                 <option value="price-low">Lowest Price</option>
                 <option value="price-high">Highest Price</option>
                 <option value="name-az">Name (A-Z)</option>

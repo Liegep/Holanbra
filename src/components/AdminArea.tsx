@@ -200,8 +200,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('settings').upsert({
         id: 'hero',
-        content: heroContent,
-        updated_at: new Date().toISOString()
+        content: heroContent
       });
       
       if (error) throw error;
@@ -216,8 +215,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('settings').upsert({
         id: 'covenant',
-        ...covenants,
-        updated_at: new Date().toISOString()
+        ...covenants
       });
       
       if (error) throw error;
@@ -277,9 +275,7 @@ export default function AdminArea() {
             await supabase.from('users').insert([{
               email: sbUser.email,
               uid: sbUser.id,
-              is_admin: isWhitelisted,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
+              is_admin: isWhitelisted
             }]);
             setIsAdmin(isWhitelisted);
           } else if (profile) {
@@ -321,8 +317,7 @@ export default function AdminArea() {
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (error) {
         console.error(error);
@@ -349,8 +344,7 @@ export default function AdminArea() {
     const fetchGallery = async () => {
       const { data, error } = await supabase
         .from('gallery')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (error) {
         console.error(error);
@@ -377,8 +371,7 @@ export default function AdminArea() {
     const fetchTeam = async () => {
       const { data, error } = await supabase
         .from('team')
-        .select('*')
-        .order('order', { ascending: true });
+        .select('*');
       
       if (error) {
         console.error(error);
@@ -417,9 +410,7 @@ export default function AdminArea() {
         bio: teamFormData.bio,
         image: teamFormData.image,
         icon: teamFormData.icon,
-        sl_profile: teamFormData.slProfile,
-        order: parseInt(teamFormData.order),
-        updated_at: new Date().toISOString()
+        sl_profile: teamFormData.slProfile
       };
 
       if (editingTeamId) {
@@ -432,7 +423,7 @@ export default function AdminArea() {
       } else {
         const { error } = await supabase
           .from('team')
-          .insert([{ ...dataToSave, created_at: new Date().toISOString() }]);
+          .insert([dataToSave]);
         if (error) throw error;
         showToast("Team member added!");
       }
@@ -487,8 +478,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('gallery').insert([{
         url: galleryFormData.imageUrl,
-        caption: galleryFormData.caption,
-        created_at: new Date().toISOString()
+        caption: galleryFormData.caption
       }]);
       
       if (error) throw error;
@@ -602,8 +592,7 @@ export default function AdminArea() {
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId,
-        image_url: formData.imageUrl,
-        updated_at: new Date().toISOString()
+        image_url: formData.imageUrl
       };
 
       if (editingId) {

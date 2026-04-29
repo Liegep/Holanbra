@@ -7,16 +7,15 @@ interface GalleryImage {
   id: string;
   url: string;
   caption?: string;
-  created_at: string;
 }
 
 const DEFAULT_IMAGES: GalleryImage[] = [
-  { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80', caption: 'Lakeside Living', created_at: new Date().toISOString() },
-  { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80', caption: 'Sunset Views', created_at: new Date().toISOString() },
-  { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', caption: 'Coastal Paradise', created_at: new Date().toISOString() },
-  { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', caption: 'Modern Interiors', created_at: new Date().toISOString() },
-  { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80', caption: 'Infinite Pools', created_at: new Date().toISOString() },
-  { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&q=80', caption: 'Private Islands', created_at: new Date().toISOString() }
+  { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80', caption: 'Lakeside Living' },
+  { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80', caption: 'Sunset Views' },
+  { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', caption: 'Coastal Paradise' },
+  { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', caption: 'Modern Interiors' },
+  { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80', caption: 'Infinite Pools' },
+  { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&q=80', caption: 'Private Islands' }
 ];
 
 export default function Gallery() {
@@ -27,8 +26,7 @@ export default function Gallery() {
     const fetchGallery = async () => {
       const { data, error } = await supabase
         .from('gallery')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
       
       if (data) {
         setImages(data as GalleryImage[]);
