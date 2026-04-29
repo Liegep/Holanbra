@@ -231,6 +231,7 @@ export default function AdminArea() {
     casperletId: '',
     price: '',
     slurl: '',
+    teleport_url: '',
     status: 'available',
     description: '',
     bedrooms: '',
@@ -592,7 +593,13 @@ export default function AdminArea() {
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId,
-        image_url: formData.imageUrl
+        image_url: formData.imageUrl,
+        slurl: formData.slurl,
+        teleport_url: formData.teleport_url,
+        location: formData.location,
+        bedrooms: parseInt(formData.bedrooms) || 0,
+        bathrooms: parseInt(formData.bathrooms) || 0,
+        status: formData.status
       };
 
       if (editingId) {
@@ -615,6 +622,7 @@ export default function AdminArea() {
         casperletId: '',
         price: '',
         slurl: '',
+        teleport_url: '',
         status: 'available',
         description: '',
         bedrooms: '',
@@ -639,6 +647,7 @@ export default function AdminArea() {
       casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
       slurl: prop.slurl || '',
+      teleport_url: prop.teleport_url || prop.slurl || '',
       status: prop.status || 'available',
       description: prop.description || '',
       bedrooms: prop.bedrooms?.toString() || '',
@@ -1412,6 +1421,45 @@ export default function AdminArea() {
                         value={formData.nextPayment}
                         onChange={handleInputChange}
                         className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-left">
+                  <label className="text-xs font-bold text-amber-500/70 uppercase">Location Settings</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-bold text-gray-500 uppercase">Region Name</label>
+                       <input 
+                        type="text"
+                        name="location"
+                        value={formData.location}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="Holanbra"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-bold text-gray-500 uppercase">SLURL / Teleport Link</label>
+                       <input 
+                        type="text"
+                        name="slurl"
+                        value={formData.slurl}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="http://maps.secondlife.com/secondlife/..."
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                       <label className="text-[10px] font-bold text-amber-500 uppercase">Teleport URL (For highlighted button)</label>
+                       <input 
+                        type="text"
+                        name="teleport_url"
+                        value={formData.teleport_url}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm border-amber-500/30 focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="Variable used for 'Teleport Now' button"
                       />
                     </div>
                   </div>

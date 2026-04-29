@@ -14,6 +14,7 @@ interface Property {
   image: string;
   gallery: Array<{ type: 'image' | 'video'; url: string }>;
   slurl: string;
+  teleport_url?: string;
   date: string;
   casperletId?: string;
   description?: string;
@@ -24,7 +25,7 @@ interface Property {
 export default function Properties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProperty, setSelectedProperty] = useState<any>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [filter, setFilter] = useState({
     type: 'All',
@@ -48,14 +49,19 @@ export default function Properties() {
           try {
             galleryList = typeof p.gallery === 'string' ? JSON.parse(p.gallery) : (p.gallery || []);
           } catch(e) {
-            galleryList = [{ type: 'image', url: p.image }];
+            galleryList = [{ type: 'image', url: p.image_url || p.image }];
+          }
+
+          if (galleryList.length === 0 && (p.image_url || p.image)) {
+            galleryList = [{ type: 'image', url: p.image_url || p.image }];
           }
 
           return {
             ...p,
             casperletId: p.casperlet_id,
             image: p.image_url,
-            gallery: galleryList
+            gallery: galleryList,
+            teleport_url: p.teleport_url || p.slurl // Fallback
           };
         });
         setProperties(propertyList);
@@ -184,11 +190,11 @@ export default function Properties() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
-              onClick={() => openGallery(property)}
               className={cn(
                 "bento-card group h-[450px] cursor-pointer",
                 idx === 0 && filter.type === 'All' ? "lg:col-span-1 md:col-span-2" : ""
               )}
+              onClick={() => openGallery(property)}
             >
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
               <img 
@@ -200,7 +206,7 @@ export default function Properties() {
                 referrerPolicy="no-referrer"
               />
               
-              <div className="absolute bottom-8 left-8 z-20 space-y-3 text-left">
+              <div className="absolute bottom-8 left-8 right-8 z-20 space-y-3 text-left">
                 <div className={cn(
                   "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit mb-3",
                   property.status === 'available' ? "bg-amber-500 text-black" : "bg-white/20 text-white"
@@ -211,33 +217,33 @@ export default function Properties() {
                 <p className="text-[10px] font-mono tracking-widest text-white/60 uppercase">
                   {property.location} | PRIMA OCEAN
                 </p>
-                <div className="flex flex-col gap-3 pt-2">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
-                      L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
-                    </div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(property.slurl, '_blank');
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
-                    >
-                      <MapPin size={12} />
-                      Teleport
-                    </button>
+                <div className="flex items-center gap-4 pt-2">
+                  <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
+                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
                   </div>
-                  
-                  {property.status === 'available' && (
-                    <Link 
-                      to="/resident"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
-                    >
-                      <Key size={12} />
-                      Rent Now
-                    </Link>
-                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(property.teleport_url || property.slurl, '_blank');
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+                  >
+                    <MapPin size={12} />
+                    Teleport
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openGallery(property);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
+                  >
+                    <ExternalLink size={12} />
+                    Saber Mais
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -257,125 +263,151 @@ export default function Properties() {
         </div>
       </div>
 
-      {/* Gallery Modal */}
       <AnimatePresence>
         {selectedProperty && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl p-6"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 sm:p-10"
             onClick={() => setSelectedProperty(null)}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="relative max-w-6xl w-full aspect-video rounded-[3rem] overflow-hidden bg-zinc-900 border border-white/10"
+              className="relative max-w-5xl w-full h-full max-h-[90vh] rounded-[2rem] sm:rounded-[3rem] overflow-hidden bg-white text-black shadow-2xl flex flex-col md:flex-row border border-white/20"
               onClick={(e) => e.stopPropagation()}
             >
-              {selectedProperty.gallery[currentImgIdx].type === 'video' ? (
-                <video 
-                  src={selectedProperty.gallery[currentImgIdx].url} 
-                  className="w-full h-full object-cover" 
-                  controls 
-                  autoPlay 
-                  loop
-                />
-              ) : (
-                <img 
-                  src={selectedProperty.gallery[currentImgIdx].url} 
-                  alt={`${selectedProperty.name} view ${currentImgIdx + 1}`}
-                  loading="lazy"
-                  decoding="async"
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              )}
-              
-              {/* Overlay Controls */}
-              <div className="absolute inset-0 flex flex-col justify-between p-8">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-end gap-6">
-                    <div>
-                      <h2 className="text-4xl font-bold text-white tracking-tighter">{selectedProperty.name}</h2>
-                      <p className="text-amber-400 text-sm font-mono tracking-widest uppercase">{selectedProperty.location}</p>
-                      
-                      {(selectedProperty.bedrooms !== undefined || selectedProperty.bathrooms !== undefined) && (
-                        <div className="flex gap-4 mt-2">
-                          {selectedProperty.bedrooms !== undefined && selectedProperty.bedrooms > 0 && (
-                            <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest">
-                              {selectedProperty.bedrooms} {selectedProperty.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}
-                            </span>
-                          )}
-                          {selectedProperty.bathrooms !== undefined && selectedProperty.bathrooms > 0 && (
-                            <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest">
-                              {selectedProperty.bathrooms} {selectedProperty.bathrooms === 1 ? 'Bathroom' : 'Bathrooms'}
-                            </span>
-                          )}
+              {/* Media Section */}
+              <div className="w-full md:w-[60%] h-[40%] md:h-full relative bg-zinc-100">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentImgIdx}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-full h-full"
+                  >
+                    {selectedProperty.gallery[currentImgIdx]?.type === 'video' ? (
+                      <video 
+                        src={selectedProperty.gallery[currentImgIdx].url} 
+                        className="w-full h-full object-cover" 
+                        controls 
+                        autoPlay 
+                        loop
+                      />
+                    ) : (
+                      <img 
+                        src={selectedProperty.gallery[currentImgIdx]?.url} 
+                        alt={selectedProperty.name}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+
+                {selectedProperty.gallery.length > 1 && (
+                  <>
+                    <button 
+                      onClick={prevImg}
+                      className="absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-xl transition-all"
+                    >
+                      <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                      onClick={nextImg}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-xl transition-all"
+                    >
+                      <ChevronRight size={24} />
+                    </button>
+                  </>
+                )}
+                
+                <div className="absolute bottom-8 inset-x-0 flex justify-center gap-2">
+                  {selectedProperty.gallery.map((_: any, i: number) => (
+                    <div 
+                      key={i} 
+                      className={cn(
+                        "w-1.5 h-1.5 rounded-full transition-all",
+                        i === currentImgIdx ? "w-6 bg-white" : "bg-white/40"
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Info Section */}
+              <div className="w-full md:w-[40%] h-[60%] md:h-full bg-white p-8 md:p-12 flex flex-col justify-between overflow-y-auto">
+                <div className="space-y-8">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                      <div className={cn(
+                        "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit",
+                        selectedProperty.status === 'available' ? "bg-amber-500 text-black" : "bg-zinc-100 text-zinc-400"
+                      )}>
+                        {selectedProperty.status === 'available' ? 'Available' : 'Rented'}
+                      </div>
+                      <h2 className="text-4xl md:text-5xl font-display font-bold leading-none tracking-tight text-black">
+                        {selectedProperty.name}
+                      </h2>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/60">
+                         {selectedProperty.location}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => setSelectedProperty(null)}
+                      className="p-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors text-black"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="text-3xl font-display font-medium text-black">
+                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">/ week</span>
+                    </div>
+                    
+                    <div className="flex gap-4">
+                      {selectedProperty.bedrooms !== undefined && selectedProperty.bedrooms > 0 && (
+                        <div className="px-4 py-2 bg-zinc-100 rounded-xl">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bedrooms} BR</span>
                         </div>
                       )}
-
-                      {selectedProperty.description && (
-                        <p className="mt-4 text-sm text-white/60 font-light max-w-md line-clamp-3">
-                          {selectedProperty.description}
-                        </p>
+                      {selectedProperty.bathrooms !== undefined && selectedProperty.bathrooms > 0 && (
+                        <div className="px-4 py-2 bg-zinc-100 rounded-xl">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bathrooms} BA</span>
+                        </div>
                       )}
                     </div>
-                    <div className="flex flex-col gap-2 mb-1">
-                      <button 
-                        onClick={() => window.open(selectedProperty.slurl, '_blank')}
-                        className="flex items-center gap-2 px-6 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
-                      >
-                        <MapPin size={14} />
-                        Teleport to Location
-                      </button>
-                      
-                      {selectedProperty.status === 'available' && (
-                        <Link 
-                          to="/resident"
-                          className="flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition-all"
-                        >
-                          <Key size={14} />
-                          Rent This Property
-                        </Link>
-                      )}
+
+                    <div className="pt-4 border-t border-zinc-100">
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Description</h3>
+                      <p className="text-sm text-zinc-600 leading-relaxed font-light">
+                        {selectedProperty.description || "Experience unparalleled luxury and comfort in this premium property at Holanbra. Designed for sophisticated residents seeking the finest in Virtual World living."}
+                      </p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setSelectedProperty(null)}
-                    className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white"
-                  >
-                    <X size={24} />
-                  </button>
                 </div>
 
-                <div className="flex justify-between items-center">
+                <div className="pt-8 space-y-3">
                   <button 
-                    onClick={prevImg}
-                    className="p-4 bg-black/40 hover:bg-amber-500 hover:text-black rounded-full transition-all text-white backdrop-blur-md"
+                    onClick={() => window.open(selectedProperty.teleport_url || selectedProperty.slurl, '_blank')}
+                    className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-full bg-amber-500 text-black text-xs font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-2xl shadow-amber-500/30"
                   >
-                    <ChevronLeft size={32} />
+                    <MapPin size={18} />
+                    Teleportar agora
                   </button>
                   
-                  <div className="flex gap-2">
-                    {selectedProperty.gallery.map((_: any, i: number) => (
-                      <div 
-                        key={i} 
-                        className={cn(
-                          "w-2 h-2 rounded-full transition-all",
-                          i === currentImgIdx ? "w-8 bg-amber-500" : "bg-white/20"
-                        )}
-                      />
-                    ))}
-                  </div>
-
-                  <button 
-                    onClick={nextImg}
-                    className="p-4 bg-black/40 hover:bg-amber-500 hover:text-black rounded-full transition-all text-white backdrop-blur-md"
-                  >
-                    <ChevronRight size={32} />
-                  </button>
+                  {selectedProperty.status === 'available' && (
+                    <Link 
+                      to="/resident"
+                      className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                    >
+                      Process Rental
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>
