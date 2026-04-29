@@ -45,40 +45,37 @@ async function startServer() {
   // API Routes
   app.post('/api/webhooks/casperlet', async (req, res) => {
     console.log('--- CasperLet Webhook Received ---');
-    console.log('Payload:', req.body);
+    const { casperlet_id, status, tenant_key, api_key } = req.body;
     
-    const { action, unit_id } = req.body;
-    
-    if (!unit_id) {
-      return res.status(400).json({ error: 'Missing unit_id' });
+    // Security Validation
+    if (api_key !== 'holanbra_secret_token') {
+      console.warn('Unauthorized webhook attempt');
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    let newStatus = '';
-
-    // CasperLet Events Mapping
-    if (action === 'rental_started' || action === 'rental_extended') {
-      newStatus = 'Rented';
-    } else if (action === 'rental_expired' || action === 'rental_vacated' || action === 'rental_expired_vacated') {
-      newStatus = 'Available';
-    }
-
-    if (!newStatus) {
-      return res.status(200).json({ message: 'Action ignored', action });
+    if (!casperlet_id) {
+      return res.status(400).json({ error: 'Missing casperlet_id' });
     }
 
     try {
-      const { data, error } = await supabase
+      // Normalize status if needed (user might send Available or Available/Rented)
+      const newStatus = status?.toLowerCase() === 'rented' ? 'Rented' : 'Available';
+
+      const { error } = await supabase
         .from('properties')
-        .update({ status: newStatus })
-        .eq('casperlet_id', unit_id);
+        .update({ 
+          status: newStatus,
+          tenant_name: tenant_key // Assuming tenant_key is what you want to store as tenant identity
+        })
+        .eq('casperlet_id', casperlet_id);
 
       if (error) {
         console.error('Supabase update error:', error);
         throw error;
       }
 
-      console.log(`Successfully updated unit ${unit_id} to status: ${newStatus}`);
-      res.status(200).json({ success: true, status: newStatus });
+      console.log(`Successfully updated property ${casperlet_id} to status: ${newStatus}`);
+      res.status(200).json({ success: true, updated_status: newStatus });
     } catch (err) {
       console.error('Webhook handler failed:', err.message);
       res.status(500).json({ error: err.message });
