@@ -13,8 +13,15 @@ dotenv.config();
 
 // Supabase Configuration
 const supabaseUrl = process.env.SUPABASE_URL || 'https://kwosiiddjwkajvatgudp.supabase.co';
-// Use Service Role Key for backend operations to bypass RLS
+// CRITICAL: For server-side updates, we MUST use the SERVICE_ROLE_KEY to bypass RLS
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3b3NpaWRkandrYWp2YXRndWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NTgwMDgsImV4cCI6MjA5MzAzNDAwOH0.33En7oofSwpWDK-lScNDCob98kBJCFGstMbAU-wGvZg';
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('⚠️ WARNING: SUPABASE_SERVICE_ROLE_KEY not found in environment. Webhook updates may fail due to RLS.');
+} else {
+  console.log('✅ INFO: Using SUPABASE_SERVICE_ROLE_KEY for database operations.');
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function startServer() {
