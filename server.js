@@ -24,6 +24,9 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Global variable for debugging
+let lastWebhookLogs = [];
+
 async function startServer() {
   const app = express();
   app.use(cors());
@@ -40,6 +43,14 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // Debug Route - Pergunta do usuário: "Onde está o log?"
+  app.get('/api/webhooks/debug', (req, res) => {
+    res.json({
+      message: "Últimos logs do Webhook",
+      logs: lastWebhookLogs
+    });
+  });
+
   // Vite Middleware
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');
@@ -52,6 +63,16 @@ async function startServer() {
 
   // API Routes
   app.post('/api/webhooks/casperlet', async (req, res) => {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      body: req.body,
+      result: null
+    };
+    
+    // Mantém apenas os últimos 10 logs
+    lastWebhookLogs.unshift(logEntry);
+    if (lastWebhookLogs.length > 10) lastWebhookLogs.pop();
+
     console.log('--- CasperLet Webhook Received ---');
     console.log('Dados recebidos:', req.body);
     
@@ -68,11 +89,13 @@ async function startServer() {
       return res.status(400).json({ error: 'Missing casperlet_id' });
     }
 
+    const targetId = String(casperlet_id).trim();
+
     try {
       // Valor exato vindo do SL (limpo e minúsculo)
       const newStatus = (status || '').toLowerCase().trim();
 
-      console.log(`Buscando imóvel com casperlet_id: "${casperlet_id}" para atualizar status para: "${newStatus}"`);
+      console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}"`);
 
       // Realiza o update na tabela 'properties' filtrando pela coluna 'casperlet_id'
       const { data, error } = await supabase
@@ -82,24 +105,27 @@ async function startServer() {
           tenant_name: tenant_key || (newStatus === 'rented' ? 'Ocupado' : 'Disponível'),
           updated_at: new Date().toISOString()
         })
-        .eq('casperlet_id', casperlet_id)
+        .eq('casperlet_id', targetId)
         .select();
 
       if (error) {
-        console.error('Erro no Supabase:', error.message);
+        console.error('❌ Erro retornado pelo Supabase:', error.message);
         return res.status(500).json({ error: error.message });
       }
 
       if (!data || data.length === 0) {
-        console.warn(`Atenção: Nenhum imóvel encontrado com o UUID: ${casperlet_id}`);
+        const msg = `⚠️ Aviso: Nenhuma linha foi alterada. Verifique se o UUID "${targetId}" existe na coluna "casperlet_id" da tabela "properties".`;
+        console.warn(msg);
+        logEntry.result = { error: 'Not Found', details: msg };
         return res.status(404).json({ 
           success: false, 
-          message: 'Imóvel não encontrado na tabela properties',
-          checked_uuid: casperlet_id
+          message: 'Imóvel não encontrado ou UUID incompatível',
+          checked_uuid: targetId
         });
       }
 
-      console.log(`✅ Sucesso! Imóvel atualizado:`, data[0]);
+      console.log(`✅ Sucesso! Status no banco agora é: "${data[0].status}" para o imóvel: "${data[0].name || targetId}"`);
+      logEntry.result = { success: true, updated_data: data[0] };
       res.status(200).json({ 
         success: true, 
         message: 'Status atualizado com sucesso',
@@ -108,6 +134,7 @@ async function startServer() {
       });
     } catch (err) {
       console.error('❌ Falha crítica no handler:', err.message);
+      logEntry.result = { error: 'Critical Failure', message: err.message };
       res.status(500).json({ error: err.message });
     }
   });
