@@ -43,6 +43,48 @@ async function startServer() {
   }
 
   // API Routes
+  app.post('/api/webhooks/casperlet', async (req, res) => {
+    console.log('--- CasperLet Webhook Received ---');
+    console.log('Payload:', req.body);
+    
+    const { action, unit_id } = req.body;
+    
+    if (!unit_id) {
+      return res.status(400).json({ error: 'Missing unit_id' });
+    }
+
+    let newStatus = '';
+
+    // CasperLet Events Mapping
+    if (action === 'rental_started' || action === 'rental_extended') {
+      newStatus = 'Rented';
+    } else if (action === 'rental_expired' || action === 'rental_vacated' || action === 'rental_expired_vacated') {
+      newStatus = 'Available';
+    }
+
+    if (!newStatus) {
+      return res.status(200).json({ message: 'Action ignored', action });
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('properties')
+        .update({ status: newStatus })
+        .eq('casperlet_id', unit_id);
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log(`Successfully updated unit ${unit_id} to status: ${newStatus}`);
+      res.status(200).json({ success: true, status: newStatus });
+    } catch (err) {
+      console.error('Webhook handler failed:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/casperlet/sync', async (req, res) => {
     try {
       const { unit_name, price, status, tenant, casperletId } = req.body;
