@@ -37,7 +37,8 @@ import {
   serverTimestamp, 
   query, 
   orderBy,
-  getDoc
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
 
 function AdminAuthForm() {
@@ -162,39 +163,33 @@ export default function AdminArea() {
     if (!user || !isAdmin) return;
     
     // Fetch Covenants
-    const fetchCovenants = async () => {
-      try {
-        const docRef = doc(db, 'settings', 'covenant');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setCovenants({
-            en: data.en || '',
-            pt: data.pt || '',
-            es: data.es || '',
-            nl: data.nl || ''
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching covenants:", error);
+    const unsubscribeCovenant = onSnapshot(doc(db, 'settings', 'covenant'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setCovenants({
+          en: data.en || '',
+          pt: data.pt || '',
+          es: data.es || '',
+          nl: data.nl || ''
+        });
       }
-    };
-
-    fetchCovenants();
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'settings/covenant');
+    });
 
     // Fetch Hero Content
-    const fetchHeroContent = async () => {
-      try {
-        const docRef = doc(db, 'settings', 'hero');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setHeroContent(docSnap.data());
-        }
-      } catch (error) {
-        console.error("Error fetching hero content:", error);
+    const unsubscribeHero = onSnapshot(doc(db, 'settings', 'hero'), (docSnap) => {
+      if (docSnap.exists()) {
+        setHeroContent(docSnap.data());
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'settings/hero');
+    });
+
+    return () => {
+      unsubscribeCovenant();
+      unsubscribeHero();
     };
-    fetchHeroContent();
   }, [user, isAdmin]);
 
   const handleHeroInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -548,13 +543,13 @@ export default function AdminArea() {
     }
 
     try {
-      const dataToSave = {
+      const dataToSave: any = {
         ...formData,
         price: parseFloat(formData.price),
         bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : 0,
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : 0,
         image: uploadedUrl,
-        gallery: [{ type: uploadedType, url: uploadedUrl }],
+        gallery: [{ type: uploadedType || 'image', url: uploadedUrl }],
         updatedAt: serverTimestamp()
       };
 
@@ -562,10 +557,8 @@ export default function AdminArea() {
         await updateDoc(doc(db, 'properties', editingId), dataToSave);
         alert("Property updated successfully!");
       } else {
-        await addDoc(collection(db, 'properties'), {
-          ...dataToSave,
-          createdAt: serverTimestamp()
-        });
+        dataToSave.createdAt = serverTimestamp();
+        await addDoc(collection(db, 'properties'), dataToSave);
         alert("Property saved successfully!");
       }
 

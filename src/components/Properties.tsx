@@ -30,7 +30,7 @@ export default function Properties() {
   const [filter, setFilter] = useState({
     type: 'All',
     status: 'all',
-    maxPrice: 3000,
+    maxPrice: 50000,
     sortBy: 'newest'
   });
 
@@ -40,7 +40,17 @@ export default function Properties() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const propertyList: Property[] = [];
       snapshot.forEach((doc) => {
-        propertyList.push({ id: doc.id, ...doc.data() } as Property);
+        const data = doc.data();
+        // Convert Firestore Timestamp to Date string if needed, or just handle safely
+        // Support both createdAt and updatedAt if createdAt is somehow missing
+        const timestamp = data.createdAt || data.updatedAt || { toDate: () => new Date() };
+        const date = typeof timestamp.toDate === 'function' ? timestamp.toDate() : new Date();
+        
+        propertyList.push({ 
+          id: doc.id, 
+          ...data,
+          date: date.toISOString() // Ensure date is a string as defined in Property interface
+        } as Property);
       });
       setProperties(propertyList);
       setLoading(false);
@@ -60,13 +70,16 @@ export default function Properties() {
       return typeMatch && statusMatch && priceMatch;
     })
     .sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      
       switch (filter.sortBy) {
         case 'price-low': return a.price - b.price;
         case 'price-high': return b.price - a.price;
         case 'name-az': return a.name.localeCompare(b.name);
         case 'name-za': return b.name.localeCompare(a.name);
-        case 'oldest': return new Date(a.date).getTime() - new Date(b.date).getTime();
-        default: return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case 'oldest': return dateA - dateB;
+        default: return dateB - dateA;
       }
     });
 
@@ -147,8 +160,8 @@ export default function Properties() {
               <input 
                 type="range" 
                 min="500" 
-                max="3000" 
-                step="100"
+                max="50000" 
+                step="500"
                 value={filter.maxPrice}
                 onChange={(e) => setFilter({ ...filter, maxPrice: parseInt(e.target.value) })}
                 className="w-24 accent-amber-500"

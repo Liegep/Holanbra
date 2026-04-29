@@ -12,25 +12,29 @@ service cloud.firestore {
       return isSignedIn() && (
         exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == "admin") ||
-        request.auth.token.email.matches("(?i)hello@liegepaschoalini\\.design") ||
-        request.auth.token.email.matches("(?i)slmariew@gmail\\.com") ||
-        request.auth.token.email.matches("(?i)victoriaholanbra@gmail\\.com")
+        (request.auth.token.email != null && request.auth.token.email.matches("(?i)hello@liegepaschoalini\\.design")) ||
+        (request.auth.token.email != null && request.auth.token.email.matches("(?i)slmariew@gmail\\.com")) ||
+        (request.auth.token.email != null && request.auth.token.email.matches("(?i)victoriaholanbra@gmail\\.com"))
       );
     }
 
     // Property Validation
     function isValidProperty(data) {
-      return data.name is string && data.name.size() <= 100
+      return data.name is string && data.name.size() <= 200
         && (data.price is number || data.price is int)
         && data.status in ['available', 'rented', 'reserved']
         && (data.get('image', '') is string)
         && (data.get('description', '') is string)
-        && (data.get('slurl', '') is string);
+        && (data.get('slurl', '') is string)
+        && (data.get('location', '') is string);
     }
 
     match /properties/{propertyId} {
       allow get, list: if true;
-      allow create, update: if isAdmin() && isValidProperty(incoming());
+      allow create: if isAdmin() && isValidProperty(incoming());
+      allow update: if isAdmin() && isValidProperty(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasAny(['name', 'price', 'status', 'image', 'gallery', 'description', 'slurl', 'location', 'updatedAt', 'casperletId', 'bedrooms', 'bathrooms', 'tenantName', 'tenantPassword', 'nextPayment'])
+      );
       allow delete: if isAdmin();
     }
 

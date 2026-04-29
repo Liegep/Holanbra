@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Play, MapPin } from 'lucide-react';
 import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { cn } from '../lib/utils';
 
 export default function Hero() {
@@ -20,18 +20,16 @@ export default function Hero() {
   });
 
   useEffect(() => {
-    const fetchHero = async () => {
-      try {
-        const docRef = doc(db, 'settings', 'hero');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setContent(docSnap.data());
-        }
-      } catch (err) {
-        console.error("Error fetching hero content:", err);
+    const docRef = doc(db, 'settings', 'hero');
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setContent((prev: any) => ({ ...prev, ...docSnap.data() }));
       }
-    };
-    fetchHero();
+    }, (err) => {
+      console.error("Error fetching hero content:", err);
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   return (
