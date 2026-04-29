@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Mail, MessageSquare, MapPin, Instagram } from 'lucide-react';
+import { MessageSquare, MapPin, Instagram, Facebook } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -19,7 +19,6 @@ export default function Footer() {
           <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
             <li><a href="#" className="hover:text-amber-400 transition-colors">Home</a></li>
             <li><a href="#" className="hover:text-amber-400 transition-colors">Properties</a></li>
-            <li><a href="http://www.holanbra.com" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 transition-colors">Web Site</a></li>
             <li><Link to="/covenant" className="hover:text-amber-400 transition-colors">Covenant</Link></li>
             <li><Link to="/admin" className="hover:text-amber-400 transition-colors">Admin Area</Link></li>
           </ul>
@@ -28,7 +27,6 @@ export default function Footer() {
         <div className="space-y-6">
           <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">Contato</h4>
           <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
-            <li className="flex items-center gap-3"><Mail size={12} className="text-amber-500" /> holanbra@sl.design</li>
             <li className="flex items-center gap-3"><MessageSquare size={12} className="text-amber-500" /> In-world Support</li>
           </ul>
         </div>
@@ -38,6 +36,9 @@ export default function Footer() {
           <div className="flex gap-4">
             <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
               <Instagram size={16} />
+            </a>
+            <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
+              <Facebook size={16} />
             </a>
             <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
               <MapPin size={16} />

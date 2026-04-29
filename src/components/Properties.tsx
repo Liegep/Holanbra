@@ -39,7 +39,7 @@ export default function Properties() {
       const { data, error } = await supabase
         .from('properties')
         .select('*')
-        .eq('status', 'Available');
+        .eq('status', 'available');
       
       if (error) {
         console.error(error);

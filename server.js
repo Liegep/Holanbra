@@ -59,7 +59,7 @@ async function startServer() {
 
     try {
       // Normalize status if needed (user might send Available or Available/Rented)
-      const newStatus = status?.toLowerCase() === 'rented' ? 'Rented' : 'Available';
+      const newStatus = status?.toLowerCase() === 'rented' ? 'rented' : 'available';
 
       const { error } = await supabase
         .from('properties')
