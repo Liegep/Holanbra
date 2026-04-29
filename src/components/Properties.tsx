@@ -38,7 +38,8 @@ export default function Properties() {
     const fetchProperties = async () => {
       const { data, error } = await supabase
         .from('properties')
-        .select('*');
+        .select('*')
+        .eq('status', 'Available');
       
       if (error) {
         console.error(error);
