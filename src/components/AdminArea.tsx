@@ -29,6 +29,7 @@ import { cn } from '../lib/utils';
 import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
+import imageCompression from 'browser-image-compression';
 
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
@@ -121,6 +122,8 @@ export default function AdminArea() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [covenants, setCovenants] = useState({ en: '', pt: '', es: '', nl: '' });
@@ -515,6 +518,76 @@ export default function AdminArea() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      let fileToUpload: File | Blob = file;
+      const isImage = file.type.startsWith('image/');
+      const isVideo = file.type.startsWith('video/');
+
+      if (isImage) {
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          fileType: 'image/webp',
+          initialQuality: 0.8
+        };
+        fileToUpload = await imageCompression(file, options);
+      }
+
+      const fileExt = isImage ? 'webp' : file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `${targetField}/${fileName}`;
+
+      // We use a broader bucket name like 'media'
+      const { data, error } = await supabase.storage
+        .from('media')
+        .upload(filePath, fileToUpload, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        if (error.message.includes('bucket not found')) {
+            throw new Error("Supabase Storage bucket 'media' not found. Please create it in your Supabase dashboard.");
+        }
+        throw error;
+      }
+
+      // Track progress manually since Supabase JS SDK upload doesn't provide it easily in 'upload' method
+      // (Wait, some versions do, but let's simulate it if not available or just show 100% on completion)
+      setUploadProgress(100);
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      if (targetField === 'imageUrl') {
+        setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      } else if (targetField === 'image') {
+        setTeamFormData(prev => ({ ...prev, image: publicUrl }));
+      } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
+        setHeroContent((prev: any) => ({ ...prev, [targetField]: publicUrl }));
+      }
+
+      showToast("Media uploaded successfully!");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      showToast(error.message || "Upload failed", "error");
+    } finally {
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 1000);
+    }
+  };
+
   const handleSave = async () => {
     console.log('Tentando salvar (Supabase):', formData);
     
@@ -765,16 +838,28 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Background Image URL</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Background Image</label>
                     <div className="space-y-4">
-                      <input 
-                        type="text"
-                        name="backgroundImage"
-                        value={heroContent.backgroundImage}
-                        onChange={handleHeroInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Background URL..."
-                      />
+                      <div className="flex gap-4">
+                        <input 
+                          type="text"
+                          name="backgroundImage"
+                          value={heroContent.backgroundImage}
+                          onChange={handleHeroInputChange}
+                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                          placeholder="Background URL..."
+                        />
+                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleFileUpload(e, 'backgroundImage')}
+                            disabled={isUploading}
+                          />
+                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
+                        </label>
+                      </div>
                       {heroContent.backgroundImage && (
                         <div className="aspect-video rounded-xl overflow-hidden border border-white/10">
                           <img src={heroContent.backgroundImage} alt="BG Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -784,16 +869,28 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">About Us Photo URL</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">About Us Photo</label>
                     <div className="space-y-4">
-                      <input 
-                        type="text"
-                        name="aboutImage"
-                        value={heroContent.aboutImage}
-                        onChange={handleHeroInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="About Image URL..."
-                      />
+                      <div className="flex gap-4">
+                        <input 
+                          type="text"
+                          name="aboutImage"
+                          value={heroContent.aboutImage}
+                          onChange={handleHeroInputChange}
+                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                          placeholder="About Image URL..."
+                        />
+                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleFileUpload(e, 'aboutImage')}
+                            disabled={isUploading}
+                          />
+                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
+                        </label>
+                      </div>
                       {heroContent.aboutImage && (
                         <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
                           <img src={heroContent.aboutImage} alt="About Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -941,16 +1038,28 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Portrait Photo URL</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Portrait Photo</label>
                     <div className="space-y-4">
-                      <input 
-                        type="text"
-                        name="image"
-                        value={teamFormData.image}
-                        onChange={handleTeamInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Paste portrait URL here..."
-                      />
+                      <div className="flex gap-4">
+                        <input 
+                          type="text"
+                          name="image"
+                          value={teamFormData.image}
+                          onChange={handleTeamInputChange}
+                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                          placeholder="Paste portrait URL or upload..."
+                        />
+                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleFileUpload(e, 'image')}
+                            disabled={isUploading}
+                          />
+                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
+                        </label>
+                      </div>
                       {teamFormData.image && (
                         <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
                            <img src={teamFormData.image} alt="Team Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -1374,34 +1483,89 @@ export default function AdminArea() {
                 </div>
 
                   <div className="space-y-4 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Image URL (from ImgBB or similar)</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Image URL or Upload Media</label>
                     <div className="space-y-4">
-                      <input 
-                        type="text"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Paste image URL here..."
-                      />
+                      <div className="flex gap-4">
+                        <input 
+                          type="text"
+                          name="imageUrl"
+                          value={formData.imageUrl}
+                          onChange={handleInputChange}
+                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                          placeholder="Paste image URL or upload below..."
+                        />
+                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
+                          <input 
+                            type="file" 
+                            accept="image/*,video/mp4,video/quicktime" 
+                            className="hidden" 
+                            onChange={(e) => handleFileUpload(e, 'imageUrl')}
+                            disabled={isUploading}
+                          />
+                          {isUploading ? (
+                            <Loader2 className="animate-spin text-amber-500" size={20} />
+                          ) : (
+                            <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
+                          )}
+                        </label>
+                      </div>
+
+                      {isUploading && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-amber-500">
+                             <span>Uploading media...</span>
+                             <span>{uploadProgress}%</span>
+                          </div>
+                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                             <motion.div 
+                              initial={{ width: 0 }}
+                              animate={{ width: `${uploadProgress}%` }}
+                              className="h-full bg-amber-500"
+                             />
+                          </div>
+                        </div>
+                      )}
                       
                       {formData.imageUrl && (
                         <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                          <img 
-                            src={formData.imageUrl} 
-                            alt="Preview" 
-                            className="w-full h-full object-contain bg-zinc-900"
-                            referrerPolicy="no-referrer"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/000000/FFFFFF?text=Invalid+Image+URL';
-                            }}
-                          />
-                          <button 
-                            onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                            className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X size={16} />
-                          </button>
+                          {formData.imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) || formData.imageUrl.includes('video') ? (
+                            <div className="w-full h-full bg-zinc-900 flex items-center justify-center relative">
+                               <Video className="text-amber-500 mb-2" size={48} />
+                               <div className="absolute bottom-4 inset-x-4 text-center">
+                                 <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Video File Detected</p>
+                                 <CheckCircle className="text-green-500 mx-auto mt-2" size={16} />
+                               </div>
+                               <button 
+                                onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                                className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                               >
+                                <X size={16} />
+                               </button>
+                            </div>
+                          ) : (
+                            <>
+                              <img 
+                                src={formData.imageUrl} 
+                                alt="Preview" 
+                                className="w-full h-full object-contain bg-zinc-900"
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/000000/FFFFFF?text=Invalid+Image+URL';
+                                }}
+                              />
+                              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="p-2 bg-green-600 text-white rounded-full">
+                                  <CheckCircle size={16} />
+                                </div>
+                                <button 
+                                  onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                                  className="p-2 bg-red-600 text-white rounded-full"
+                                >
+                                  <X size={16} />
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
