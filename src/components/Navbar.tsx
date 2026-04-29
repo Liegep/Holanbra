@@ -60,13 +60,13 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'About', path: '/#about', icon: Users },
-    { name: 'Properties', path: '/#imoveis', icon: Layers, highlight: true },
-    { name: 'Gallery', path: '/#gallery', icon: ImageIcon },
-    { name: 'Services', path: '/#servicos', icon: Paintbrush },
-    { name: 'Team', path: '/#team', icon: Users },
-    { name: 'Covenant', path: '/covenant', icon: FileText },
+    { name: 'Home', path: '/', icon: Home, external: false },
+    { name: 'About', path: '/#about', icon: Users, external: false },
+    { name: 'Properties', path: '/#imoveis', icon: Layers, highlight: true, external: false },
+    { name: 'Gallery', path: '/#gallery', icon: ImageIcon, external: false },
+    { name: 'Services', path: '/#servicos', icon: Paintbrush, external: false },
+    { name: 'Team', path: '/#team', icon: Users, external: false },
+    { name: 'Covenant', path: '/covenant', icon: FileText, external: false },
   ];
 
   return (

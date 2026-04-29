@@ -230,16 +230,9 @@ export default function AdminArea() {
     name: '',
     casperletId: '',
     price: '',
-    slurl: '',
     teleport_url: '',
     status: 'available',
     description: '',
-    bedrooms: '',
-    bathrooms: '',
-    location: 'Holanbra',
-    tenantName: '',
-    tenantPassword: '',
-    nextPayment: '',
     imageUrl: ''
   });
 
@@ -536,9 +529,10 @@ export default function AdminArea() {
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       const filePath = `${targetField}/${fileName}`;
 
-      // We use a broader bucket name like 'media'
+      // Use the requested bucket 'media'
+      const bucketName = 'media';
       const { data, error } = await supabase.storage
-        .from('media')
+        .from(bucketName)
         .upload(filePath, fileToUpload, {
           cacheControl: '3600',
           upsert: false
@@ -546,17 +540,15 @@ export default function AdminArea() {
 
       if (error) {
         if (error.message.includes('bucket not found')) {
-            throw new Error("Supabase Storage bucket 'media' not found. Please create it in your Supabase dashboard.");
+            throw new Error(`Supabase Storage bucket '${bucketName}' not found. Please create it in your Supabase dashboard.`);
         }
         throw error;
       }
 
-      // Track progress manually since Supabase JS SDK upload doesn't provide it easily in 'upload' method
-      // (Wait, some versions do, but let's simulate it if not available or just show 100% on completion)
       setUploadProgress(100);
 
       const { data: { publicUrl } } = supabase.storage
-        .from('media')
+        .from(bucketName)
         .getPublicUrl(filePath);
 
       if (targetField === 'imageUrl') {
@@ -582,8 +574,8 @@ export default function AdminArea() {
   const handleSave = async () => {
     console.log('Tentando salvar (Supabase):', formData);
     
-    if (!formData.name || !formData.price || !formData.imageUrl) {
-      showToast("Please fill in name, price, and provide an image URL.", "info");
+    if (!formData.name || !formData.price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
+      showToast("Please fill in all required fields and upload an image.", "info");
       return;
     }
 
@@ -594,12 +586,8 @@ export default function AdminArea() {
         price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
-        slurl: formData.slurl,
         teleport_url: formData.teleport_url,
-        location: formData.location,
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
-        status: formData.status
+        status: editingId ? formData.status : 'available'
       };
 
       if (editingId) {
@@ -612,7 +600,7 @@ export default function AdminArea() {
       } else {
         const { error } = await supabase
           .from('properties')
-          .insert([dataToSave]); // No ID sent, let DB generate it
+          .insert([dataToSave]);
         if (error) throw error;
         showToast("Property saved successfully!");
       }
@@ -621,23 +609,16 @@ export default function AdminArea() {
         name: '',
         casperletId: '',
         price: '',
-        slurl: '',
         teleport_url: '',
         status: 'available',
         description: '',
-        bedrooms: '',
-        bathrooms: '',
-        location: 'Holanbra',
-        tenantName: '',
-        tenantPassword: '',
-        nextPayment: '',
         imageUrl: ''
       });
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
       console.error("CRITICAL SUPABASE ERROR:", error);
-      showToast("Failed to save property", "error");
+      showToast("Failed to save property. Check console for details.", "error");
     }
   };
 
@@ -646,16 +627,9 @@ export default function AdminArea() {
       name: prop.name || '',
       casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
-      slurl: prop.slurl || '',
-      teleport_url: prop.teleport_url || prop.slurl || '',
+      teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
-      bedrooms: prop.bedrooms?.toString() || '',
-      bathrooms: prop.bathrooms?.toString() || '',
-      location: prop.location || 'Holanbra',
-      tenantName: prop.tenant_name || '',
-      tenantPassword: prop.tenant_password || '',
-      nextPayment: prop.next_payment || '',
       imageUrl: prop.image_url || ''
     });
     setEditingId(prop.id);
@@ -1233,25 +1207,25 @@ export default function AdminArea() {
                 {properties.map((prop) => (
                   <div key={prop.id} className="glass-card p-4 flex items-center gap-4 group">
                     <div className="w-20 h-14 rounded-lg bg-white/10 overflow-hidden shrink-0">
-                       <img src={prop.image} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                       <img src={prop.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </div>
                     <div className="flex-1 text-left min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-bold text-sm truncate">{prop.name}</h4>
-                        {prop.casperletId && (
+                        {prop.casperlet_id && (
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-[8px] text-amber-500 font-black uppercase tracking-tighter shadow-sm">
                             <RefreshCw size={8} className="animate-spin-slow" />
                             Synced
                           </div>
                         )}
-                        {prop.tenantName && (
+                        {prop.tenant_name && (
                           <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
                             <UserIcon size={8} />
-                            {prop.tenantName}
+                            {prop.tenant_name}
                           </div>
                         )}
                       </div>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">{prop.location} / L$ {prop.price}</p>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.price}</p>
                     </div>
                     <div className="flex items-center gap-4">
                        <div className="flex flex-col items-end gap-1">
@@ -1271,7 +1245,7 @@ export default function AdminArea() {
                           <ChevronRight size={14} />
                         </button>
                         <button 
-                          onClick={() => window.open(prop.slurl, '_blank')}
+                          onClick={() => window.open(prop.teleport_url, '_blank')}
                           className="p-2 text-gray-500 hover:text-amber-500 transition-colors"
                           title="Teleport to location"
                         >
@@ -1312,15 +1286,9 @@ export default function AdminArea() {
                         name: '',
                         casperletId: '',
                         price: '',
-                        slurl: '',
+                        teleport_url: '',
                         status: 'available',
                         description: '',
-                        bedrooms: '',
-                        bathrooms: '',
-                        location: 'Holambra',
-                        tenantName: '',
-                        tenantPassword: '',
-                        nextPayment: '',
                         imageUrl: ''
                       });
                     }}
@@ -1345,279 +1313,152 @@ export default function AdminArea() {
                     />
                   </div>
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">CasperLet ID</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Device Key (CasperLet ID)</label>
                     <input 
                       type="text" 
                       name="casperletId"
                       value={formData.casperletId}
                       onChange={handleInputChange}
                       className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder="Device Key" 
+                      placeholder="Paste Device Key" 
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Financial Information & Location</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase">Price (L$ / Week)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2 text-left">
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">Price (L$ / Week)</label>
+                    <input 
+                      type="number" 
+                      name="price"
+                      value={formData.price}
+                      onChange={handleInputChange}
+                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+                      placeholder="1500" 
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">Teleport Link (SLURL)</label>
+                    <div className="relative">
+                      <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                       <input 
-                        type="number" 
-                        name="price"
-                        value={formData.price}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white" 
-                        placeholder="1500" 
-                      />
-                    </div>
-                    <div className="col-span-2 space-y-2">
-                      <label className="text-[10px] font-bold text-gray-500 uppercase">SLURL (Location)</label>
-                      <div className="relative">
-                        <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                        <input 
-                          type="text" 
-                          name="slurl"
-                          value={formData.slurl}
-                          onChange={handleInputChange}
-                          className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white" 
-                          placeholder="secondlife://Holidays/128/128/22" 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Resident Access (Optional)</label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">SL Name</label>
-                       <input 
-                        type="text"
-                        name="tenantName"
-                        value={formData.tenantName}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-                        placeholder="Resident Name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">Access Password</label>
-                       <input 
-                        type="text"
-                        name="tenantPassword"
-                        value={formData.tenantPassword}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-                        placeholder="Secret Key"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">Next Payment Due</label>
-                       <input 
-                        type="date"
-                        name="nextPayment"
-                        value={formData.nextPayment}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Location Settings</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">Region Name</label>
-                       <input 
-                        type="text"
-                        name="location"
-                        value={formData.location}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Holanbra"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">SLURL / Teleport Link</label>
-                       <input 
-                        type="text"
-                        name="slurl"
-                        value={formData.slurl}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="http://maps.secondlife.com/secondlife/..."
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                       <label className="text-[10px] font-bold text-amber-500 uppercase">Teleport URL (For highlighted button)</label>
-                       <input 
-                        type="text"
+                        type="text" 
                         name="teleport_url"
                         value={formData.teleport_url}
                         onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm border-amber-500/30 focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Variable used for 'Teleport Now' button"
+                        className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+                        placeholder="http://maps.secondlife.com/secondlife/..." 
                       />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Current Availability</label>
-                  <div className="relative">
-                    <select 
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full glass-card bg-background-dark border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white appearance-none cursor-pointer"
-                    >
-                      <option value="available" className="bg-background-dark">Available</option>
-                      <option value="rented" className="bg-background-dark">Rented</option>
-                      <option value="reserved" className="bg-background-dark">Reserved</option>
-                    </select>
-                    <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Property Details</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">Bedrooms</label>
-                       <input 
-                        type="number"
-                        name="bedrooms"
-                        value={formData.bedrooms}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-bold text-gray-500 uppercase">Bathrooms</label>
-                       <input 
-                        type="number"
-                        name="bathrooms"
-                        value={formData.bathrooms}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                  <div className="space-y-4 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Image URL or Upload Media</label>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <input 
-                          type="text"
-                          name="imageUrl"
-                          value={formData.imageUrl}
-                          onChange={handleInputChange}
-                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder="Paste image URL or upload below..."
-                        />
-                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
-                          <input 
-                            type="file" 
-                            accept="image/*,video/mp4,video/quicktime" 
-                            className="hidden" 
-                            onChange={(e) => handleFileUpload(e, 'imageUrl')}
-                            disabled={isUploading}
-                          />
-                          {isUploading ? (
-                            <Loader2 className="animate-spin text-amber-500" size={20} />
-                          ) : (
-                            <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
-                          )}
-                        </label>
-                      </div>
-
-                      {isUploading && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-amber-500">
-                             <span>Uploading media...</span>
-                             <span>{uploadProgress}%</span>
-                          </div>
-                          <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                             <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${uploadProgress}%` }}
-                              className="h-full bg-amber-500"
-                             />
-                          </div>
-                        </div>
-                      )}
-                      
-                      {formData.imageUrl && (
-                        <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                          {formData.imageUrl.match(/\.(mp4|webm|mov|ogg)$/i) || formData.imageUrl.includes('video') ? (
-                            <div className="w-full h-full bg-zinc-900 flex items-center justify-center relative">
-                               <Video className="text-amber-500 mb-2" size={48} />
-                               <div className="absolute bottom-4 inset-x-4 text-center">
-                                 <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Video File Detected</p>
-                                 <CheckCircle className="text-green-500 mx-auto mt-2" size={16} />
-                               </div>
-                               <button 
-                                onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                               >
-                                <X size={16} />
-                               </button>
-                            </div>
-                          ) : (
-                            <>
-                              <img 
-                                src={formData.imageUrl} 
-                                alt="Preview" 
-                                className="w-full h-full object-contain bg-zinc-900"
-                                referrerPolicy="no-referrer"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/000000/FFFFFF?text=Invalid+Image+URL';
-                                }}
-                              />
-                              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="p-2 bg-green-600 text-white rounded-full">
-                                  <CheckCircle size={16} />
-                                </div>
-                                <button 
-                                  onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                                  className="p-2 bg-red-600 text-white rounded-full"
-                                >
-                                  <X size={16} />
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                <div className="space-y-2 text-left">
-                  <label className="text-xs font-bold text-gray-500 uppercase">Description</label>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase">Description</label>
                   <textarea 
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
-                    rows={4} 
-                    className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white" 
-                    placeholder="Property details..." 
+                    rows={4}
+                    className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+                    placeholder="Describe the island amenities..."
                   />
                 </div>
 
-                <button 
-                  onClick={handleSave}
-                  className="w-full py-5 rounded-2xl bg-amber-600 text-white font-bold flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
-                >
-                  <Save size={18} /> 
-                  {editingId ? 'Update Property' : 'Save Property to Catalog'}
-                </button>
+                {editingId && (
+                  <div className="space-y-2 text-left">
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">Availability Status</label>
+                    <div className="relative">
+                      <select 
+                        name="status"
+                        value={formData.status}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-background-dark border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white appearance-none cursor-pointer"
+                      >
+                        <option value="available" className="bg-background-dark">Available</option>
+                        <option value="rented" className="bg-background-dark">Rented</option>
+                      </select>
+                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4 text-left">
+                  <label className="text-xs font-bold text-gray-500 uppercase">Property Photo</label>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <input 
+                        type="text"
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        readOnly
+                        className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm opacity-50 cursor-not-allowed outline-none text-white shadow-inner"
+                        placeholder="Upload an image using the button..."
+                      />
+                      <label className="shrink-0 flex items-center justify-center px-6 bg-amber-500 border border-amber-400 rounded-xl cursor-pointer hover:bg-amber-400 transition-all group">
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => handleFileUpload(e, 'imageUrl')}
+                          disabled={isUploading}
+                        />
+                        {isUploading ? (
+                          <Loader2 className="animate-spin text-black" size={20} />
+                        ) : (
+                          <div className="flex items-center gap-2 text-black font-bold text-[10px] uppercase tracking-widest">
+                            <ImageIcon size={16} />
+                            Upload Photo
+                          </div>
+                        )}
+                      </label>
+                    </div>
+
+                    {isUploading && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-amber-500">
+                           <span>Processing...</span>
+                           <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                           <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${uploadProgress}%` }}
+                            className="h-full bg-amber-500"
+                           />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {formData.imageUrl && (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
+                        <img 
+                          src={formData.imageUrl} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                        <button 
+                          onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                          className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <button 
+                    onClick={handleSave}
+                    disabled={isUploading}
+                    className="w-full py-5 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(245,158,11,0.2)] hover:bg-amber-400 transition-all uppercase tracking-[0.2em] text-xs disabled:opacity-50"
+                  >
+                    {editingId ? <RefreshCw size={18} /> : <Plus size={18} />}
+                    {editingId ? 'Update Property' : 'Publish Property'}
+                  </button>
+                </div>
               </div>
             </div>
           )}

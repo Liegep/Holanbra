@@ -215,8 +215,8 @@ export default function Properties() {
                   {property.status === 'available' ? 'Available' : 'Rented'}
                 </div>
                 <h3 className="text-3xl font-bold tracking-tight text-white">{property.name}</h3>
-                <p className="text-[10px] font-mono tracking-widest text-white/60 uppercase">
-                  {property.location} | PRIMA OCEAN
+                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                  HOLANBRA | PRIMA OCEAN
                 </p>
                 <div className="flex items-center gap-4 pt-2">
                   <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
@@ -354,7 +354,7 @@ export default function Properties() {
                         {selectedProperty.name}
                       </h2>
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/60">
-                         {selectedProperty.location}
+                         HOLANBRA
                       </p>
                     </div>
                     <button 
