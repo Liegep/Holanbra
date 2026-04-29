@@ -44,7 +44,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">
       {/* Background Video/Image Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black z-10"></div>

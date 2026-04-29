@@ -62,9 +62,8 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/', icon: Home },
     { name: 'About', path: '/#about', icon: Users },
-    { name: 'Properties', path: '/#imoveis', icon: Layers },
+    { name: 'Properties', path: '/#imoveis', icon: Layers, highlight: true },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon },
-    { name: 'Web Site', path: 'http://www.holanbra.com', icon: Home, external: true },
     { name: 'Services', path: '/#servicos', icon: Paintbrush },
     { name: 'Team', path: '/#team', icon: Users },
     { name: 'Covenant', path: '/covenant', icon: FileText },
@@ -88,7 +87,7 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
+          {navLinks.map((link: any) => (
             link.external ? (
               <a 
                 key={link.name} 
@@ -105,7 +104,8 @@ export default function Navbar() {
                 to={link.path}
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400",
-                  location.pathname === link.path ? "text-white" : "text-white/60"
+                  location.pathname + location.hash === link.path ? "text-white" : "text-white/60",
+                  link.highlight && "text-amber-500"
                 )}
               >
                 {link.name}
