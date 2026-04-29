@@ -53,7 +53,7 @@ async function startServer() {
   // API Routes
   app.post('/api/webhooks/casperlet', async (req, res) => {
     console.log('--- CasperLet Webhook Received ---');
-    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('Dados recebidos:', req.body);
     
     const { casperlet_id, status, tenant_key, api_key } = req.body;
     
@@ -64,47 +64,50 @@ async function startServer() {
     }
 
     if (!casperlet_id) {
-      console.error('Webhook error: Missing casperlet_id in request');
+      console.error('Webhook error: Missing casperlet_id in request payload');
       return res.status(400).json({ error: 'Missing casperlet_id' });
     }
 
     try {
-      // Simplified status handling as requested
+      // Valor exato vindo do SL (limpo e minúsculo)
       const newStatus = (status || '').toLowerCase().trim();
 
-      console.log(`Processing unit: ${casperlet_id} | Status: ${newStatus}`);
+      console.log(`Buscando imóvel com casperlet_id: "${casperlet_id}" para atualizar status para: "${newStatus}"`);
 
+      // Realiza o update na tabela 'properties' filtrando pela coluna 'casperlet_id'
       const { data, error } = await supabase
         .from('properties')
         .update({ 
           status: newStatus,
-          tenant_name: tenant_key || (newStatus === 'rented' ? 'Rented' : 'Disponível')
+          tenant_name: tenant_key || (newStatus === 'rented' ? 'Ocupado' : 'Disponível'),
+          updated_at: new Date().toISOString()
         })
         .eq('casperlet_id', casperlet_id)
         .select();
 
       if (error) {
-        console.error('Supabase update error:', error);
-        throw error;
+        console.error('Erro no Supabase:', error.message);
+        return res.status(500).json({ error: error.message });
       }
 
       if (!data || data.length === 0) {
-        console.warn(`⚠️ Warning: No property found with casperlet_id: ${casperlet_id}. Update skipped.`);
+        console.warn(`Atenção: Nenhum imóvel encontrado com o UUID: ${casperlet_id}`);
         return res.status(404).json({ 
           success: false, 
-          message: 'Property not found', 
-          received_id: casperlet_id 
+          message: 'Imóvel não encontrado na tabela properties',
+          checked_uuid: casperlet_id
         });
       }
 
-      console.log(`✅ Success: Property ${casperlet_id} updated to ${newStatus}`);
+      console.log(`✅ Sucesso! Imóvel atualizado:`, data[0]);
       res.status(200).json({ 
         success: true, 
-        updated_status: newStatus,
-        affected_id: casperlet_id
+        message: 'Status atualizado com sucesso',
+        updated_to: newStatus,
+        property: data[0]
       });
     } catch (err) {
-      console.error('❌ Webhook handler failed:', err.message);
+      console.error('❌ Falha crítica no handler:', err.message);
       res.status(500).json({ error: err.message });
     }
   });
