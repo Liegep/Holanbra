@@ -16,8 +16,18 @@ import {
   Lock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Toast, { ToastType } from './Toast';
 
 const ResidentDashboard: React.FC = () => {
+  const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
+    message: '',
+    type: 'success',
+    visible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, visible: true });
+  };
   const [residentName, setResidentName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -61,6 +71,7 @@ const ResidentDashboard: React.FC = () => {
         setIsLoggedIn(true);
         localStorage.setItem('sl_resident_name', name);
         localStorage.setItem('sl_resident_pass', pass);
+        showToast(`Welcome back, ${name}!`);
       } else {
         setError('Invalid resident name or password. Please check your credentials.');
         if (nameOverride) {
@@ -82,6 +93,7 @@ const ResidentDashboard: React.FC = () => {
     setPassword('');
     localStorage.removeItem('sl_resident_name');
     localStorage.removeItem('sl_resident_pass');
+    showToast("Logged out successfully", "info");
   };
 
   if (loading && !isLoggedIn) {
@@ -264,6 +276,12 @@ const ResidentDashboard: React.FC = () => {
             })}
           </div>
         )}
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          isVisible={toast.visible} 
+          onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+        />
       </div>
     </div>
   );

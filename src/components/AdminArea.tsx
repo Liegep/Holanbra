@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { auth, db, loginWithEmail, handleFirestoreError, OperationType } from '../lib/firebase';
+import Toast, { ToastType } from './Toast';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { 
   collection, 
@@ -128,6 +129,15 @@ function AdminAuthForm() {
 }
 
 export default function AdminArea() {
+  const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
+    message: '',
+    type: 'success',
+    visible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, visible: true });
+  };
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -225,7 +235,7 @@ export default function AdminArea() {
       });
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      showToast("Hero upload failed", "error");
     } finally {
       setIsHeroUploading(null);
     }
@@ -238,8 +248,9 @@ export default function AdminArea() {
         ...heroContent,
         updatedAt: serverTimestamp()
       });
-      alert("Hero content updated successfully!");
+      showToast("Hero content updated successfully!");
     } catch (error) {
+      showToast("Failed to update hero content", "error");
       handleFirestoreError(error, OperationType.WRITE, 'settings/hero');
     }
   };
@@ -252,8 +263,9 @@ export default function AdminArea() {
         ...covenants,
         updatedAt: serverTimestamp()
       });
-      alert("Covenants updated successfully!");
+      showToast("Covenants updated successfully!");
     } catch (error) {
+      showToast("Failed to update covenants", "error");
       handleFirestoreError(error, OperationType.WRITE, 'settings/covenant');
     }
   };
@@ -394,7 +406,7 @@ export default function AdminArea() {
       setTeamFormData(prev => ({ ...prev, image: data.url }));
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      showToast("Team photo upload failed", "error");
     } finally {
       setIsTeamUploading(false);
     }
@@ -402,7 +414,7 @@ export default function AdminArea() {
 
   const handleSaveTeam = async () => {
     if (!teamFormData.name || !teamFormData.role || !teamFormData.image) {
-      alert("Please fill in name, role and upload a photo.");
+      showToast("Please fill in name, role and upload a photo.", "info");
       return;
     }
 
@@ -415,13 +427,13 @@ export default function AdminArea() {
 
       if (editingTeamId) {
         await updateDoc(doc(db, 'team', editingTeamId), dataToSave);
-        alert("Team member updated!");
+        showToast("Team member updated!");
       } else {
         await addDoc(collection(db, 'team'), {
           ...dataToSave,
           createdAt: serverTimestamp()
         });
-        alert("Team member added!");
+        showToast("Team member added!");
       }
 
       setTeamFormData({
@@ -443,7 +455,9 @@ export default function AdminArea() {
     if (!confirm("Are you sure?")) return;
     try {
       await deleteDoc(doc(db, 'team', id));
+      showToast("Team member removed!");
     } catch (error) {
+      showToast("Error deleting member", "error");
       handleFirestoreError(error, OperationType.DELETE, `team/${id}`);
     }
   };
@@ -485,7 +499,7 @@ export default function AdminArea() {
       setGalleryFormData({ caption: '' });
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      showToast("Gallery upload failed", "error");
     } finally {
       setIsGalleryUploading(false);
     }
@@ -495,7 +509,9 @@ export default function AdminArea() {
     if (!confirm("Are you sure you want to delete this gallery image?")) return;
     try {
       await deleteDoc(doc(db, 'gallery', id));
+      showToast("Image removed from gallery!");
     } catch (error) {
+      showToast("Error deleting image", "error");
       handleFirestoreError(error, OperationType.DELETE, `gallery/${id}`);
     }
   };
@@ -513,7 +529,7 @@ export default function AdminArea() {
     const limit = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
 
     if (file.size > limit) {
-      alert(`File too large. The limit for ${isVideo ? 'video' : 'image'} is ${isVideo ? '50MB' : '5MB'}.`);
+      showToast(`File too large. The limit for ${isVideo ? 'video' : 'image'} is ${isVideo ? '50MB' : '5MB'}.`, "error");
       return;
     }
 
@@ -538,7 +554,7 @@ export default function AdminArea() {
 
   const handleSave = async () => {
     if (!formData.name || !formData.price || !uploadedUrl) {
-      alert("Please fill in name, price, and upload an image.");
+      showToast("Please fill in name, price, and upload an image.", "info");
       return;
     }
 
@@ -555,11 +571,11 @@ export default function AdminArea() {
 
       if (editingId) {
         await updateDoc(doc(db, 'properties', editingId), dataToSave);
-        alert("Property updated successfully!");
+        showToast("Property updated successfully!");
       } else {
         dataToSave.createdAt = serverTimestamp();
         await addDoc(collection(db, 'properties'), dataToSave);
-        alert("Property saved successfully!");
+        showToast("Property saved successfully!");
       }
 
       setFormData({
@@ -580,6 +596,7 @@ export default function AdminArea() {
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
+      showToast("Failed to save property", "error");
       handleFirestoreError(error, editingId ? OperationType.UPDATE : OperationType.CREATE, 'properties');
     }
   };
@@ -609,7 +626,9 @@ export default function AdminArea() {
     if (!window.confirm("Are you sure you want to delete this property?")) return;
     try {
       await deleteDoc(doc(db, 'properties', id));
+      showToast("Property deleted successfully!");
     } catch (error) {
+      showToast("Error deleting property", "error");
       handleFirestoreError(error, OperationType.DELETE, `properties/${id}`);
     }
   };
@@ -1384,6 +1403,12 @@ export default function AdminArea() {
           )}
         </main>
       </div>
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.visible} 
+        onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+      />
     </div>
   );
 }
