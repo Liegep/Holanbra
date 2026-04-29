@@ -17,6 +17,7 @@ import {
   Loader2,
   MapPin,
   RefreshCw,
+  X,
   FileText,
   Clock,
   Calendar,
@@ -70,20 +71,24 @@ function AdminAuthForm() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white/5 border border-white/10 p-8 rounded-3xl text-center space-y-6">
-        <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto">
-          <LogIn className="text-amber-500" size={32} />
-        </div>
+      <div className="bg-white/5 border border-white/10 p-12 rounded-3xl text-center space-y-8 flex flex-col items-center">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-20 h-20 bg-amber-500 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(247,203,69,0.1)] mb-4"
+        >
+          <span className="text-black font-black text-3xl">H</span>
+        </motion.div>
         
         <div className="space-y-2">
-          <h3 className="text-white font-bold uppercase tracking-widest text-sm">Secure Access</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest leading-relaxed">
-            Use your professional Google account to access the administrative panel.
+          <h3 className="text-white font-bold uppercase tracking-[0.3em] text-sm">Secure Access</h3>
+          <p className="text-white/30 text-[10px] uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto">
+            Administrative authentication required.
           </p>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl w-full">
             <p className="text-red-500 text-[10px] uppercase font-bold tracking-widest leading-relaxed">{error}</p>
           </div>
         )}
@@ -91,7 +96,7 @@ function AdminAuthForm() {
         <button 
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full py-4 rounded-xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-gray-200 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
+          className="w-full py-4 rounded-xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
         >
           {loading ? (
             <Loader2 className="animate-spin" size={16} />
@@ -120,10 +125,6 @@ function AdminAuthForm() {
           )}
         </button>
       </div>
-      
-      <p className="text-center text-[10px] text-white/20 uppercase tracking-widest font-medium">
-        Authorized emails only: <br/> slmariew@gmail.com | liegepaschoalini.design
-      </p>
     </div>
   );
 }
@@ -153,12 +154,9 @@ export default function AdminArea() {
     gridImages: ['', '', '', ''],
     aboutImage: ''
   });
-  const [isHeroUploading, setIsHeroUploading] = useState<number | 'bg' | 'about' | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [galleryFormData, setGalleryFormData] = useState({ caption: '' });
-  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
-  const [isTeamUploading, setIsTeamUploading] = useState(false);
+  const [galleryFormData, setGalleryFormData] = useState({ caption: '', imageUrl: '' });
   const [teamFormData, setTeamFormData] = useState({
     name: '',
     role: '',
@@ -207,38 +205,12 @@ export default function AdminArea() {
     setHeroContent((prev: any) => ({ ...prev, [name]: value }));
   };
 
-  const handleHeroUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number | 'bg' | 'about') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsHeroUploading(index);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      
-      setHeroContent((prev: any) => {
-        if (index === 'bg') {
-          return { ...prev, backgroundImage: data.url };
-        } else if (index === 'about') {
-          return { ...prev, aboutImage: data.url };
-        } else {
-          const newGrid = [...prev.gridImages];
-          newGrid[index] = data.url;
-          return { ...prev, gridImages: newGrid };
-        }
-      });
-    } catch (err) {
-      console.error(err);
-      showToast("Hero upload failed", "error");
-    } finally {
-      setIsHeroUploading(null);
-    }
+  const handleHeroGridChange = (idx: number, value: string) => {
+    setHeroContent((prev: any) => {
+      const newGrid = [...prev.gridImages];
+      newGrid[idx] = value;
+      return { ...prev, gridImages: newGrid };
+    });
   };
 
   const handleSaveHero = async () => {
@@ -269,9 +241,6 @@ export default function AdminArea() {
       handleFirestoreError(error, OperationType.WRITE, 'settings/covenant');
     }
   };
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadedUrl, setUploadedUrl] = useState('');
-  const [uploadedType, setUploadedType] = useState<'image' | 'video' | ''>('');
   const [properties, setProperties] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -285,7 +254,8 @@ export default function AdminArea() {
     location: 'Holanbra',
     tenantName: '',
     tenantPassword: '',
-    nextPayment: ''
+    nextPayment: '',
+    imageUrl: ''
   });
 
   useEffect(() => {
@@ -304,10 +274,17 @@ export default function AdminArea() {
             'victoriaholanbra@gmail.com'
           ];
           const isWhitelisted = userEmail && adminEmails.includes(userEmail);
+          
+          if (isWhitelisted) {
+            setIsAdmin(true); // Set true immediately for whitelisted users
+          }
 
           // Sync profile to Firestore
           const userDocRef = doc(db, 'users', user.uid);
-          const userDoc = await getDoc(userDocRef);
+          const userDocPromise = getDoc(userDocRef);
+          
+          // Wait for the doc check anyway to ensure profile is synced or if not whitelisted
+          const userDoc = await userDocPromise;
           
           if (!userDoc.exists() && isWhitelisted) {
             console.log("Creating initial admin profile for whitelisted user");
@@ -333,11 +310,13 @@ export default function AdminArea() {
           const userEmail = user.email?.toLowerCase();
           const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
           setIsAdmin(!!(userEmail && whitelist.includes(userEmail)));
+        } finally {
+          setAuthLoading(false);
         }
       } else {
         setIsAdmin(false);
+        setAuthLoading(false);
       }
-      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -387,29 +366,6 @@ export default function AdminArea() {
   const handleTeamInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setTeamFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleTeamFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsTeamUploading(true);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      setTeamFormData(prev => ({ ...prev, image: data.url }));
-    } catch (err) {
-      console.error(err);
-      showToast("Team photo upload failed", "error");
-    } finally {
-      setIsTeamUploading(false);
-    }
   };
 
   const handleSaveTeam = async () => {
@@ -475,33 +431,24 @@ export default function AdminArea() {
     setEditingTeamId(item.id);
   };
 
-  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsGalleryUploading(true);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
+  const handleGallerySave = async () => {
+    if (!galleryFormData.imageUrl) {
+      showToast("Please provide an image URL.", "info");
+      return;
+    }
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      
       await addDoc(collection(db, 'gallery'), {
-        url: data.url,
+        url: galleryFormData.imageUrl,
         caption: galleryFormData.caption,
         createdAt: serverTimestamp()
       });
       
-      setGalleryFormData({ caption: '' });
-    } catch (err) {
+      setGalleryFormData({ caption: '', imageUrl: '' });
+      showToast("Gallery image saved!");
+    } catch (err: any) {
       console.error(err);
-      showToast("Gallery upload failed", "error");
-    } finally {
-      setIsGalleryUploading(false);
+      showToast("Gallery save failed", "error");
     }
   };
 
@@ -521,51 +468,20 @@ export default function AdminArea() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const isVideo = file.type.startsWith('video/');
-    const limit = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
-
-    if (file.size > limit) {
-      showToast(`File too large. The limit for ${isVideo ? 'video' : 'image'} is ${isVideo ? '50MB' : '5MB'}.`, "error");
-      return;
-    }
-
-    setIsUploading(true);
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-      const data = await res.json();
-      setUploadedUrl(data.url);
-      setUploadedType(data.format === 'video' ? 'video' : 'image');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleSave = async () => {
-    if (!formData.name || !formData.price || !uploadedUrl) {
-      showToast("Please fill in name, price, and upload an image.", "info");
+    console.log('Tentando salvar:', formData);
+    
+    if (!formData.name || !formData.price || !formData.imageUrl) {
+      showToast("Please fill in name, price, and provide an image URL.", "info");
       return;
     }
 
     try {
-      const dataToSave: any = {
+      const dataToSave = {
         ...formData,
-        price: parseFloat(formData.price),
-        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : 0,
-        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : 0,
-        image: uploadedUrl,
-        gallery: [{ type: uploadedType || 'image', url: uploadedUrl }],
+        price: parseFloat(formData.price) || 0,
+        bedrooms: parseInt(formData.bedrooms) || 0,
+        bathrooms: parseInt(formData.bathrooms) || 0,
         updatedAt: serverTimestamp()
       };
 
@@ -573,8 +489,10 @@ export default function AdminArea() {
         await updateDoc(doc(db, 'properties', editingId), dataToSave);
         showToast("Property updated successfully!");
       } else {
-        dataToSave.createdAt = serverTimestamp();
-        await addDoc(collection(db, 'properties'), dataToSave);
+        await addDoc(collection(db, 'properties'), {
+          ...dataToSave,
+          createdAt: serverTimestamp()
+        });
         showToast("Property saved successfully!");
       }
 
@@ -590,12 +508,13 @@ export default function AdminArea() {
         location: 'Holanbra',
         tenantName: '',
         tenantPassword: '',
-        nextPayment: ''
+        nextPayment: '',
+        imageUrl: ''
       });
-      setUploadedUrl('');
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
+      console.error("CRITICAL FIRESTORE ERROR:", error);
       showToast("Failed to save property", "error");
       handleFirestoreError(error, editingId ? OperationType.UPDATE : OperationType.CREATE, 'properties');
     }
@@ -614,10 +533,9 @@ export default function AdminArea() {
       location: prop.location || 'Holanbra',
       tenantName: prop.tenantName || '',
       tenantPassword: prop.tenantPassword || '',
-      nextPayment: prop.nextPayment || ''
+      nextPayment: prop.nextPayment || '',
+      imageUrl: prop.image || ''
     });
-    setUploadedUrl(prop.image || '');
-    setUploadedType(prop.gallery?.[0]?.type || 'image');
     setEditingId(prop.id);
     setActiveTab('add');
   };
@@ -635,38 +553,63 @@ export default function AdminArea() {
 
   if (authLoading) {
     return (
-      <div className="pt-32 pb-24 px-6 bg-black min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin text-amber-500 w-12 h-12" />
+      <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center space-y-8">
+        <div className="relative">
+          <div className="w-24 h-24 border-2 border-white/5 rounded-full absolute inset-0 animate-ping"></div>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            className="w-24 h-24 bg-amber-500 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(247,203,69,0.2)]"
+          >
+            <span className="text-black font-black text-4xl">H</span>
+          </motion.div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-xs animate-pulse">Loading</h2>
+          <div className="w-48 h-[1px] bg-white/10 relative overflow-hidden">
+            <motion.div 
+              initial={{ left: "-100%" }}
+              animate={{ left: "100%" }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 bg-amber-500/50 w-1/2"
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!user || !isAdmin) {
+  // Only show auth form or access denied if loading is finished AND we have a final answer on isAdmin
+  if (!user || (isAdmin === false && !authLoading)) {
     return (
       <div className="pt-32 pb-24 px-6 bg-black min-h-screen flex items-center justify-center">
-        <div className="max-w-md w-full glass-card p-12 text-center space-y-8">
-          <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
-            <LogIn className="text-amber-500 w-10 h-10" />
+        <div className="aspect-square w-full max-w-md flex items-center justify-center">
+          <div className="w-full">
+            {!user ? (
+              <AdminAuthForm />
+            ) : (
+              <div className="glass-card p-12 text-center space-y-8">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
+                  <AlertCircle className="text-red-500 w-10 h-10" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-display font-bold text-white">Access Denied</h2>
+                  <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account is not authorized to access this panel.</p>
+                </div>
+                <div className="space-y-4">
+                  <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                    {user.email}
+                  </p>
+                  <button 
+                    onClick={() => signOut(auth)}
+                    className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]"
+                  >
+                    Logout & Switch User
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-display font-bold text-white">Administrative Area</h2>
-            <p className="text-white/40 uppercase tracking-widest text-xs">Restricted access for Holanbra administrators only.</p>
-          </div>
-          {!user ? (
-            <AdminAuthForm />
-          ) : (
-            <div className="space-y-4">
-              <p className="text-red-400 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                <AlertCircle size={14} /> You do not have administrator permissions.
-              </p>
-              <button 
-                onClick={() => signOut(auth)}
-                className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]"
-              >
-                Logout
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -761,37 +704,41 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Background Image</label>
-                    <label className="block border-2 border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden aspect-video">
-                      {isHeroUploading === 'bg' ? (
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
-                      ) : heroContent.backgroundImage ? (
-                        <img src={heroContent.backgroundImage} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      ) : (
-                        <>
-                          <ImageIcon size={32} className="mb-2" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">Upload BG Image</span>
-                        </>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Background Image URL</label>
+                    <div className="space-y-4">
+                      <input 
+                        type="text"
+                        name="backgroundImage"
+                        value={heroContent.backgroundImage}
+                        onChange={handleHeroInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="Background URL..."
+                      />
+                      {heroContent.backgroundImage && (
+                        <div className="aspect-video rounded-xl overflow-hidden border border-white/10">
+                          <img src={heroContent.backgroundImage} alt="BG Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
                       )}
-                      <input type="file" accept="image/*" onChange={(e) => handleHeroUpload(e, 'bg')} className="hidden" />
-                    </label>
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">About Us Photo</label>
-                    <label className="block border-2 border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden aspect-[4/5]">
-                      {isHeroUploading === 'about' ? (
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
-                      ) : heroContent.aboutImage ? (
-                        <img src={heroContent.aboutImage} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      ) : (
-                        <>
-                          <ImageIcon size={32} className="mb-2" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">Upload About Us Image</span>
-                        </>
+                    <label className="text-xs font-bold text-gray-500 uppercase">About Us Photo URL</label>
+                    <div className="space-y-4">
+                      <input 
+                        type="text"
+                        name="aboutImage"
+                        value={heroContent.aboutImage}
+                        onChange={handleHeroInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="About Image URL..."
+                      />
+                      {heroContent.aboutImage && (
+                        <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
+                          <img src={heroContent.aboutImage} alt="About Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
                       )}
-                      <input type="file" accept="image/*" onChange={(e) => handleHeroUpload(e, 'about')} className="hidden" />
-                    </label>
+                    </div>
                   </div>
 
                   <button 
@@ -807,19 +754,24 @@ export default function AdminArea() {
                   <label className="text-xs font-bold text-gray-500 uppercase block text-left">Hero Grid Photos (4)</label>
                   <div className="grid grid-cols-2 gap-4">
                     {[0, 1, 2, 3].map((idx) => (
-                      <label key={idx} className="block border-2 border-dashed border-white/5 rounded-2xl p-4 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden aspect-square">
-                        {isHeroUploading === idx ? (
-                          <Loader2 className="animate-spin text-amber-500" size={24} />
-                        ) : heroContent.gridImages[idx] ? (
-                          <img src={heroContent.gridImages[idx]} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          <>
-                            <ImageIcon size={20} className="mb-1" />
-                            <span className="text-[8px] font-bold uppercase tracking-widest">Photo {idx + 1}</span>
-                          </>
-                        )}
-                        <input type="file" accept="image/*" onChange={(e) => handleHeroUpload(e, idx)} className="hidden" />
-                      </label>
+                      <div key={idx} className="space-y-2">
+                        <input 
+                          type="text"
+                          value={heroContent.gridImages[idx]}
+                          onChange={(e) => handleHeroGridChange(idx, e.target.value)}
+                          className="w-full glass-card bg-transparent border-white/10 p-2 text-[10px] focus:border-amber-500 outline-none text-white shadow-inner"
+                          placeholder={`Grid Photo ${idx + 1}`}
+                        />
+                        <div className="aspect-square rounded-xl bg-white/5 border border-white/10 overflow-hidden relative">
+                          {heroContent.gridImages[idx] ? (
+                            <img src={heroContent.gridImages[idx]} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                              <ImageIcon size={20} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -928,20 +880,22 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Portrait Photo</label>
-                    <label className="block border-2 border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden aspect-[4/5]">
-                      {isTeamUploading ? (
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
-                      ) : teamFormData.image ? (
-                        <img src={teamFormData.image} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      ) : (
-                        <>
-                          <UserIcon size={32} className="mb-2" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-center">Portrait Upload<br/>(4:5 Ratio recommended)</span>
-                        </>
+                    <label className="text-xs font-bold text-gray-500 uppercase">Portrait Photo URL</label>
+                    <div className="space-y-4">
+                      <input 
+                        type="text"
+                        name="image"
+                        value={teamFormData.image}
+                        onChange={handleTeamInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="Paste portrait URL here..."
+                      />
+                      {teamFormData.image && (
+                        <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
+                           <img src={teamFormData.image} alt="Team Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
                       )}
-                      <input type="file" accept="image/*" onChange={handleTeamFileUpload} className="hidden" disabled={isTeamUploading} />
-                    </label>
+                    </div>
                   </div>
 
                   <button 
@@ -1007,25 +961,28 @@ export default function AdminArea() {
                     />
                   </div>
 
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Upload to Gallery</label>
-                    <label className="block border-2 border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden">
-                      {isGalleryUploading ? (
-                        <Loader2 className="animate-spin text-amber-500" size={32} />
-                      ) : (
-                        <>
-                          <ImageIcon size={32} className="mb-2" />
-                          <span className="text-[10px] font-bold uppercase tracking-widest">Click or drag to upload photo</span>
-                        </>
-                      )}
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleGalleryUpload} 
-                        className="hidden" 
-                        disabled={isGalleryUploading}
-                      />
-                    </label>
+                  <div className="space-y-4 text-left">
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">Image URL</label>
+                    <input 
+                      type="text"
+                      value={galleryFormData.imageUrl}
+                      onChange={(e) => setGalleryFormData({ ...galleryFormData, imageUrl: e.target.value })}
+                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                      placeholder="Paste image URL here..."
+                    />
+                    
+                    {galleryFormData.imageUrl && (
+                      <div className="aspect-video rounded-xl overflow-hidden border border-white/10">
+                        <img src={galleryFormData.imageUrl} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </div>
+                    )}
+
+                    <button 
+                      onClick={handleGallerySave}
+                      className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
+                    >
+                      <Save size={18} /> Save to Gallery
+                    </button>
                   </div>
                 </div>
 
@@ -1204,9 +1161,9 @@ export default function AdminArea() {
                         location: 'Holambra',
                         tenantName: '',
                         tenantPassword: '',
-                        nextPayment: ''
+                        nextPayment: '',
+                        imageUrl: ''
                       });
-                      setUploadedUrl('');
                     }}
                     className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
                   >
@@ -1355,30 +1312,39 @@ export default function AdminArea() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-left">
-                  <label className="text-xs font-bold text-gray-500 uppercase">Upload Photos/Videos (WebP/MP4 Auto)</label>
-                  <label className="block border-2 border-dashed border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-gray-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all cursor-pointer relative overflow-hidden">
-                    <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*,video/*" />
-                    {uploadedUrl ? (
-                      uploadedType === 'video' ? (
-                        <video src={uploadedUrl} className="absolute inset-0 w-full h-full object-cover" muted loop autoPlay />
-                      ) : (
-                        <img src={uploadedUrl} className="absolute inset-0 w-full h-full object-cover" />
-                      )
-                    ) : (
-                      <>
-                        <div className="flex gap-4 mb-4">
-                          <ImageIcon size={40} className={cn(isUploading && !uploadedUrl ? "animate-bounce text-amber-400" : "text-amber-500")} />
-                          <Video size={40} className={cn(isUploading && !uploadedUrl ? "animate-bounce text-amber-400" : "text-amber-500")} />
+                  <div className="space-y-4 text-left">
+                    <label className="text-xs font-bold text-gray-500 uppercase">Image URL (from ImgBB or similar)</label>
+                    <div className="space-y-4">
+                      <input 
+                        type="text"
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
+                        placeholder="Paste image URL here..."
+                      />
+                      
+                      {formData.imageUrl && (
+                        <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
+                          <img 
+                            src={formData.imageUrl} 
+                            alt="Preview" 
+                            className="w-full h-full object-contain bg-zinc-900"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/000000/FFFFFF?text=Invalid+Image+URL';
+                            }}
+                          />
+                          <button 
+                            onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                            className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={16} />
+                          </button>
                         </div>
-                        <p className="text-sm font-medium text-white mb-1">
-                          {isUploading ? 'Processing file...' : 'Drag photos or videos here'}
-                        </p>
-                        <p className="text-xs">WebP for photos | MP4 for videos</p>
-                      </>
-                    )}
-                  </label>
-                </div>
+                      )}
+                    </div>
+                  </div>
 
                 <div className="space-y-2 text-left">
                   <label className="text-xs font-bold text-gray-500 uppercase">Description</label>
@@ -1396,7 +1362,8 @@ export default function AdminArea() {
                   onClick={handleSave}
                   className="w-full py-5 rounded-2xl bg-amber-600 text-white font-bold flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
                 >
-                  <Save size={18} /> {editingId ? 'Update Property' : 'Save Property to Catalog'}
+                  <Save size={18} /> 
+                  {editingId ? 'Update Property' : 'Save Property to Catalog'}
                 </button>
               </div>
             </div>

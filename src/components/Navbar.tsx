@@ -1,18 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon } from 'lucide-react';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { auth, db } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        // Check whitelist first
+        const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
+        const isWhitelisted = firebaseUser.email && whitelist.includes(firebaseUser.email.toLowerCase());
+        
+        if (isWhitelisted) {
+          setIsAdmin(true);
+        } else {
+          // Check doc
+          try {
+            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+            setIsAdmin(userDoc.exists() && userDoc.data()?.role === 'admin');
+          } catch (e) {
+            setIsAdmin(false);
+          }
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      unsubscribe();
+    };
   }, []);
 
   const navLinks = [
@@ -68,6 +100,15 @@ export default function Navbar() {
               </Link>
             )
           ))}
+          {isAdmin && (
+            <Link 
+              to="/admin" 
+              className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
+            >
+              <LayoutDashboard size={14} className="text-amber-500" />
+              Admin
+            </Link>
+          )}
           <Link 
             to="/resident" 
             className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
@@ -122,10 +163,20 @@ export default function Navbar() {
                 )
               ))}
               <div className="h-[1px] bg-white/10 my-2" />
+              {isAdmin && (
+                <Link 
+                  to="/admin" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold flex items-center justify-center gap-3 border border-white/10"
+                >
+                  <LayoutDashboard size={20} className="text-amber-500" />
+                  Admin Panel
+                </Link>
+              )}
               <Link 
                 to="/resident" 
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3"
+                className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
               >
                 <ShieldCheck size={20} />
                 Resident Area

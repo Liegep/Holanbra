@@ -114,24 +114,6 @@ async function startServer() {
     }
   });
 
-  const upload = multer({ dest: 'uploads/' });
-  app.post("/api/upload", upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    const isVideo = req.file.mimetype.startsWith('video/');
-    const outputPath = `uploads/${req.file.filename}${isVideo ? (path.extname(req.file.originalname) || '.mp4') : '.webp'}`;
-    try {
-      if (!isVideo) {
-        await sharp(req.file.path).resize(1920, 1080, { fit: 'inside', withoutEnlargement: true }).webp({ quality: 75 }).toFile(outputPath);
-        fs.unlinkSync(req.file.path);
-      } else {
-        fs.renameSync(req.file.path, outputPath);
-      }
-      res.json({ url: `/${outputPath}` });
-    } catch (error) {
-      res.status(500).json({ error: "Upload failed" });
-    }
-  });
-
   app.use('/uploads', express.static('uploads'));
 
   if (process.env.NODE_ENV === 'production') {

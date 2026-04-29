@@ -98,8 +98,20 @@ const ResidentDashboard: React.FC = () => {
 
   if (loading && !isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background-dark">
-        <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
+      <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center space-y-8">
+        <div className="relative">
+          <div className="w-20 h-20 border-2 border-white/5 rounded-full absolute inset-0 animate-ping"></div>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            className="w-20 h-20 bg-background-dark border border-white/10 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(255,255,255,0.05)]"
+          >
+            <ShieldCheck className="text-amber-500" size={32} />
+          </motion.div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-[10px] animate-pulse">Authenticating</h2>
+        </div>
       </div>
     );
   }

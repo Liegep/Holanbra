@@ -1,0 +1,46 @@
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper to check if user is authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper to check for the specific admin email
+    function isSuperAdmin() {
+      return isSignedIn() && request.auth.token.email.lower() == 'slmariew@gmail.com';
+    }
+    
+    // Whitelisted admins (optional, but requested only for slmariew@gmail.com)
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'slmariew@gmail.com' ||
+        request.auth.token.email.lower() == 'hello@liegepaschoalini.design' ||
+        request.auth.token.email.lower() == 'victoriaholanbra@gmail.com'
+      );
+    }
+
+    // Rules for property images
+    match /properties/{allPaths=**} {
+      allow read: if true; // Publicly viewable
+      allow write: if isAdmin();
+    }
+    
+    // Rules for gallery
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Rules for team photos
+    match /team/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Rules for hero images
+    match /hero/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
