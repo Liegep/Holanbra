@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Play, MapPin } from 'lucide-react';
-import { db } from '../lib/firebase';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { cn } from '../lib/utils';
+import { supabase } from '../lib/supabase';
 
 export default function Hero() {
   const [content, setContent] = useState<any>({
@@ -20,16 +19,28 @@ export default function Hero() {
   });
 
   useEffect(() => {
-    const docRef = doc(db, 'settings', 'hero');
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setContent((prev: any) => ({ ...prev, ...docSnap.data() }));
+    const fetchHero = async () => {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('content')
+        .eq('id', 'hero')
+        .single();
+      
+      if (data) {
+        setContent((prev: any) => ({ ...prev, ...data.content }));
       }
-    }, (err) => {
-      console.error("Error fetching hero content:", err);
-    });
-    
-    return () => unsubscribe();
+    };
+
+    fetchHero();
+
+    const heroSubscription = supabase
+      .channel('hero_public_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings', filter: 'id=eq.hero' }, fetchHero)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(heroSubscription);
+    };
   }, []);
 
   return (

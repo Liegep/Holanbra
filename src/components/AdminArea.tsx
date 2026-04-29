@@ -26,44 +26,22 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { auth, db, loginWithEmail, handleFirestoreError, OperationType } from '../lib/firebase';
+import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
-import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { 
-  collection, 
-  onSnapshot, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  doc, 
-  serverTimestamp, 
-  query, 
-  orderBy,
-  getDoc,
-  setDoc
-} from 'firebase/firestore';
+import { User } from '@supabase/supabase-js';
 
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleGoogleLogin = async () => {
+  const handleLogin = async () => {
     setLoading(true);
     setError('');
     try {
-      const { signInWithGoogle } = await import('../lib/firebase');
       await signInWithGoogle();
     } catch (err: any) {
-      console.error("Google login failed:", err);
-      let msg = err.message || 'Login failed';
-      if (err.code === 'auth/popup-blocked') {
-        msg = "The login popup was blocked by your browser. Please allow popups for this site.";
-      } else if (err.code === 'auth/cancelled-popup-request') {
-        msg = "Login process was cancelled.";
-      } else if (err.code === 'auth/api-key-not-valid') {
-        msg = "Invalid API Key. Please verify the Firebase configuration.";
-      }
-      setError(msg);
+      console.error("Login failed:", err);
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -94,7 +72,7 @@ function AdminAuthForm() {
         )}
 
         <button 
-          onClick={handleGoogleLogin}
+          onClick={handleLogin}
           disabled={loading}
           className="w-full py-4 rounded-xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
         >
@@ -139,7 +117,7 @@ export default function AdminArea() {
   const showToast = (message: string, type: ToastType = 'success') => {
     setToast({ message, type, visible: true });
   };
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
@@ -170,33 +148,35 @@ export default function AdminArea() {
   useEffect(() => {
     if (!user || !isAdmin) return;
     
-    // Fetch Covenants
-    const unsubscribeCovenant = onSnapshot(doc(db, 'settings', 'covenant'), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
+    const fetchData = async () => {
+      // Fetch Covenants
+      const { data: covenantData } = await supabase.from('settings').select('*').eq('id', 'covenant').single();
+      if (covenantData) {
         setCovenants({
-          en: data.en || '',
-          pt: data.pt || '',
-          es: data.es || '',
-          nl: data.nl || ''
+          en: covenantData.en || '',
+          pt: covenantData.pt || '',
+          es: covenantData.es || '',
+          nl: covenantData.nl || ''
         });
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'settings/covenant');
-    });
 
-    // Fetch Hero Content
-    const unsubscribeHero = onSnapshot(doc(db, 'settings', 'hero'), (docSnap) => {
-      if (docSnap.exists()) {
-        setHeroContent(docSnap.data());
+      // Fetch Hero Content
+      const { data: heroData } = await supabase.from('settings').select('*').eq('id', 'hero').single();
+      if (heroData) {
+        setHeroContent(heroData.content);
       }
-    }, (error) => {
-      handleFirestoreError(error, OperationType.GET, 'settings/hero');
-    });
+    };
+
+    fetchData();
+
+    // Subscribe to changes for real-time
+    const settingsSubscription = supabase
+      .channel('settings_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, fetchData)
+      .subscribe();
 
     return () => {
-      unsubscribeCovenant();
-      unsubscribeHero();
+      supabase.removeChannel(settingsSubscription);
     };
   }, [user, isAdmin]);
 
@@ -215,30 +195,33 @@ export default function AdminArea() {
 
   const handleSaveHero = async () => {
     try {
-      const { setDoc } = await import('firebase/firestore');
-      await setDoc(doc(db, 'settings', 'hero'), {
-        ...heroContent,
-        updatedAt: serverTimestamp()
+      const { error } = await supabase.from('settings').upsert({
+        id: 'hero',
+        content: heroContent,
+        updated_at: new Date().toISOString()
       });
+      
+      if (error) throw error;
       showToast("Hero content updated successfully!");
     } catch (error) {
+      console.error(error);
       showToast("Failed to update hero content", "error");
-      handleFirestoreError(error, OperationType.WRITE, 'settings/hero');
     }
   };
 
   const handleSaveCovenant = async () => {
     try {
-      // Need setDoc because it might be the first time creation
-      const { setDoc } = await import('firebase/firestore');
-      await setDoc(doc(db, 'settings', 'covenant'), {
+      const { error } = await supabase.from('settings').upsert({
+        id: 'covenant',
         ...covenants,
-        updatedAt: serverTimestamp()
+        updated_at: new Date().toISOString()
       });
+      
+      if (error) throw error;
       showToast("Covenants updated successfully!");
     } catch (error) {
+      console.error(error);
       showToast("Failed to update covenants", "error");
-      handleFirestoreError(error, OperationType.WRITE, 'settings/covenant');
     }
   };
   const [properties, setProperties] = useState<any[]>([]);
@@ -259,14 +242,18 @@ export default function AdminArea() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth State Changed - User:", user?.email);
-      setUser(user);
-      if (user) {
-        try {
-          const userEmail = user.email?.toLowerCase();
-          console.log("Verifying admin status for:", userEmail);
+    // Check initial session
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      handleUser(session?.user ?? null);
+    };
 
+    const handleUser = async (sbUser: User | null) => {
+      setUser(sbUser);
+      if (sbUser) {
+        try {
+          const userEmail = sbUser.email?.toLowerCase();
+          
           // Hardcoded whitelist (unconditional admins)
           const adminEmails = [
             'hello@liegepaschoalini.design', 
@@ -274,42 +261,39 @@ export default function AdminArea() {
             'victoriaholanbra@gmail.com'
           ];
           const isWhitelisted = userEmail && adminEmails.includes(userEmail);
+
+          // Get or Create profile in Supabase
+          const { data: profile, error: profileError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', userEmail)
+            .single();
           
-          if (isWhitelisted) {
-            setIsAdmin(true); // Set true immediately for whitelisted users
+          if (!profile && sbUser.email) {
+            console.log("Synchronizing new user to table:", userEmail);
+            await supabase.from('users').insert([{
+              email: sbUser.email,
+              uid: sbUser.id,
+              is_admin: isWhitelisted,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }]);
+            setIsAdmin(isWhitelisted);
+          } else if (profile) {
+            // Update admin status if whitelisted but not set in DB
+            if (isWhitelisted && !profile.is_admin) {
+              await supabase.from('users').update({ is_admin: true }).eq('id', profile.id);
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(!!profile.is_admin);
+            }
           }
-
-          // Sync profile to Firestore
-          const userDocRef = doc(db, 'users', user.uid);
-          const userDocPromise = getDoc(userDocRef);
-          
-          // Wait for the doc check anyway to ensure profile is synced or if not whitelisted
-          const userDoc = await userDocPromise;
-          
-          if (!userDoc.exists() && isWhitelisted) {
-            console.log("Creating initial admin profile for whitelisted user");
-            await setDoc(userDocRef, {
-              email: user.email,
-              uid: user.uid,
-              role: 'admin',
-              createdAt: serverTimestamp(),
-              updatedAt: serverTimestamp()
-            }, { merge: true });
-          }
-
-          const hasAdminRole = userDoc.exists() && userDoc.data()?.role === 'admin';
-
-          // Final decision
-          const finalIsAdmin = !!isWhitelisted || hasAdminRole;
-          console.log("Admin verification result:", { isWhitelisted, hasAdminRole, finalIsAdmin });
-          
-          setIsAdmin(finalIsAdmin);
-        } catch (error: any) {
-          console.error("Error checking admin status:", error.code, error.message);
-          // If Firestore check fails, still allow if whitelisted
-          const userEmail = user.email?.toLowerCase();
-          const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
-          setIsAdmin(!!(userEmail && whitelist.includes(userEmail)));
+        } catch (error) {
+          console.error("Error synchronizing profile:", error);
+          // Fallback to whitelist if DB fails
+          const userEmail = sbUser.email?.toLowerCase();
+          const adminEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
+          setIsAdmin(!!(userEmail && adminEmails.includes(userEmail)));
         } finally {
           setAuthLoading(false);
         }
@@ -317,50 +301,99 @@ export default function AdminArea() {
         setIsAdmin(false);
         setAuthLoading(false);
       }
+    };
+
+    checkUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleUser(session?.user ?? null);
     });
-    return () => unsubscribe();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
 
-    const q = query(collection(db, 'properties'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const propertyList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProperties(propertyList);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'properties');
-    });
+    const fetchProperties = async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error(error);
+      } else {
+        setProperties(data || []);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchProperties();
+
+    const propertiesSubscription = supabase
+      .channel('properties_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(propertiesSubscription);
+    };
   }, [user, isAdmin]);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
 
-    const q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const imgs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setGalleryImages(imgs);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'gallery');
-    });
+    const fetchGallery = async () => {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error(error);
+      } else {
+        setGalleryImages(data || []);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchGallery();
+
+    const gallerySubscription = supabase
+      .channel('gallery_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(gallerySubscription);
+    };
   }, [user, isAdmin]);
 
   useEffect(() => {
     if (!user || !isAdmin) return;
 
-    const q = query(collection(db, 'team'), orderBy('order', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTeamMembers(items);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'team');
-    });
+    const fetchTeam = async () => {
+      const { data, error } = await supabase
+        .from('team')
+        .select('*')
+        .order('order', { ascending: true });
+      
+      if (error) {
+        console.error(error);
+      } else {
+        setTeamMembers(data || []);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchTeam();
+
+    const teamSubscription = supabase
+      .channel('team_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team' }, fetchTeam)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(teamSubscription);
+    };
   }, [user, isAdmin]);
 
   const handleTeamInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -376,19 +409,28 @@ export default function AdminArea() {
 
     try {
       const dataToSave = {
-        ...teamFormData,
+        name: teamFormData.name,
+        role: teamFormData.role,
+        bio: teamFormData.bio,
+        image: teamFormData.image,
+        icon: teamFormData.icon,
+        sl_profile: teamFormData.slProfile,
         order: parseInt(teamFormData.order),
-        updatedAt: serverTimestamp()
+        updated_at: new Date().toISOString()
       };
 
       if (editingTeamId) {
-        await updateDoc(doc(db, 'team', editingTeamId), dataToSave);
+        const { error } = await supabase
+          .from('team')
+          .update(dataToSave)
+          .eq('id', editingTeamId);
+        if (error) throw error;
         showToast("Team member updated!");
       } else {
-        await addDoc(collection(db, 'team'), {
-          ...dataToSave,
-          createdAt: serverTimestamp()
-        });
+        const { error } = await supabase
+          .from('team')
+          .insert([{ ...dataToSave, created_at: new Date().toISOString() }]);
+        if (error) throw error;
         showToast("Team member added!");
       }
 
@@ -403,18 +445,20 @@ export default function AdminArea() {
       });
       setEditingTeamId(null);
     } catch (error) {
-      handleFirestoreError(error, editingTeamId ? OperationType.UPDATE : OperationType.CREATE, 'team');
+      console.error(error);
+      showToast("Error saving team member", "error");
     }
   };
 
   const handleDeleteTeam = async (id: string) => {
     if (!confirm("Are you sure?")) return;
     try {
-      await deleteDoc(doc(db, 'team', id));
+      const { error } = await supabase.from('team').delete().eq('id', id);
+      if (error) throw error;
       showToast("Team member removed!");
     } catch (error) {
+      console.error(error);
       showToast("Error deleting member", "error");
-      handleFirestoreError(error, OperationType.DELETE, `team/${id}`);
     }
   };
 
@@ -438,11 +482,13 @@ export default function AdminArea() {
     }
 
     try {
-      await addDoc(collection(db, 'gallery'), {
+      const { error } = await supabase.from('gallery').insert([{
         url: galleryFormData.imageUrl,
         caption: galleryFormData.caption,
-        createdAt: serverTimestamp()
-      });
+        created_at: new Date().toISOString()
+      }]);
+      
+      if (error) throw error;
       
       setGalleryFormData({ caption: '', imageUrl: '' });
       showToast("Gallery image saved!");
@@ -455,11 +501,12 @@ export default function AdminArea() {
   const handleDeleteGallery = async (id: string) => {
     if (!confirm("Are you sure you want to delete this gallery image?")) return;
     try {
-      await deleteDoc(doc(db, 'gallery', id));
+      const { error } = await supabase.from('gallery').delete().eq('id', id);
+      if (error) throw error;
       showToast("Image removed from gallery!");
     } catch (error) {
+      console.error(error);
       showToast("Error deleting image", "error");
-      handleFirestoreError(error, OperationType.DELETE, `gallery/${id}`);
     }
   };
 
@@ -469,7 +516,7 @@ export default function AdminArea() {
   };
 
   const handleSave = async () => {
-    console.log('Tentando salvar:', formData);
+    console.log('Tentando salvar (Supabase):', formData);
     
     if (!formData.name || !formData.price || !formData.imageUrl) {
       showToast("Please fill in name, price, and provide an image URL.", "info");
@@ -478,21 +525,35 @@ export default function AdminArea() {
 
     try {
       const dataToSave = {
-        ...formData,
+        name: formData.name,
+        casperlet_id: formData.casperletId,
         price: parseFloat(formData.price) || 0,
+        slurl: formData.slurl,
+        status: formData.status,
+        description: formData.description,
         bedrooms: parseInt(formData.bedrooms) || 0,
         bathrooms: parseInt(formData.bathrooms) || 0,
-        updatedAt: serverTimestamp()
+        location: formData.location,
+        tenant_name: formData.tenantName,
+        tenant_password: formData.tenantPassword,
+        next_payment: formData.nextPayment,
+        image_url: formData.imageUrl,
+        gallery: JSON.stringify([{ type: 'image', url: formData.imageUrl }]),
+        updated_at: new Date().toISOString()
       };
 
       if (editingId) {
-        await updateDoc(doc(db, 'properties', editingId), dataToSave);
+        const { error } = await supabase
+          .from('properties')
+          .update(dataToSave)
+          .eq('id', editingId);
+        if (error) throw error;
         showToast("Property updated successfully!");
       } else {
-        await addDoc(collection(db, 'properties'), {
-          ...dataToSave,
-          createdAt: serverTimestamp()
-        });
+        const { error } = await supabase
+          .from('properties')
+          .insert([{ ...dataToSave, created_at: new Date().toISOString() }]);
+        if (error) throw error;
         showToast("Property saved successfully!");
       }
 
@@ -514,16 +575,15 @@ export default function AdminArea() {
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
-      console.error("CRITICAL FIRESTORE ERROR:", error);
+      console.error("CRITICAL SUPABASE ERROR:", error);
       showToast("Failed to save property", "error");
-      handleFirestoreError(error, editingId ? OperationType.UPDATE : OperationType.CREATE, 'properties');
     }
   };
 
   const handleEdit = (prop: any) => {
     setFormData({
       name: prop.name || '',
-      casperletId: prop.casperletId || '',
+      casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
       slurl: prop.slurl || '',
       status: prop.status || 'available',
@@ -531,10 +591,10 @@ export default function AdminArea() {
       bedrooms: prop.bedrooms?.toString() || '',
       bathrooms: prop.bathrooms?.toString() || '',
       location: prop.location || 'Holanbra',
-      tenantName: prop.tenantName || '',
-      tenantPassword: prop.tenantPassword || '',
-      nextPayment: prop.nextPayment || '',
-      imageUrl: prop.image || ''
+      tenantName: prop.tenant_name || '',
+      tenantPassword: prop.tenant_password || '',
+      nextPayment: prop.next_payment || '',
+      imageUrl: prop.image_url || ''
     });
     setEditingId(prop.id);
     setActiveTab('add');
@@ -543,11 +603,12 @@ export default function AdminArea() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this property?")) return;
     try {
-      await deleteDoc(doc(db, 'properties', id));
+      const { error } = await supabase.from('properties').delete().eq('id', id);
+      if (error) throw error;
       showToast("Property deleted successfully!");
     } catch (error) {
+      console.error(error);
       showToast("Error deleting property", "error");
-      handleFirestoreError(error, OperationType.DELETE, `properties/${id}`);
     }
   };
 
@@ -601,7 +662,7 @@ export default function AdminArea() {
                     {user.email}
                   </p>
                   <button 
-                    onClick={() => signOut(auth)}
+                    onClick={() => signOut()}
                     className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]"
                   >
                     Logout & Switch User
@@ -622,15 +683,15 @@ export default function AdminArea() {
         <aside className="w-full md:w-64 space-y-2">
           <div className="flex items-center gap-4 px-4 mb-8 text-left">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 shrink-0 bg-amber-500/10 flex items-center justify-center">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt={user.displayName || 'User'} className="w-full h-full object-cover" />
+              {user.user_metadata?.avatar_url ? (
+                <img src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'User'} className="w-full h-full object-cover" />
               ) : (
                 <UserIcon className="text-amber-500" size={20} />
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">{user.displayName || user.email}</p>
-              <button onClick={() => signOut(auth)} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Logout</button>
+              <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
+              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Logout</button>
             </div>
           </div>
 

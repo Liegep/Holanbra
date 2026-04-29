@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { auth, db } from '../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,20 +16,25 @@ export default function Navbar() {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
+    const checkAdmin = async (sbUser: any) => {
+      setUser(sbUser);
+      if (sbUser) {
         // Check whitelist first
         const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
-        const isWhitelisted = firebaseUser.email && whitelist.includes(firebaseUser.email.toLowerCase());
+        const isWhitelisted = sbUser.email && whitelist.includes(sbUser.email.toLowerCase());
         
         if (isWhitelisted) {
           setIsAdmin(true);
         } else {
-          // Check doc
+          // Check Supabase users table
           try {
-            const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-            setIsAdmin(userDoc.exists() && userDoc.data()?.role === 'admin');
+            const { data, error } = await supabase
+              .from('users')
+              .select('is_admin')
+              .eq('email', sbUser.email)
+              .single();
+            
+            setIsAdmin(!!(data && data.is_admin));
           } catch (e) {
             setIsAdmin(false);
           }
@@ -39,11 +42,20 @@ export default function Navbar() {
       } else {
         setIsAdmin(false);
       }
+    };
+
+    // Initial check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      checkAdmin(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      checkAdmin(session?.user ?? null);
     });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 

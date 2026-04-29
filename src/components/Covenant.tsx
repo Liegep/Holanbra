@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { FileText, Globe, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -13,10 +12,13 @@ const Covenant: React.FC = () => {
   useEffect(() => {
     const fetchCovenant = async () => {
       try {
-        const docRef = doc(db, 'settings', 'covenant');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        const { data, error } = await supabase
+          .from('settings')
+          .select('*')
+          .eq('id', 'covenant')
+          .single();
+        
+        if (data) {
           setContent({
             en: data.en || '',
             pt: data.pt || '',

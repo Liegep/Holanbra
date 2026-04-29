@@ -1,23 +1,22 @@
 import { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { Maximize2, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface GalleryImage {
   id: string;
   url: string;
   caption?: string;
-  createdAt: any;
+  created_at: string;
 }
 
 const DEFAULT_IMAGES: GalleryImage[] = [
-  { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80', caption: 'Lakeside Living', createdAt: new Date() },
-  { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80', caption: 'Sunset Views', createdAt: new Date() },
-  { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', caption: 'Coastal Paradise', createdAt: new Date() },
-  { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', caption: 'Modern Interiors', createdAt: new Date() },
-  { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80', caption: 'Infinite Pools', createdAt: new Date() },
-  { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&q=80', caption: 'Private Islands', createdAt: new Date() }
+  { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80', caption: 'Lakeside Living', created_at: new Date().toISOString() },
+  { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80', caption: 'Sunset Views', created_at: new Date().toISOString() },
+  { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', caption: 'Coastal Paradise', created_at: new Date().toISOString() },
+  { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', caption: 'Modern Interiors', created_at: new Date().toISOString() },
+  { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80', caption: 'Infinite Pools', created_at: new Date().toISOString() },
+  { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&q=80', caption: 'Private Islands', created_at: new Date().toISOString() }
 ];
 
 export default function Gallery() {
@@ -25,18 +24,27 @@ export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'gallery'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const imgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as GalleryImage[];
-      setImages(imgs);
-    }, (error) => {
-      console.error("Error fetching gallery:", error);
-    });
+    const fetchGallery = async () => {
+      const { data, error } = await supabase
+        .from('gallery')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (data) {
+        setImages(data as GalleryImage[]);
+      }
+    };
 
-    return () => unsubscribe();
+    fetchGallery();
+
+    const gallerySubscription = supabase
+      .channel('gallery_public_view')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(gallerySubscription);
+    };
   }, []);
 
   const displayImages = images.length > 0 ? images : DEFAULT_IMAGES;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 
 export default function AboutUs() {
   const [aboutImage, setAboutImage] = useState('https://images.unsplash.com/photo-1600585154340-be6199f3e009?w=1200&q=80');
@@ -9,10 +8,14 @@ export default function AboutUs() {
   useEffect(() => {
     const fetchHero = async () => {
       try {
-        const docRef = doc(db, 'settings', 'hero');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data().aboutImage) {
-          setAboutImage(docSnap.data().aboutImage);
+        const { data, error } = await supabase
+          .from('settings')
+          .select('content')
+          .eq('id', 'hero')
+          .single();
+        
+        if (data && data.content && data.content.aboutImage) {
+          setAboutImage(data.content.aboutImage);
         }
       } catch (err) {
         console.error("Error fetching about image:", err);

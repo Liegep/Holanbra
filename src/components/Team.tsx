@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 
 interface TeamMember {
   id: string;
@@ -57,29 +56,28 @@ export default function Team() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set a safety timeout to stop loading state even if Firestore hangs
-    const timeoutSignal = setTimeout(() => {
+    const fetchTeam = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('team')
+        .select('*')
+        .order('order', { ascending: true });
+      
+      if (data) {
+        setTeam(data.map(m => ({ ...m, slProfile: m.sl_profile })));
+      }
       setLoading(false);
-    }, 3000);
+    };
 
-    const q = query(collection(db, 'team'), orderBy('order', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      clearTimeout(timeoutSignal);
-      const members = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as TeamMember[];
-      setTeam(members);
-      setLoading(false);
-    }, (error) => {
-      clearTimeout(timeoutSignal);
-      console.error("Error fetching team:", error);
-      setLoading(false);
-    });
+    fetchTeam();
+
+    const teamSubscription = supabase
+      .channel('team_public_view')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'team' }, fetchTeam)
+      .subscribe();
 
     return () => {
-      unsubscribe();
-      clearTimeout(timeoutSignal);
+      supabase.removeChannel(teamSubscription);
     };
   }, []);
 

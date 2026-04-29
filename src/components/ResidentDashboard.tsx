@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { db } from '../lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 import { 
   Home, 
   Calendar, 
@@ -57,17 +56,22 @@ const ResidentDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      const q = query(
-        collection(db, 'properties'), 
-        where('tenantName', '==', name),
-        where('tenantPassword', '==', pass)
-      );
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('tenant_name', name)
+        .eq('tenant_password', pass);
 
-      const snapshot = await getDocs(q);
-      const p = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (error) throw error;
 
-      if (p.length > 0) {
-        setProperties(p);
+      if (data && data.length > 0) {
+        setProperties(data.map(p => ({
+          ...p,
+          tenantName: p.tenant_name,
+          tenantPassword: p.tenant_password,
+          nextPayment: p.next_payment,
+          image: p.image_url
+        })));
         setIsLoggedIn(true);
         localStorage.setItem('sl_resident_name', name);
         localStorage.setItem('sl_resident_pass', pass);

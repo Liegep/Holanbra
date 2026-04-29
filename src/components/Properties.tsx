@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 
 interface Property {
   id: string;
@@ -35,31 +34,47 @@ export default function Properties() {
   });
 
   useEffect(() => {
-    const q = query(collection(db, 'properties'), orderBy('createdAt', 'desc'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const propertyList: Property[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        // Convert Firestore Timestamp to Date string if needed, or just handle safely
-        // Support both createdAt and updatedAt if createdAt is somehow missing
-        const timestamp = data.createdAt || data.updatedAt || { toDate: () => new Date() };
-        const date = typeof timestamp.toDate === 'function' ? timestamp.toDate() : new Date();
-        
-        propertyList.push({ 
-          id: doc.id, 
-          ...data,
-          date: date.toISOString() // Ensure date is a string as defined in Property interface
-        } as Property);
-      });
-      setProperties(propertyList);
-      setLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'properties');
-      setLoading(false);
-    });
+    const fetchProperties = async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error(error);
+        setLoading(false);
+      } else {
+        const propertyList = (data || []).map(p => {
+          let galleryList = [];
+          try {
+            galleryList = typeof p.gallery === 'string' ? JSON.parse(p.gallery) : (p.gallery || []);
+          } catch(e) {
+            galleryList = [{ type: 'image', url: p.image }];
+          }
 
-    return () => unsubscribe();
+          return {
+            ...p,
+            casperletId: p.casperlet_id,
+            image: p.image_url,
+            gallery: galleryList,
+            date: p.created_at
+          };
+        });
+        setProperties(propertyList);
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+
+    const propertiesSubscription = supabase
+      .channel('properties_public_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(propertiesSubscription);
+    };
   }, []);
 
   const sortedAndFilteredProperties = [...properties]
