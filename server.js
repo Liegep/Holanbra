@@ -12,9 +12,10 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 // Supabase Configuration
-const supabaseUrl = 'https://kwosiiddjwkajvatgudp.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3b3NpaWRkandrYWp2YXRndWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NTgwMDgsImV4cCI6MjA5MzAzNDAwOH0.33En7oofSwpWDK-lScNDCob98kBJCFGstMbAU-wGvZg';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseUrl = process.env.SUPABASE_URL || 'https://kwosiiddjwkajvatgudp.supabase.co';
+// Use Service Role Key for backend operations to bypass RLS
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3b3NpaWRkandrYWp2YXRndWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NTgwMDgsImV4cCI6MjA5MzAzNDAwOH0.33En7oofSwpWDK-lScNDCob98kBJCFGstMbAU-wGvZg';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function startServer() {
   const app = express();
@@ -61,21 +62,19 @@ async function startServer() {
     }
 
     try {
-      // Robust status check
-      const incomingStatus = (status || '').toLowerCase().trim();
-      const isRented = ['rented', 'occupied', 'taken', 'alugado'].includes(incomingStatus);
-      const newStatus = isRented ? 'rented' : 'available';
+      // Simplified status handling as requested
+      const newStatus = (status || '').toLowerCase().trim();
 
-      console.log(`Processing unit: ${casperlet_id} | Raw Status: ${status} -> Unified Status: ${newStatus}`);
+      console.log(`Processing unit: ${casperlet_id} | Status: ${newStatus}`);
 
-      const { data, error, count } = await supabase
+      const { data, error } = await supabase
         .from('properties')
         .update({ 
           status: newStatus,
-          tenant_name: tenant_key || (isRented ? 'Rented' : 'Disponível')
+          tenant_name: tenant_key || (newStatus === 'rented' ? 'Rented' : 'Disponível')
         })
         .eq('casperlet_id', casperlet_id)
-        .select(); // Fetching to confirm update
+        .select();
 
       if (error) {
         console.error('Supabase update error:', error);
