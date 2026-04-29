@@ -599,19 +599,10 @@ export default function AdminArea() {
     try {
       const dataToSave = {
         name: formData.name,
-        casperlet_id: formData.casperletId,
-        price: parseFloat(formData.price) || 0,
-        slurl: formData.slurl,
-        status: formData.status,
         description: formData.description,
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
-        location: formData.location,
-        tenant_name: formData.tenantName,
-        tenant_password: formData.tenantPassword,
-        next_payment: formData.nextPayment,
+        price: parseFloat(formData.price) || 0,
+        casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
-        gallery: JSON.stringify([{ type: 'image', url: formData.imageUrl }]),
         updated_at: new Date().toISOString()
       };
 
@@ -625,7 +616,7 @@ export default function AdminArea() {
       } else {
         const { error } = await supabase
           .from('properties')
-          .insert([{ ...dataToSave, created_at: new Date().toISOString() }]);
+          .insert([dataToSave]); // No ID sent, let DB generate it
         if (error) throw error;
         showToast("Property saved successfully!");
       }
