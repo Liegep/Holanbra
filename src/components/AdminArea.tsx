@@ -380,6 +380,11 @@ export default function AdminArea() {
       showToast("Error deleting renter", "error");
     }
   };
+
+  useEffect(() => {
+    if (!user || !isAdmin) return;
+
+    const fetchProperties = async () => {
       const { data, error } = await supabase
         .from('properties')
         .select('*');
@@ -684,7 +689,8 @@ export default function AdminArea() {
         teleport_url: '',
         status: 'available',
         description: '',
-        imageUrl: ''
+        imageUrl: '',
+        tenantId: ''
       });
       setEditingId(null);
       setActiveTab('listings');
@@ -1491,7 +1497,8 @@ export default function AdminArea() {
                         teleport_url: '',
                         status: 'available',
                         description: '',
-                        imageUrl: ''
+                        imageUrl: '',
+                        tenantId: ''
                       });
                     }}
                     className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"

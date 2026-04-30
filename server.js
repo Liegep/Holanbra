@@ -104,7 +104,7 @@ async function startServer() {
       console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}"`);
 
       // Realiza o update na tabela 'properties' filtrando pela coluna 'casperlet_id'
-      const updateData: any = { 
+      const updateData = { 
         status: newStatus,
         tenant_name: tenant_key || (newStatus === 'rented' ? 'Ocupado' : 'Disponível'),
         tenant_id: tenant_key || null, // Guardamos o UUID do residente
