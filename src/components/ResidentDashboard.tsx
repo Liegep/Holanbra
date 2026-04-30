@@ -31,6 +31,7 @@ const ResidentDashboard: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [residentData, setResidentData] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [error, setError] = useState('');
 
@@ -56,35 +57,37 @@ const ResidentDashboard: React.FC = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Step 1: Login via 'renters' table
+      const { data: renter, error: renterError } = await supabase
+        .from('renters')
+        .select('*')
+        .ilike('avatar_name', name.trim())
+        .eq('password', pass.trim())
+        .single();
+
+      if (renterError || !renter) {
+        throw new Error('Resident not found or invalid password.');
+      }
+
+      setResidentData(renter);
+
+      // Step 2: Fetch properties linked to this resident (tenant_id == avatar_uuid)
+      const { data: userProperties, error: propError } = await supabase
         .from('properties')
         .select('*')
-        .eq('tenant_name', name)
-        .eq('tenant_password', pass);
+        .eq('tenant_id', renter.avatar_uuid);
 
-      if (error) throw error;
+      if (propError) throw propError;
 
-      if (data && data.length > 0) {
-        setProperties(data.map(p => ({
-          ...p,
-          tenantName: p.tenant_name,
-          tenantPassword: p.tenant_password,
-          nextPayment: p.next_payment,
-          image: p.image_url
-        })));
-        setIsLoggedIn(true);
-        localStorage.setItem('sl_resident_name', name);
-        localStorage.setItem('sl_resident_pass', pass);
-        showToast(`Welcome back, ${name}!`);
-      } else {
-        setError('Invalid resident name or password. Please check your credentials.');
-        if (nameOverride) {
-            handleLogout();
-        }
-      }
-    } catch (err) {
+      setProperties(userProperties || []);
+      setIsLoggedIn(true);
+      localStorage.setItem('sl_resident_name', name);
+      localStorage.setItem('sl_resident_pass', pass);
+      showToast(`Welcome back, ${name}!`);
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError('An error occurred during sign in.');
+      setError(err.message || 'An error occurred during sign in.');
+      if (nameOverride) handleLogout();
     } finally {
       setLoading(false);
     }
@@ -92,6 +95,7 @@ const ResidentDashboard: React.FC = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setResidentData(null);
     setProperties([]);
     setResidentName('');
     setPassword('');
@@ -186,20 +190,36 @@ const ResidentDashboard: React.FC = () => {
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-amber-500">
-              <ShieldCheck size={20} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Dashboard</span>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-white/5 p-8 rounded-[40px] border border-white/5">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+                <img 
+                  src={`https://my-secondlife-s3-amazon-aws.com/users/${residentData?.avatar_uuid}/thumb_user_image.png`} 
+                  alt="SL Avatar"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=f59e0b&color=000`;
+                  }}
+                />
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-full"></div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-display font-bold tracking-tighter capitalize">
-              Welcome, {localStorage.getItem('sl_resident_name')?.split(' ')[0]}
-            </h1>
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 text-amber-500">
+                <ShieldCheck size={16} />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Authenticated</span>
+              </div>
+              <h1 className="text-4xl font-display font-bold tracking-tighter capitalize">
+                {residentData?.avatar_name}
+              </h1>
+              <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest">{residentData?.avatar_uuid}</p>
+            </div>
           </div>
           
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-2 text-white/40 hover:text-red-400 transition-colors uppercase tracking-widest text-[10px] font-black"
+            className="flex items-center gap-2 px-6 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20"
           >
             <LogOut size={14} /> Sign Out
           </button>
@@ -219,7 +239,8 @@ const ResidentDashboard: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {properties.map((prop) => {
-              const daysLeft = prop.nextPayment ? Math.ceil((new Date(prop.nextPayment).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
+              const expiresAt = prop.expires_at || prop.next_payment;
+              const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
               
               return (
                 <motion.div 
@@ -230,12 +251,12 @@ const ResidentDashboard: React.FC = () => {
                 >
                   {/* Property Image Header */}
                   <div className="relative h-64 overflow-hidden">
-                    <img src={prop.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
+                    <img src={prop.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
                     <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
                     <div className="absolute bottom-6 left-8">
                       <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
                       <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
-                        <MapPin size={12} /> {prop.location}
+                        <MapPin size={12} /> HOLANBRA
                       </div>
                     </div>
                   </div>
@@ -245,24 +266,24 @@ const ResidentDashboard: React.FC = () => {
                     <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
                       <div className="flex items-center justify-between">
                         <Clock className="text-amber-500" size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Time Status</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Status</span>
                       </div>
                       <div>
                         <p className={`text-4xl font-display font-black ${daysLeft <= 0 ? 'text-red-500' : 'text-white'}`}>
-                            {daysLeft <= 0 ? '0' : daysLeft} Days
+                            {daysLeft <= 0 ? 'Expired' : `${daysLeft} Days`}
                         </p>
-                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Remaining until next cycle</p>
+                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Time remaining on lease</p>
                       </div>
                     </div>
 
                     <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
                       <div className="flex items-center justify-between">
                         <Calendar className="text-amber-500" size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Next Payment</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Expiraton Date</span>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-white">{prop.nextPayment ? new Date(prop.nextPayment).toLocaleDateString() : 'N/A'}</p>
-                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Scheduled due date</p>
+                        <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : 'Active'}</p>
+                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">End of current cycle</p>
                       </div>
                     </div>
 
@@ -270,19 +291,19 @@ const ResidentDashboard: React.FC = () => {
                        <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
                            <CreditCard className="text-amber-500" size={20} />
-                           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Payment Info</span>
+                           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Price</span>
                          </div>
-                         <div className="px-3 py-1 bg-amber-500/20 text-amber-400 text-[8px] font-black rounded-full uppercase">L$ {prop.price} / week</div>
+                         <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / wk</div>
                        </div>
                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                           <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
-                            Your payment is handled in-world via our CasperLet meters at the property location.
+                            Manage your extension via in-world terminal at {prop.name}.
                           </p>
                           <button 
-                            onClick={() => window.open(prop.slurl, '_blank')}
-                            className="w-full md:w-auto px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                            onClick={() => window.open(prop.teleport_url, '_blank')}
+                            className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
                           >
-                            <MapPin size={12} /> Go to Meter
+                            <MapPin size={12} /> Visit Property
                           </button>
                        </div>
                     </div>

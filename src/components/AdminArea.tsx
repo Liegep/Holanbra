@@ -121,11 +121,18 @@ export default function AdminArea() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingRenterId, setEditingRenterId] = useState<string | null>(null);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [renters, setRenters] = useState<any[]>([]);
+  const [renterFormData, setRenterFormData] = useState({
+    avatarName: '',
+    avatarUuid: '',
+    password: ''
+  });
   const [covenants, setCovenants] = useState({ en: '', pt: '', es: '', nl: '' });
   const [heroContent, setHeroContent] = useState<any>({
     backgroundImage: '',
@@ -233,7 +240,8 @@ export default function AdminArea() {
     teleport_url: '',
     status: 'available',
     description: '',
-    imageUrl: ''
+    imageUrl: '',
+    tenantId: ''
   });
 
   useEffect(() => {
@@ -308,7 +316,70 @@ export default function AdminArea() {
   useEffect(() => {
     if (!user || !isAdmin) return;
 
-    const fetchProperties = async () => {
+    const fetchRenters = async () => {
+      const { data, error } = await supabase.from('renters').select('*');
+      if (error) console.error(error);
+      else setRenters(data || []);
+    };
+
+    fetchRenters();
+    const rentersSubscription = supabase
+      .channel('renters_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(rentersSubscription);
+    };
+  }, [user, isAdmin]);
+
+  const handleRenterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRenterFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveRenter = async () => {
+    if (!renterFormData.avatarName || !renterFormData.avatarUuid || !renterFormData.password) {
+      showToast("Please fill in all renter fields.", "info");
+      return;
+    }
+
+    try {
+      const dataToSave = {
+        avatar_name: renterFormData.avatarName,
+        avatar_uuid: renterFormData.avatarUuid,
+        password: renterFormData.password
+      };
+
+      if (editingRenterId) {
+        const { error } = await supabase.from('renters').update(dataToSave).eq('id', editingRenterId);
+        if (error) throw error;
+        showToast("Renter updated!");
+      } else {
+        const { error } = await supabase.from('renters').insert([dataToSave]);
+        if (error) throw error;
+        showToast("Renter added!");
+      }
+
+      setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
+      setEditingRenterId(null);
+    } catch (error) {
+      console.error(error);
+      showToast("Error saving renter", "error");
+    }
+  };
+
+  const handleDeleteRenter = async (id: string) => {
+    if (!confirm("Are you sure? This will not remove their properties but they won't be able to login.")) return;
+    try {
+      const { error } = await supabase.from('renters').delete().eq('id', id);
+      if (error) throw error;
+      showToast("Renter removed!");
+    } catch (error) {
+      console.error(error);
+      showToast("Error deleting renter", "error");
+    }
+  };
       const { data, error } = await supabase
         .from('properties')
         .select('*');
@@ -587,6 +658,7 @@ export default function AdminArea() {
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
         teleport_url: formData.teleport_url,
+        tenant_id: formData.tenantId || null,
         status: editingId ? formData.status : 'available'
       };
 
@@ -630,7 +702,8 @@ export default function AdminArea() {
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
-      imageUrl: prop.image_url || ''
+      imageUrl: prop.image_url || '',
+      tenantId: prop.tenant_id || ''
     });
     setEditingId(prop.id);
     setActiveTab('add');
@@ -734,6 +807,7 @@ export default function AdminArea() {
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">Admin Panel</h2>
           {[
             { id: 'listings', name: 'Properties', icon: BarChart3 },
+            { id: 'renters', name: 'Residents', icon: UserIcon },
             { id: 'gallery', name: 'Gallery', icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: 'Team', icon: UserIcon },
@@ -759,6 +833,134 @@ export default function AdminArea() {
 
         {/* Content */}
         <main className="flex-1 space-y-8">
+          {activeTab === 'renters' && (
+            <div className="max-w-4xl space-y-8">
+              <div className="flex justify-between items-end">
+                <div className="text-left">
+                  <h3 className="text-2xl font-bold font-display text-white">Resident Management</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Manage SL residents, UUIDs and access passwords.</p>
+                </div>
+              </div>
+
+              <div className="glass-card p-8 border-white/10 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar Name (SL)</label>
+                    <input 
+                      type="text" 
+                      name="avatarName"
+                      value={renterFormData.avatarName}
+                      onChange={handleRenterInputChange}
+                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
+                      placeholder="John Resident"
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar UUID</label>
+                    <input 
+                      type="text" 
+                      name="avatarUuid"
+                      value={renterFormData.avatarUuid}
+                      onChange={handleRenterInputChange}
+                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
+                      placeholder="00000000-0000-0000-0000-000000000000"
+                    />
+                  </div>
+                  <div className="space-y-2 text-left">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Login Password</label>
+                    <input 
+                      type="text" 
+                      name="password"
+                      value={renterFormData.password}
+                      onChange={handleRenterInputChange}
+                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
+                      placeholder="Secret Key"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  {renterFormData.avatarUuid && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/30">
+                        <img 
+                          src={`https://my-secondlife-s3-amazon-aws.com/users/${renterFormData.avatarUuid}/thumb_user_image.png`} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover"
+                          onError={(e) => (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=SL&background=333&color=fff'}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase text-amber-500/60">SL Profile Preview</span>
+                    </div>
+                  )}
+                  <div className="flex gap-4">
+                    {editingRenterId && (
+                      <button 
+                        onClick={() => { setEditingRenterId(null); setRenterFormData({ avatarName: '', avatarUuid: '', password: '' }); }}
+                        className="px-6 py-3 rounded-xl border border-white/10 text-white text-[10px] font-bold uppercase"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button 
+                      onClick={handleSaveRenter}
+                      className="px-8 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
+                    >
+                      {editingRenterId ? 'Update Resident' : 'Register Resident'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {renters.map((renter) => (
+                  <div key={renter.id} className="glass-card p-6 border-white/5 hover:border-amber-500/30 transition-all group relative overflow-hidden">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10">
+                        <img 
+                          src={`https://my-secondlife-s3-amazon-aws.com/users/${renter.avatar_uuid}/thumb_user_image.png`} 
+                          alt={renter.avatar_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-left min-w-0">
+                        <h4 className="font-bold text-white truncate">{renter.avatar_name}</h4>
+                        <p className="text-[9px] text-white/30 font-mono truncate">{renter.avatar_uuid}</p>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex justify-between items-center bg-black/20 p-2 rounded-lg">
+                      <div className="text-left">
+                        <span className="text-[8px] uppercase text-gray-500 font-bold block">Password</span>
+                        <span className="text-[10px] text-amber-500/80 font-mono">{renter.password}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => {
+                            setEditingRenterId(renter.id);
+                            setRenterFormData({
+                              avatarName: renter.avatar_name,
+                              avatarUuid: renter.avatar_uuid,
+                              password: renter.password
+                            });
+                          }}
+                          className="p-2 text-gray-400 hover:text-white transition-colors"
+                        >
+                          <Settings size={14} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteRenter(renter.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'hero' && (
             <div className="max-w-4xl space-y-8">
               <h3 className="text-2xl font-bold font-display text-left text-white">Hero Management</h3>
@@ -1350,6 +1552,36 @@ export default function AdminArea() {
                         placeholder="http://maps.secondlife.com/secondlife/..." 
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-left">
+                  <label className="text-xs font-bold text-amber-500/70 uppercase">Property Assignment</label>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase">Tenant / Resident (Optional)</label>
+                    <div className="relative">
+                      <UserIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <select 
+                        name="tenantId"
+                        value={formData.tenantId}
+                        onChange={handleInputChange}
+                        className="w-full glass-card bg-background-dark border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white appearance-none cursor-pointer"
+                      >
+                        <option value="">Vacant / No Tenant vinculated</option>
+                        {renters.map(r => (
+                          <option key={r.id} value={r.avatar_uuid}>{r.avatar_name} ({r.avatar_uuid.substring(0,8)}...)</option>
+                        ))}
+                      </select>
+                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
+                    </div>
+                    {formData.tenantId && (
+                      <div className="flex items-center gap-2 mt-2 px-4 py-2 bg-amber-500/10 rounded-lg">
+                        <div className="w-6 h-6 rounded-full overflow-hidden border border-amber-500/30">
+                          <img src={`https://my-secondlife-s3-amazon-aws.com/users/${formData.tenantId}/thumb_user_image.png`} className="w-full h-full object-cover" />
+                        </div>
+                        <span className="text-[9px] font-bold text-amber-500 uppercase">Resident Linked via UUID</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

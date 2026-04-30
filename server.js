@@ -76,7 +76,7 @@ async function startServer() {
     console.log('--- CasperLet Webhook Received ---');
     console.log('Dados recebidos:', req.body);
     
-    const { casperlet_id, status, tenant_key, api_key } = req.body;
+    const { casperlet_id, status, tenant_key, api_key, expires, rental_price } = req.body;
     
     // Security Validation
     if (api_key !== 'holanbra_secret_token') {
@@ -94,17 +94,29 @@ async function startServer() {
     try {
       // Valor exato vindo do SL (limpo e minúsculo)
       const newStatus = (status || '').toLowerCase().trim();
+      
+      // Calculate expires_at if 'expires' (seconds) is provided
+      let expiresAt = null;
+      if (expires && !isNaN(Number(expires))) {
+        expiresAt = new Date(Date.now() + Number(expires) * 1000).toISOString();
+      }
 
       console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}"`);
 
       // Realiza o update na tabela 'properties' filtrando pela coluna 'casperlet_id'
+      const updateData: any = { 
+        status: newStatus,
+        tenant_name: tenant_key || (newStatus === 'rented' ? 'Ocupado' : 'Disponível'),
+        tenant_id: tenant_key || null, // Guardamos o UUID do residente
+        updated_at: new Date().toISOString()
+      };
+
+      if (expiresAt) updateData.expires_at = expiresAt;
+      if (rental_price) updateData.rental_price = Number(rental_price);
+
       const { data, error } = await supabase
         .from('properties')
-        .update({ 
-          status: newStatus,
-          tenant_name: tenant_key || (newStatus === 'rented' ? 'Ocupado' : 'Disponível'),
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('casperlet_id', targetId)
         .select();
 
