@@ -195,7 +195,7 @@ const ResidentDashboard: React.FC = () => {
             <div className="relative">
               <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
                 <img 
-                  src={`https://my-secondlife-s3-amazon-aws.com/users/${residentData?.avatar_uuid}/thumb_user_image.png`} 
+                  src={`https://api.secondlife.com/get_agent_resources?agent_id=${residentData?.avatar_uuid}&magick=avatar_picker`} 
                   alt="SL Avatar"
                   className="w-full h-full object-cover"
                   onError={(e) => {

@@ -398,12 +398,26 @@ export default function AdminArea() {
     }
   };
 
-  const handleDeleteRenter = async (id: string) => {
-    if (!confirm("Are you sure? This will not remove their properties but they won't be able to login.")) return;
+  const handleDeleteRenter = async (id: string, avatarUuid: string) => {
+    if (!confirm("Are you sure? This will not remove their history but will set their properties to Available and prevent their login.")) return;
     try {
+      // 1. Clear properties linked to this resident before deleting them
+      const { error: clearError } = await supabase
+        .from('properties')
+        .update({
+          tenant_id: null,
+          tenant_name: null,
+          status: 'available'
+        })
+        .eq('tenant_id', avatarUuid);
+
+      if (clearError) throw clearError;
+
+      // 2. Delete the renter
       const { error } = await supabase.from('renters').delete().eq('id', id);
       if (error) throw error;
-      showToast("Renter removed!");
+
+      showToast("Renter removed and properties reset to Available!");
     } catch (error) {
       console.error(error);
       showToast("Error deleting renter", "error");
@@ -957,7 +971,7 @@ export default function AdminArea() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/30">
                         <img 
-                          src={`https://my-secondlife-s3-amazon-aws.com/users/${renterFormData.avatarUuid}/thumb_user_image.png`} 
+                          src={`https://api.secondlife.com/get_agent_resources?agent_id=${renterFormData.avatarUuid}&magick=avatar_picker`} 
                           alt="Preview" 
                           className="w-full h-full object-cover"
                           onError={(e) => (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=SL&background=333&color=fff'}
@@ -995,9 +1009,10 @@ export default function AdminArea() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full overflow-hidden border border-white/10">
                         <img 
-                          src={`https://my-secondlife-s3-amazon-aws.com/users/${renter.avatar_uuid}/thumb_user_image.png`} 
+                          src={`https://api.secondlife.com/get_agent_resources?agent_id=${renter.avatar_uuid}&magick=avatar_picker`} 
                           alt={renter.avatar_name}
                           className="w-full h-full object-cover"
+                          onError={(e) => (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=SL&background=333&color=fff'}
                         />
                       </div>
                       <div className="text-left min-w-0">
@@ -1030,7 +1045,7 @@ export default function AdminArea() {
                           <Settings size={14} />
                         </button>
                         <button 
-                          onClick={() => handleDeleteRenter(renter.id)}
+                          onClick={() => handleDeleteRenter(renter.id, renter.avatar_uuid)}
                           className="p-2 text-gray-400 hover:text-red-500 transition-colors"
                         >
                           <Trash2 size={14} />
