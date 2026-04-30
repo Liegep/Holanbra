@@ -358,33 +358,50 @@ export default function AdminArea() {
 
       if (renterError) throw renterError;
 
-      // Link/Unlink properties
+      // 1. First, clear all properties that were assigned to this resident if we are doing a full sync
+      // If selectedPropertyIds is provided, we should ensure only those are linked.
+      // But based on user feedback "O vínculo só deve ser removido se eu clicar explicitamente",
+      // we might want to only ADD links here, and let unlinking happen elsewhere.
+      // HOWEVER, for a multi-select UI, usually it is expected to sync.
+      // I will keep the clear logic but wrap it to be sure it only happens if we are intending to manage links.
+      
       const renterUuid = renterFormData.avatarUuid;
 
-      // 1. First, clear all properties that were assigned to this resident
-      const { error: clearError } = await supabase
+      // Update links: Sync properties with the selection
+      // First, get currently linked properties for this user
+      const { data: currentLinked } = await supabase
         .from('properties')
-        .update({
-          tenant_id: null,
-          tenant_name: null,
-          status: 'available'
-        })
+        .select('id')
         .eq('tenant_id', renterUuid);
       
-      if (clearError) throw clearError;
+      const currentLinkedIds = currentLinked?.map(p => p.id) || [];
 
-      // 2. Then, apply the new selection
-      if (selectedPropertyIds.length > 0) {
-        const { error: linkError } = await supabase
+      // Find properties to UNLINK (those currently linked but NOT in the new selection)
+      const toUnlink = currentLinkedIds.filter(id => !selectedPropertyIds.includes(id));
+      
+      if (toUnlink.length > 0) {
+        await supabase
+          .from('properties')
+          .update({
+            tenant_id: null,
+            tenant_name: null,
+            status: 'available'
+          })
+          .in('id', toUnlink);
+      }
+
+      // Find properties to LINK (those in new selection but NOT currently linked)
+      const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
+
+      if (toLink.length > 0) {
+        await supabase
           .from('properties')
           .update({
             tenant_id: renterUuid,
             tenant_name: renterFormData.avatarName,
             status: 'rented'
           })
-          .in('id', selectedPropertyIds);
-        
-        if (linkError) throw linkError;
+          .in('id', toLink);
       }
 
       showToast("Residente e vínculos de imóveis atualizados!");
@@ -927,12 +944,11 @@ export default function AdminArea() {
                 {/* Property Assignment in Renter Tab */}
                 <div className="space-y-4 text-left border-t border-white/5 pt-6">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Assign Properties (Available only)</label>
+                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Assign Properties</label>
                     <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} Selected</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {properties
-                      .filter(p => p.status === 'available' || (editingRenterId && p.tenant_id === renterFormData.avatarUuid))
                       .map(prop => (
                         <button
                           key={prop.id}
@@ -950,17 +966,27 @@ export default function AdminArea() {
                               : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
                           )}
                         >
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 shrink-0 relative">
                             <img src={prop.image_url} className="w-full h-full object-cover" />
+                            {prop.status !== 'available' && !selectedPropertyIds.includes(prop.id) && (
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">Ocupado</span>
+                              </div>
+                            )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[10px] font-bold truncate">{prop.name}</p>
+                            <div className="flex items-center gap-1">
+                              <p className="text-[10px] font-bold truncate">{prop.name}</p>
+                              {prop.tenant_id && !selectedPropertyIds.includes(prop.id) && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" title={`Occupied by ${prop.tenant_name}`} />
+                              )}
+                            </div>
                             <p className="text-[8px] font-mono text-amber-500/60 truncate">L$ {prop.price}</p>
                           </div>
                         </button>
                       ))}
-                    {properties.filter(p => p.status === 'available').length === 0 && (
-                      <p className="text-[10px] text-white/20 uppercase py-4">No available properties to link</p>
+                    {properties.length === 0 && (
+                      <p className="text-[10px] text-white/20 uppercase py-4">No properties registered</p>
                     )}
                   </div>
                 </div>
@@ -1517,9 +1543,23 @@ export default function AdminArea() {
                           </div>
                         )}
                         {prop.tenant_name && (
-                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
-                            <UserIcon size={8} />
-                            {prop.tenant_name}
+                          <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
+                              <UserIcon size={8} />
+                              {prop.tenant_name}
+                            </div>
+                            <button 
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if(!confirm(`Desvincular ${prop.tenant_name} deste imóvel?`)) return;
+                                await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('id', prop.id);
+                                showToast("Imóvel desvinculado!");
+                              }}
+                              className="p-1 hover:text-red-500 text-white/20 transition-colors"
+                              title="Unlink Resident"
+                            >
+                              <X size={10} />
+                            </button>
                           </div>
                         )}
                       </div>
