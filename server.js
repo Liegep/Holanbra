@@ -76,7 +76,7 @@ async function startServer() {
     console.log('--- CasperLet Webhook Received ---');
     console.log('Dados recebidos:', req.body);
     
-    const { casperlet_id, status, tenant_key, api_key, expires, rental_price } = req.body;
+    const { casperlet_id, status, tenant_key, api_key, expires, remaining_seconds, rental_price } = req.body;
     
     // Security Validation
     if (api_key !== 'holanbra_secret_token') {
@@ -95,10 +95,11 @@ async function startServer() {
       // Valor exato vindo do SL (limpo e minúsculo)
       const newStatus = (status || '').toLowerCase().trim();
       
-      // Calculate expires_at if 'expires' (seconds) is provided
+      // Calculate expires_at if 'expires' (seconds) or 'remaining_seconds' is provided
+      const seconds = remaining_seconds || expires;
       let expiresAt = null;
-      if (expires && !isNaN(Number(expires))) {
-        expiresAt = new Date(Date.now() + Number(expires) * 1000).toISOString();
+      if (seconds && !isNaN(Number(seconds))) {
+        expiresAt = new Date(Date.now() + Number(seconds) * 1000).toISOString();
       }
 
       console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}"`);
