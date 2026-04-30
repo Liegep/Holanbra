@@ -351,13 +351,12 @@ export default function AdminArea() {
         password: renterFormData.password
       };
 
-      if (editingRenterId) {
-        const { error } = await supabase.from('renters').update(dataToSave).eq('id', editingRenterId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('renters').insert([dataToSave]);
-        if (error) throw error;
-      }
+      // Use upsert to avoid 409 errors (conflicts)
+      const { error: renterError } = await supabase
+        .from('renters')
+        .upsert(dataToSave, { onConflict: 'avatar_uuid' });
+
+      if (renterError) throw renterError;
 
       // Link/Unlink properties
       const renterUuid = renterFormData.avatarUuid;
@@ -388,13 +387,13 @@ export default function AdminArea() {
         if (linkError) throw linkError;
       }
 
-      showToast(editingRenterId ? "Renter and assignments updated!" : "Renter registered and properties linked!");
+      showToast("Residente e vínculos de imóveis atualizados!");
       setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
       setSelectedPropertyIds([]);
       setEditingRenterId(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      showToast("Error saving renter", "error");
+      showToast(`Erro no salvamento: ${error.message}`, "error");
     }
   };
 
