@@ -126,6 +126,7 @@ export default function AdminArea() {
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRenterId, setEditingRenterId] = useState<string | null>(null);
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [renters, setRenters] = useState<any[]>([]);
   const [renterFormData, setRenterFormData] = useState({
@@ -240,8 +241,7 @@ export default function AdminArea() {
     teleport_url: '',
     status: 'available',
     description: '',
-    imageUrl: '',
-    tenantId: ''
+    imageUrl: ''
   });
 
   useEffect(() => {
@@ -354,14 +354,43 @@ export default function AdminArea() {
       if (editingRenterId) {
         const { error } = await supabase.from('renters').update(dataToSave).eq('id', editingRenterId);
         if (error) throw error;
-        showToast("Renter updated!");
       } else {
         const { error } = await supabase.from('renters').insert([dataToSave]);
         if (error) throw error;
-        showToast("Renter added!");
       }
 
+      // Link/Unlink properties
+      const renterUuid = renterFormData.avatarUuid;
+
+      // 1. First, clear all properties that were assigned to this resident
+      const { error: clearError } = await supabase
+        .from('properties')
+        .update({
+          tenant_id: null,
+          tenant_name: null,
+          status: 'available'
+        })
+        .eq('tenant_id', renterUuid);
+      
+      if (clearError) throw clearError;
+
+      // 2. Then, apply the new selection
+      if (selectedPropertyIds.length > 0) {
+        const { error: linkError } = await supabase
+          .from('properties')
+          .update({
+            tenant_id: renterUuid,
+            tenant_name: renterFormData.avatarName,
+            status: 'rented'
+          })
+          .in('id', selectedPropertyIds);
+        
+        if (linkError) throw linkError;
+      }
+
+      showToast(editingRenterId ? "Renter and assignments updated!" : "Renter registered and properties linked!");
       setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
+      setSelectedPropertyIds([]);
       setEditingRenterId(null);
     } catch (error) {
       console.error(error);
@@ -663,7 +692,6 @@ export default function AdminArea() {
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
         teleport_url: formData.teleport_url,
-        tenant_id: formData.tenantId || null,
         status: editingId ? formData.status : 'available'
       };
 
@@ -689,8 +717,7 @@ export default function AdminArea() {
         teleport_url: '',
         status: 'available',
         description: '',
-        imageUrl: '',
-        tenantId: ''
+        imageUrl: ''
       });
       setEditingId(null);
       setActiveTab('listings');
@@ -708,8 +735,7 @@ export default function AdminArea() {
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
-      imageUrl: prop.image_url || '',
-      tenantId: prop.tenant_id || ''
+      imageUrl: prop.image_url || ''
     });
     setEditingId(prop.id);
     setActiveTab('add');
@@ -885,6 +911,47 @@ export default function AdminArea() {
                   </div>
                 </div>
 
+                {/* Property Assignment in Renter Tab */}
+                <div className="space-y-4 text-left border-t border-white/5 pt-6">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Assign Properties (Available only)</label>
+                    <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} Selected</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {properties
+                      .filter(p => p.status === 'available' || (editingRenterId && p.tenant_id === renterFormData.avatarUuid))
+                      .map(prop => (
+                        <button
+                          key={prop.id}
+                          onClick={() => {
+                            setSelectedPropertyIds(prev => 
+                              prev.includes(prop.id) 
+                                ? prev.filter(id => id !== prop.id) 
+                                : [...prev, prop.id]
+                            );
+                          }}
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
+                            selectedPropertyIds.includes(prop.id)
+                              ? "bg-amber-500/10 border-amber-500 text-white"
+                              : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                          )}
+                        >
+                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                            <img src={prop.image_url} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold truncate">{prop.name}</p>
+                            <p className="text-[8px] font-mono text-amber-500/60 truncate">L$ {prop.price}</p>
+                          </div>
+                        </button>
+                      ))}
+                    {properties.filter(p => p.status === 'available').length === 0 && (
+                      <p className="text-[10px] text-white/20 uppercase py-4">No available properties to link</p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="flex justify-between items-center">
                   {renterFormData.avatarUuid && (
                     <div className="flex items-center gap-3">
@@ -902,7 +969,11 @@ export default function AdminArea() {
                   <div className="flex gap-4">
                     {editingRenterId && (
                       <button 
-                        onClick={() => { setEditingRenterId(null); setRenterFormData({ avatarName: '', avatarUuid: '', password: '' }); }}
+                        onClick={() => { 
+                          setEditingRenterId(null); 
+                          setRenterFormData({ avatarName: '', avatarUuid: '', password: '' }); 
+                          setSelectedPropertyIds([]);
+                        }}
                         className="px-6 py-3 rounded-xl border border-white/10 text-white text-[10px] font-bold uppercase"
                       >
                         Cancel
@@ -948,6 +1019,11 @@ export default function AdminArea() {
                               avatarUuid: renter.avatar_uuid,
                               password: renter.password
                             });
+                            // Fetch currently assigned properties for this renter
+                            const assignedIds = properties
+                              .filter(p => p.tenant_id === renter.avatar_uuid)
+                              .map(p => p.id);
+                            setSelectedPropertyIds(assignedIds);
                           }}
                           className="p-2 text-gray-400 hover:text-white transition-colors"
                         >
@@ -1497,8 +1573,7 @@ export default function AdminArea() {
                         teleport_url: '',
                         status: 'available',
                         description: '',
-                        imageUrl: '',
-                        tenantId: ''
+                        imageUrl: ''
                       });
                     }}
                     className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
@@ -1559,36 +1634,6 @@ export default function AdminArea() {
                         placeholder="http://maps.secondlife.com/secondlife/..." 
                       />
                     </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Property Assignment</label>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase">Tenant / Resident (Optional)</label>
-                    <div className="relative">
-                      <UserIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                      <select 
-                        name="tenantId"
-                        value={formData.tenantId}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-background-dark border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white appearance-none cursor-pointer"
-                      >
-                        <option value="">Vacant / No Tenant vinculated</option>
-                        {renters.map(r => (
-                          <option key={r.id} value={r.avatar_uuid}>{r.avatar_name} ({r.avatar_uuid.substring(0,8)}...)</option>
-                        ))}
-                      </select>
-                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
-                    </div>
-                    {formData.tenantId && (
-                      <div className="flex items-center gap-2 mt-2 px-4 py-2 bg-amber-500/10 rounded-lg">
-                        <div className="w-6 h-6 rounded-full overflow-hidden border border-amber-500/30">
-                          <img src={`https://my-secondlife-s3-amazon-aws.com/users/${formData.tenantId}/thumb_user_image.png`} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[9px] font-bold text-amber-500 uppercase">Resident Linked via UUID</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
