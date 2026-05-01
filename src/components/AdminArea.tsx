@@ -122,6 +122,7 @@ export default function AdminArea() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
+  const [isUploadingSlot, setIsUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -638,22 +639,26 @@ export default function AdminArea() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage' | 'gridImage', gridIdx?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const uploadId = gridIdx !== undefined ? `grid-${gridIdx}` : targetField;
+    setIsUploadingSlot(uploadId);
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
       let fileToUpload: File | Blob = file;
       const isImage = file.type.startsWith('image/');
-      const isVideo = file.type.startsWith('video/');
-
+      
       if (isImage) {
+        let maxWidth = 1920;
+        if (targetField === 'gridImage' || targetField === 'image') maxWidth = 800;
+
         const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1920,
+          maxSizeMB: 0.8,
+          maxWidthOrHeight: maxWidth,
           useWebWorker: true,
           fileType: 'image/webp',
           initialQuality: 0.8
@@ -662,26 +667,22 @@ export default function AdminArea() {
       }
 
       const fileExt = isImage ? 'webp' : file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const filePath = `${targetField}/${fileName}`;
+      const cleanName = targetField === 'backgroundImage' ? 'hero_bg' : 
+                        targetField === 'gridImage' ? `hero_grid_${gridIdx}` : 
+                        targetField === 'aboutImage' ? 'hero_about' : targetField;
+      
+      const fileName = `${cleanName}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `media/${fileName}`;
 
-      // Use the requested bucket 'media'
       const bucketName = 'media';
-      const { data, error } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(filePath, fileToUpload, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true
         });
 
-      if (error) {
-        if (error.message.includes('bucket not found')) {
-            throw new Error(`Supabase Storage bucket '${bucketName}' not found. Please create it in your Supabase dashboard.`);
-        }
-        throw error;
-      }
-
-      setUploadProgress(100);
+      if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
@@ -692,18 +693,24 @@ export default function AdminArea() {
       } else if (targetField === 'image') {
         setTeamFormData(prev => ({ ...prev, image: publicUrl }));
       } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
-        setHeroContent((prev: any) => ({ ...prev, [targetField]: publicUrl }));
+        const updatedHero = { ...heroContent, [targetField]: publicUrl };
+        setHeroContent(updatedHero);
+        await supabase.from('settings').upsert({ id: 'hero', content: updatedHero });
+      } else if (targetField === 'gridImage' && gridIdx !== undefined) {
+        const newGrid = [...heroContent.gridImages];
+        newGrid[gridIdx] = publicUrl;
+        const updatedHero = { ...heroContent, gridImages: newGrid };
+        setHeroContent(updatedHero);
+        await supabase.from('settings').upsert({ id: 'hero', content: updatedHero });
       }
 
-      showToast("Media uploaded successfully!");
+      showToast("Media processada e salva!");
     } catch (error: any) {
       console.error("Upload error:", error);
       showToast(error.message || "Upload failed", "error");
     } finally {
-      setTimeout(() => {
-        setIsUploading(false);
-        setUploadProgress(0);
-      }, 1000);
+      setIsUploadingSlot(null);
+      setIsUploading(false);
     }
   };
 
@@ -1084,141 +1091,170 @@ export default function AdminArea() {
           )}
 
           {activeTab === 'hero' && (
-            <div className="max-w-4xl space-y-8">
-              <h3 className="text-2xl font-bold font-display text-left text-white">Hero Management</h3>
-              <p className="text-white/40 text-xs uppercase tracking-widest text-left">Manage images and text for the main entrance of your site.</p>
+            <div className="max-w-4xl space-y-12">
+              <div className="text-left">
+                <h3 className="text-2xl font-bold font-display text-white">Hero Management</h3>
+                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Layout espelhado com compressão WebP automática.</p>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-12">
+                {/* Visual Mirror Layout */}
+                <div className="space-y-8">
+                  <div className="space-y-4 text-left">
+                    <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                       < ImageIcon size={14} /> Background Photo (Full Page)
+                    </label>
+                    <div className="relative group aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
+                      {heroContent.backgroundImage ? (
+                        <img src={heroContent.backgroundImage} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                          <ImageIcon size={48} />
+                        </div>
+                      )}
+                      
+                      {/* Upload Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                        <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
+                           <input 
+                             type="file" 
+                             className="hidden" 
+                             accept="image/*"
+                             onChange={(e) => handleFileUpload(e, 'backgroundImage')}
+                             disabled={isUploadingSlot === 'backgroundImage'}
+                           />
+                           {isUploadingSlot === 'backgroundImage' ? 'Gravando...' : 'Mudar Fundo'}
+                        </label>
+                      </div>
+
+                      {isUploadingSlot === 'backgroundImage' && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                           <Loader2 className="text-amber-500 animate-spin" size={32} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 text-left">
+                    <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                       < ImageIcon size={14} /> Front Cards Grid (4 Photos)
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {[0, 1, 2, 3].map((idx) => (
+                        <div key={idx} className={cn(
+                          "relative group aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 bg-zinc-900 transition-all",
+                          idx % 2 !== 0 && "md:translate-y-6"
+                        )}>
+                          {heroContent.gridImages[idx] ? (
+                            <img src={heroContent.gridImages[idx]} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-white/5">
+                              <ImageIcon size={24} />
+                            </div>
+                          )}
+
+                          {/* Upload Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                            <label className="w-10 h-10 bg-white/10 backdrop-blur-md text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-500 hover:text-black transition-all">
+                               <input 
+                                 type="file" 
+                                 className="hidden" 
+                                 accept="image/*"
+                                 onChange={(e) => handleFileUpload(e, 'gridImage', idx)}
+                                 disabled={isUploadingSlot === `grid-${idx}`}
+                               />
+                               <Plus size={18} />
+                            </label>
+                          </div>
+
+                          {isUploadingSlot === `grid-${idx}` && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                               <Loader2 className="text-amber-500 animate-spin" size={24} />
+                            </div>
+                          )}
+                          
+                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">Slot {idx + 1}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Text Settings */}
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-amber-500/70 uppercase">Badge Text</label>
-                      <input 
-                        type="text"
-                        name="badgeText"
-                        value={heroContent.badgeText}
-                        onChange={handleHeroInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                      />
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">Title 1 (Main)</label>
-                      <input 
-                        type="text"
-                        name="title1"
-                        value={heroContent.title1}
-                        onChange={handleHeroInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                      />
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">Title 2 (Italic)</label>
-                      <input 
-                        type="text"
-                        name="title2"
-                        value={heroContent.title2}
-                        onChange={handleHeroInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Background Image</label>
+                <div className="glass-card p-10 border-white/5 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                      <div className="flex gap-4">
+                      <div className="space-y-2 text-left">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Badge Highlight</label>
                         <input 
                           type="text"
-                          name="backgroundImage"
-                          value={heroContent.backgroundImage}
+                          name="badgeText"
+                          value={heroContent.badgeText}
                           onChange={handleHeroInputChange}
-                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder="Background URL..."
+                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
                         />
-                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => handleFileUpload(e, 'backgroundImage')}
-                            disabled={isUploading}
-                          />
-                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
-                        </label>
                       </div>
-                      {heroContent.backgroundImage && (
-                        <div className="aspect-video rounded-xl overflow-hidden border border-white/10">
-                          <img src={heroContent.backgroundImage} alt="BG Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">About Us Photo</label>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
+                      <div className="space-y-2 text-left">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title Part 1 (Main)</label>
                         <input 
                           type="text"
-                          name="aboutImage"
-                          value={heroContent.aboutImage}
+                          name="title1"
+                          value={heroContent.title1}
                           onChange={handleHeroInputChange}
-                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder="About Image URL..."
+                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
                         />
-                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => handleFileUpload(e, 'aboutImage')}
-                            disabled={isUploading}
-                          />
-                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
-                        </label>
                       </div>
-                      {heroContent.aboutImage && (
-                        <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
-                          <img src={heroContent.aboutImage} alt="About Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        </div>
-                      )}
+                      <div className="space-y-2 text-left">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title Part 2 (Italic)</label>
+                        <input 
+                          type="text"
+                          name="title2"
+                          value={heroContent.title2}
+                          onChange={handleHeroInputChange}
+                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 text-left border-l border-white/5 pl-8">
+                       <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">About Section Image</label>
+                       <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
+                          {heroContent.aboutImage ? (
+                            <img src={heroContent.aboutImage} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-white/5">
+                              <ImageIcon size={32} />
+                            </div>
+                          )}
+                          
+                          <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                             <input 
+                               type="file" 
+                               className="hidden" 
+                               accept="image/*"
+                               onChange={(e) => handleFileUpload(e, 'aboutImage')}
+                               disabled={isUploadingSlot === 'aboutImage'}
+                             />
+                             <div className="p-3 bg-white text-black rounded-xl">
+                                <Plus size={18} />
+                             </div>
+                          </label>
+
+                          {isUploadingSlot === 'aboutImage' && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                               <Loader2 className="text-amber-500 animate-spin" size={24} />
+                            </div>
+                          )}
+                       </div>
                     </div>
                   </div>
 
                   <button 
                     onClick={handleSaveHero}
-                    className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
+                    className="w-full py-5 rounded-2xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-amber-500 transition-all uppercase tracking-widest text-[10px] shadow-2xl"
                   >
-                    <Save size={18} /> Update Hero Content
+                    <Save size={18} /> Save All Text & Links
                   </button>
-                </div>
-
-                {/* Grid Images */}
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-gray-500 uppercase block text-left">Hero Grid Photos (4)</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {[0, 1, 2, 3].map((idx) => (
-                      <div key={idx} className="space-y-2">
-                        <input 
-                          type="text"
-                          value={heroContent.gridImages[idx]}
-                          onChange={(e) => handleHeroGridChange(idx, e.target.value)}
-                          className="w-full glass-card bg-transparent border-white/10 p-2 text-[10px] focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder={`Grid Photo ${idx + 1}`}
-                        />
-                        <div className="aspect-square rounded-xl bg-white/5 border border-white/10 overflow-hidden relative">
-                          {heroContent.gridImages[idx] ? (
-                            <img src={heroContent.gridImages[idx]} className="absolute inset-0 w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-white/10">
-                              <ImageIcon size={20} />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
