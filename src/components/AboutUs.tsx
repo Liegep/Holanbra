@@ -9,7 +9,7 @@ export default function AboutUs() {
     const fetchHero = async () => {
       try {
         const { data, error } = await supabase
-          .from('settings')
+          .from('site_settings')
           .select('content')
           .eq('id', 'hero')
           .single();

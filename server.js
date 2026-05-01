@@ -179,7 +179,7 @@ async function startServer() {
   app.get("/api/casperlet/status", async (req, res) => {
     try {
       const { data, error } = await supabase
-        .from('settings')
+        .from('site_settings')
         .select('*')
         .eq('id', 'sl_config')
         .single();

@@ -162,18 +162,20 @@ export default function AdminArea() {
     
     const fetchData = async () => {
       // Fetch Covenants
-      const { data: covenantData } = await supabase.from('settings').select('*').eq('id', 'covenant').single();
+      const { data: covenantData } = await supabase.from('site_settings').select('*').eq('id', 'covenant').single();
       if (covenantData) {
+        // Suppoting both structures during migration if needed
+        const content = covenantData.content || covenantData;
         setCovenants({
-          en: covenantData.en || '',
-          pt: covenantData.pt || '',
-          es: covenantData.es || '',
-          nl: covenantData.nl || ''
+          en: content.en || '',
+          pt: content.pt || '',
+          es: content.es || '',
+          nl: content.nl || ''
         });
       }
 
       // Fetch Hero Content
-      const { data: heroData } = await supabase.from('settings').select('*').eq('id', 'hero').single();
+      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero').single();
       if (heroData) {
         setHeroContent(heroData.content);
       }
@@ -184,7 +186,7 @@ export default function AdminArea() {
     // Subscribe to changes for real-time
     const settingsSubscription = supabase
       .channel('settings_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
       .subscribe();
 
     return () => {
@@ -207,9 +209,10 @@ export default function AdminArea() {
 
   const handleSaveHero = async () => {
     try {
-      const { error } = await supabase.from('settings').upsert({
+      const { error } = await supabase.from('site_settings').upsert({
         id: 'hero',
-        content: heroContent
+        content: heroContent,
+        updated_at: new Date().toISOString()
       });
       
       if (error) throw error;
@@ -222,9 +225,10 @@ export default function AdminArea() {
 
   const handleSaveCovenant = async () => {
     try {
-      const { error } = await supabase.from('settings').upsert({
+      const { error } = await supabase.from('site_settings').upsert({
         id: 'covenant',
-        ...covenants
+        content: covenants,
+        updated_at: new Date().toISOString()
       });
       
       if (error) throw error;
@@ -695,13 +699,13 @@ export default function AdminArea() {
       } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
         const updatedHero = { ...heroContent, [targetField]: publicUrl };
         setHeroContent(updatedHero);
-        await supabase.from('settings').upsert({ id: 'hero', content: updatedHero });
+        await supabase.from('site_settings').upsert({ id: 'hero', content: updatedHero, updated_at: new Date().toISOString() });
       } else if (targetField === 'gridImage' && gridIdx !== undefined) {
         const newGrid = [...heroContent.gridImages];
         newGrid[gridIdx] = publicUrl;
         const updatedHero = { ...heroContent, gridImages: newGrid };
         setHeroContent(updatedHero);
-        await supabase.from('settings').upsert({ id: 'hero', content: updatedHero });
+        await supabase.from('site_settings').upsert({ id: 'hero', content: updatedHero, updated_at: new Date().toISOString() });
       }
 
       showToast("Media processada e salva!");

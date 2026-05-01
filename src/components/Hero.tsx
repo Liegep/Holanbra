@@ -21,7 +21,7 @@ export default function Hero() {
   useEffect(() => {
     const fetchHero = async () => {
       const { data, error } = await supabase
-        .from('settings')
+        .from('site_settings')
         .select('content')
         .eq('id', 'hero')
         .single();
@@ -35,7 +35,7 @@ export default function Hero() {
 
     const heroSubscription = supabase
       .channel('hero_public_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings', filter: 'id=eq.hero' }, fetchHero)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings', filter: 'id=eq.hero' }, fetchHero)
       .subscribe();
 
     return () => {
