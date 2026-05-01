@@ -84,69 +84,42 @@
   background-color: #000000 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 1.5rem !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .rsw-toolbar {
-  background-color: #111111 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  padding: 12px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 50 !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  display: none !important; /* Hide default toolbar for Adobe style */
 }
 
 .editor-container {
   position: relative;
 }
 
+/* Custom Floating Toolbar */
+.floating-toolbar {
+  @apply fixed z-[100] bg-zinc-900/95 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] transition-all duration-200;
+}
+
+.floating-toolbar button {
+  @apply p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white flex items-center justify-center;
+}
+
+.floating-toolbar select {
+  @apply bg-transparent text-[10px] bg-zinc-800 rounded-md py-1 uppercase font-black text-amber-500 outline-none cursor-pointer px-3 border border-white/5;
+}
+
+.floating-toolbar select option {
+  @apply bg-zinc-900 text-white;
+}
+
+.floating-toolbar svg {
+  @apply w-4 h-4 fill-amber-500;
+}
+
 /* Fix selection color */
 .rsw-content ::selection {
   background: #fbbf24 !important;
   color: #000000 !important;
-}
-
-/* Dropdown/labels visibility */
-.rsw-toolbar select {
-  background-color: #222222 !important;
-  color: #fbbf24 !important;
-  font-weight: 800 !important;
-  font-size: 10px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  padding: 6px 12px !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  outline: none !important;
-  cursor: pointer !important;
-}
-
-.rsw-toolbar select option {
-  background-color: #111111 !important;
-  color: #ffffff !important;
-}
-
-.rsw-toolbar button {
-  color: #ffffff !important;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 6px !important;
-  transition: all 0.2s !important;
-}
-
-.rsw-toolbar button:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-.rsw-toolbar svg {
-  fill: #f59e0b !important;
-  width: 18px !important;
-  height: 18px !important;
 }
 
 .rsw-content {
@@ -157,6 +130,7 @@
   font-family: inherit !important;
   font-size: 1rem !important;
   line-height: 1.8 !important;
+  outline: none !important;
 }
 
 /* CRITICAL: Force visible text color and remove background from pasted content */

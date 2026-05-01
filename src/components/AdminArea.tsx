@@ -27,7 +27,13 @@ import {
   User as UserIcon,
   ArrowUpRight,
   Mail,
-  MessageSquare
+  MessageSquare,
+  Bold,
+  Italic,
+  Underline,
+  List as ListIcon,
+  Type,
+  Code
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
@@ -293,6 +299,63 @@ export default function AdminArea() {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
     document.execCommand('insertText', false, text);
+  };
+
+  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
+
+  const handleSelection = () => {
+    setTimeout(() => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        setSelectionRect(rect);
+      } else {
+        setSelectionRect(null);
+      }
+    }, 10);
+  };
+
+  const applyCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    setIsDirty(true);
+  };
+
+  const FloatingToolbar = () => {
+    if (!selectionRect) return null;
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="floating-toolbar"
+        style={{ 
+          top: selectionRect.top - 60, 
+          left: Math.max(10, Math.min(window.innerWidth - 320, selectionRect.left + (selectionRect.width / 2) - 160)) 
+        }}
+      >
+        <button onClick={() => applyCommand('bold')} title="Bold"><Bold size={14} /></button>
+        <button onClick={() => applyCommand('italic')} title="Italic"><Italic size={14} /></button>
+        <button onClick={() => applyCommand('underline')} title="Underline"><Underline size={14} /></button>
+        <div className="w-[1px] h-4 bg-white/10 mx-1" />
+        <button onClick={() => applyCommand('insertUnorderedList')} title="List"><ListIcon size={14} /></button>
+        <div className="w-[1px] h-4 bg-white/10 mx-1" />
+        <select 
+          onChange={(e) => applyCommand('formatBlock', e.target.value)}
+          defaultValue="P"
+        >
+          <option value="P">Text</option>
+          <option value="H1">H1</option>
+          <option value="H2">H2</option>
+          <option value="H3">H3</option>
+        </select>
+        <div className="w-[1px] h-4 bg-white/10 mx-1" />
+        <button onClick={() => {
+          const url = prompt('Enter URL:');
+          if (url) applyCommand('createLink', url);
+        }} title="Link"><LinkIcon size={14} /></button>
+      </motion.div>
+    );
   };
 
   const [properties, setProperties] = useState<any[]>([]);
@@ -1948,14 +2011,20 @@ export default function AdminArea() {
           )}
 
           {activeTab === 'covenant' && (
-            <div className="max-w-4xl space-y-8">
-              <h3 className="text-2xl font-bold font-display text-left text-white">Manage Covenant</h3>
-              <p className="text-white/40 text-xs uppercase tracking-widest text-left">Set the rules and terms for your residents in multiple languages. Use the editor to format your text (Bold, Headers, Lists).</p>
-              
+            <div className="space-y-12 max-w-4xl mx-auto pb-32">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h2 className="text-4xl font-bold font-display text-amber-500 tracking-tighter">Covenant Management</h2>
+                  <p className="text-white/40 uppercase tracking-[0.3em] text-[10px]">Edit legal documentation (Select text to format - Adobe Style).</p>
+                </div>
+              </div>
+
+              <FloatingToolbar />
+
               <div className="grid grid-cols-1 gap-12">
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
-                  <div className="editor-container" onPaste={handlePaste}>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">English Version</label>
+                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.en}
                       onChange={(e: any) => {
@@ -1967,8 +2036,8 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
-                  <div className="editor-container" onPaste={handlePaste}>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Portuguese Version</label>
+                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.pt}
                       onChange={(e: any) => {
@@ -1980,8 +2049,8 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
-                  <div className="editor-container" onPaste={handlePaste}>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Spanish Version</label>
+                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.es}
                       onChange={(e: any) => {
@@ -1993,8 +2062,8 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
-                  <div className="editor-container" onPaste={handlePaste}>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Dutch Version</label>
+                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.nl}
                       onChange={(e: any) => {
@@ -2009,7 +2078,7 @@ export default function AdminArea() {
 
               <button 
                 onClick={handleSaveCovenant}
-                className="px-12 py-5 rounded-2xl bg-amber-600 text-white font-bold flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
+                className="w-full py-6 bg-white/5 border border-white/10 rounded-3xl text-sm font-bold uppercase tracking-[0.4em] hover:bg-white/10 transition-all flex items-center justify-center gap-3"
               >
                 <Save size={18} /> Update Covenants
               </button>
@@ -2021,9 +2090,9 @@ export default function AdminArea() {
                     animate={{ y: 0, opacity: 1, scale: 1 }}
                     exit={{ y: 50, opacity: 0, scale: 0.8 }}
                     onClick={handleSaveCovenant}
-                    className="fixed bottom-12 right-12 z-[100] px-10 py-5 rounded-full bg-amber-500 text-black font-black flex items-center gap-3 shadow-[0_15px_60px_rgba(245,158,11,0.5)] hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] text-[10px]"
+                    className="fixed bottom-12 right-12 z-[150] px-10 py-5 rounded-full bg-amber-500 text-black font-black flex items-center gap-3 shadow-[0_15px_60px_rgba(245,158,11,0.5)] hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] text-[10px]"
                   >
-                    <Save size={16} /> Save Covenants
+                    <Save size={16} /> Save Changes
                   </motion.button>
                 )}
               </AnimatePresence>
