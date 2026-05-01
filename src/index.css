@@ -55,3 +55,46 @@
 .bento-card {
   @apply relative overflow-hidden rounded-[2.5rem] border border-white/10 transition-all duration-500;
 }
+
+/* Covenant Rich Text Styles */
+.covenant-rich-content h1, 
+.covenant-rich-content h2, 
+.covenant-rich-content h3 {
+  @apply font-display font-bold text-amber-500 mb-6 mt-12;
+}
+.covenant-rich-content h1 { @apply text-4xl md:text-5xl; }
+.covenant-rich-content h2 { @apply text-3xl md:text-4xl; }
+.covenant-rich-content h3 { @apply text-2xl md:text-3xl; }
+
+.covenant-rich-content p {
+  @apply mb-6;
+}
+
+.covenant-rich-content ul, 
+.covenant-rich-content ol {
+  @apply mb-6 pl-6 list-disc space-y-2;
+}
+
+.covenant-rich-content a {
+  @apply text-amber-500 underline;
+}
+
+/* Dark mode Quill fixes */
+.quill-dark-editor .ql-toolbar {
+  @apply bg-white/5 border-white/10!;
+}
+.quill-dark-editor .ql-container {
+  @apply border-white/10! min-h-[300px] font-sans text-base;
+}
+.quill-dark-editor .ql-stroke {
+  stroke: white !important;
+}
+.quill-dark-editor .ql-fill {
+  fill: white !important;
+}
+.quill-dark-editor .ql-picker {
+  color: white !important;
+}
+.quill-dark-editor .ql-picker-options {
+  background-color: #18181b !important;
+}

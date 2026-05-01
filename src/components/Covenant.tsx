@@ -102,9 +102,10 @@ const Covenant: React.FC = () => {
           
           <div className="relative z-10">
             <div className="prose prose-invert max-w-none">
-              <div className="whitespace-pre-wrap text-amber-100/70 leading-relaxed font-light text-lg md:text-xl space-y-6">
-                {content[lang] || getNoTextMsg(lang)}
-              </div>
+              <div 
+                className="covenant-rich-content text-amber-100/70 leading-relaxed font-light text-lg md:text-xl"
+                dangerouslySetInnerHTML={{ __html: content[lang] || getNoTextMsg(lang) }}
+              />
             </div>
           </div>
 

@@ -34,6 +34,9 @@ import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
 
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -1912,48 +1915,56 @@ export default function AdminArea() {
           {activeTab === 'covenant' && (
             <div className="max-w-4xl space-y-8">
               <h3 className="text-2xl font-bold font-display text-left text-white">Manage Covenant</h3>
-              <p className="text-white/40 text-xs uppercase tracking-widest text-left">Set the rules and terms for your residents in multiple languages.</p>
+              <p className="text-white/40 text-xs uppercase tracking-widest text-left">Set the rules and terms for your residents in multiple languages. Use the editor to format your text (Bold, Headers, Lists).</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-12">
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
-                  <textarea 
-                    value={covenants.en}
-                    onChange={(e) => setCovenants({ ...covenants, en: e.target.value })}
-                    rows={10}
-                    className="w-full glass-card bg-transparent border-white/10 p-6 text-sm focus:border-amber-500 outline-none text-white leading-relaxed"
-                    placeholder="Enter English covenant text..."
-                  />
+                  <div className="quill-dark-editor">
+                    <ReactQuill 
+                      theme="snow"
+                      value={covenants.en}
+                      onChange={(content) => setCovenants({ ...covenants, en: content })}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      placeholder="Enter English covenant text..."
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
-                  <textarea 
-                    value={covenants.pt}
-                    onChange={(e) => setCovenants({ ...covenants, pt: e.target.value })}
-                    rows={10}
-                    className="w-full glass-card bg-transparent border-white/10 p-6 text-sm focus:border-amber-500 outline-none text-white leading-relaxed"
-                    placeholder="Insira o texto do covenant em português..."
-                  />
+                  <div className="quill-dark-editor">
+                    <ReactQuill 
+                      theme="snow"
+                      value={covenants.pt}
+                      onChange={(content) => setCovenants({ ...covenants, pt: content })}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      placeholder="Insira o texto do covenant em português..."
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
-                  <textarea 
-                    value={covenants.es}
-                    onChange={(e) => setCovenants({ ...covenants, es: e.target.value })}
-                    rows={10}
-                    className="w-full glass-card bg-transparent border-white/10 p-6 text-sm focus:border-amber-500 outline-none text-white leading-relaxed"
-                    placeholder="Ingrese el texto del convenio en español..."
-                  />
+                  <div className="quill-dark-editor">
+                    <ReactQuill 
+                      theme="snow"
+                      value={covenants.es}
+                      onChange={(content) => setCovenants({ ...covenants, es: content })}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      placeholder="Ingrese el texto del convenio en español..."
+                    />
+                  </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
-                  <textarea 
-                    value={covenants.nl}
-                    onChange={(e) => setCovenants({ ...covenants, nl: e.target.value })}
-                    rows={10}
-                    className="w-full glass-card bg-transparent border-white/10 p-6 text-sm focus:border-amber-500 outline-none text-white leading-relaxed"
-                    placeholder="Voer de Nederlandse tekst van het convenant in..."
-                  />
+                  <div className="quill-dark-editor">
+                    <ReactQuill 
+                      theme="snow"
+                      value={covenants.nl}
+                      onChange={(content) => setCovenants({ ...covenants, nl: content })}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      placeholder="Voer de Nederlandse tekst van het convenant in..."
+                    />
+                  </div>
                 </div>
               </div>
 
