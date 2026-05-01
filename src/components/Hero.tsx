@@ -22,12 +22,25 @@ export default function Hero() {
     const fetchHero = async () => {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('content')
-        .eq('id', 'hero')
+        .select('*')
+        .eq('id', 'hero_section')
         .single();
       
       if (data) {
-        setContent((prev: any) => ({ ...prev, ...data.content }));
+        setContent({
+          backgroundImage: data.background_url || '',
+          badgeText: data.badge_text || '',
+          title1: data.title_main || '',
+          title2: data.title_italic || '',
+          gridImages: [
+            data.grid_photo_1 || '',
+            data.grid_photo_2 || '',
+            data.grid_photo_3 || '',
+            data.grid_photo_4 || ''
+          ]
+        });
+      } else if (error) {
+        console.error("Hero Load Error:", error);
       }
     };
 
@@ -35,7 +48,7 @@ export default function Hero() {
 
     const heroSubscription = supabase
       .channel('hero_public_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings', filter: 'id=eq.hero' }, fetchHero)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings', filter: 'id=eq.hero_section' }, fetchHero)
       .subscribe();
 
     return () => {

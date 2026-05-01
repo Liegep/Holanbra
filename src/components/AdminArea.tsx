@@ -164,7 +164,7 @@ export default function AdminArea() {
       // Fetch Covenants
       const { data: covenantData } = await supabase.from('site_settings').select('*').eq('id', 'covenant').single();
       if (covenantData) {
-        // Suppoting both structures during migration if needed
+        // Supporting both structures during migration if needed
         const content = covenantData.content || covenantData;
         setCovenants({
           en: content.en || '',
@@ -174,10 +174,23 @@ export default function AdminArea() {
         });
       }
 
-      // Fetch Hero Content
-      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero').single();
+      // Fetch Hero Content - Supports flat columns or JSONB content branch
+      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').single();
       if (heroData) {
-        setHeroContent(heroData.content);
+        // Map flat columns back to state
+        setHeroContent({
+          badgeText: heroData.badge_text || '',
+          title1: heroData.title_main || '',
+          title2: heroData.title_italic || '',
+          backgroundImage: heroData.background_url || '',
+          aboutImage: heroData.about_image_url || '',
+          gridImages: [
+            heroData.grid_photo_1 || '',
+            heroData.grid_photo_2 || '',
+            heroData.grid_photo_3 || '',
+            heroData.grid_photo_4 || ''
+          ]
+        });
       }
     };
 
@@ -209,17 +222,30 @@ export default function AdminArea() {
 
   const handleSaveHero = async () => {
     try {
+      console.log("Saving Hero to site_settings (hero_section)...", heroContent);
+      
       const { error } = await supabase.from('site_settings').upsert({
-        id: 'hero',
-        content: heroContent,
+        id: 'hero_section',
+        badge_text: heroContent.badgeText,
+        title_main: heroContent.title1,
+        title_italic: heroContent.title2,
+        background_url: heroContent.backgroundImage,
+        about_image_url: heroContent.aboutImage,
+        grid_photo_1: heroContent.gridImages[0] || '',
+        grid_photo_2: heroContent.gridImages[1] || '',
+        grid_photo_3: heroContent.gridImages[2] || '',
+        grid_photo_4: heroContent.gridImages[3] || '',
         updated_at: new Date().toISOString()
       });
       
-      if (error) throw error;
-      showToast("Hero content updated successfully!");
-    } catch (error) {
-      console.error(error);
-      showToast("Failed to update hero content", "error");
+      if (error) {
+        console.error("SUPABASE SAVE ERROR:", error);
+        throw error;
+      }
+      showToast("Configurações do topo salvas com sucesso!");
+    } catch (error: any) {
+      console.error("Full Error Object:", error);
+      showToast(`Falha ao salvar: ${error.message || 'Erro desconhecido'}`, "error");
     }
   };
 
@@ -699,13 +725,41 @@ export default function AdminArea() {
       } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
         const updatedHero = { ...heroContent, [targetField]: publicUrl };
         setHeroContent(updatedHero);
-        await supabase.from('site_settings').upsert({ id: 'hero', content: updatedHero, updated_at: new Date().toISOString() });
+        
+        // Persist all fields to avoid overwriting with nulls
+        await supabase.from('site_settings').upsert({ 
+          id: 'hero_section',
+          badge_text: updatedHero.badgeText,
+          title_main: updatedHero.title1,
+          title_italic: updatedHero.title2,
+          background_url: updatedHero.backgroundImage,
+          about_image_url: updatedHero.aboutImage,
+          grid_photo_1: updatedHero.gridImages[0] || '',
+          grid_photo_2: updatedHero.gridImages[1] || '',
+          grid_photo_3: updatedHero.gridImages[2] || '',
+          grid_photo_4: updatedHero.gridImages[3] || '',
+          updated_at: new Date().toISOString()
+        });
       } else if (targetField === 'gridImage' && gridIdx !== undefined) {
         const newGrid = [...heroContent.gridImages];
         newGrid[gridIdx] = publicUrl;
         const updatedHero = { ...heroContent, gridImages: newGrid };
         setHeroContent(updatedHero);
-        await supabase.from('site_settings').upsert({ id: 'hero', content: updatedHero, updated_at: new Date().toISOString() });
+        
+        // Persist all fields to avoid overwriting with nulls
+        await supabase.from('site_settings').upsert({ 
+          id: 'hero_section',
+          badge_text: updatedHero.badgeText,
+          title_main: updatedHero.title1,
+          title_italic: updatedHero.title2,
+          background_url: updatedHero.backgroundImage,
+          about_image_url: updatedHero.aboutImage,
+          grid_photo_1: updatedHero.gridImages[0] || '',
+          grid_photo_2: updatedHero.gridImages[1] || '',
+          grid_photo_3: updatedHero.gridImages[2] || '',
+          grid_photo_4: updatedHero.gridImages[3] || '',
+          updated_at: new Date().toISOString()
+        });
       }
 
       showToast("Media processada e salva!");

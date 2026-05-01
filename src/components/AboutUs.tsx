@@ -10,12 +10,12 @@ export default function AboutUs() {
       try {
         const { data, error } = await supabase
           .from('site_settings')
-          .select('content')
-          .eq('id', 'hero')
+          .select('*')
+          .eq('id', 'hero_section')
           .single();
         
-        if (data && data.content && data.content.aboutImage) {
-          setAboutImage(data.content.aboutImage);
+        if (data && data.about_image_url) {
+          setAboutImage(data.about_image_url);
         }
       } catch (err) {
         console.error("Error fetching about image:", err);
