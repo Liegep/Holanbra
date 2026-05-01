@@ -96,48 +96,72 @@ export default function Team() {
 
     setIsSending(true);
     try {
-      const { error } = await supabase.from('contact_messages').insert([{
+      console.log("Attempting to save message to Supabase...", {
+        visitor_name: visitorData.name,
+        recipient_name: activeMessageTarget.name
+      });
+
+      const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
         message: visitorData.message,
         recipient_id: activeMessageTarget.id,
         recipient_name: activeMessageTarget.name,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        is_read: false
       }]);
 
-      if (error) throw error;
+      if (supabaseError) {
+        console.error("Supabase Insert Error:", supabaseError);
+        throw supabaseError;
+      }
 
       // Discord Webhook Notification
       const discordUrl = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
+      console.log("Discord Webhook URL present:", !!discordUrl);
+      
       if (discordUrl) {
         try {
-          await fetch(discordUrl, {
+          const response = await fetch(discordUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               embeds: [{
                 title: '📬 Nova Mensagem do Site',
-                color: 0xF59E0B, // Amber
+                color: 16096779, // Amber (#F59E0B hex to decimal)
                 fields: [
-                  { name: 'De:', value: visitorData.name, inline: true },
-                  { name: 'Para:', value: activeMessageTarget.name, inline: true },
-                  { name: 'Mensagem:', value: visitorData.message }
+                  { name: 'De:', value: visitorData.name || 'Anônimo', inline: true },
+                  { name: 'Para:', value: activeMessageTarget.name || 'Equipe', inline: true },
+                  { name: 'Mensagem:', value: visitorData.message || '(Vazio)' }
                 ],
+                footer: { text: "Holanbra Real Estate System" },
                 timestamp: new Date().toISOString()
               }]
             })
           });
+
+          if (!response.ok) {
+            console.error("Discord Webhook responded with error status:", response.status);
+          } else {
+            console.log("Discord Webhook sent successfully");
+          }
         } catch (webhookErr) {
-          console.warn("Discord Webhook failed, but message was saved to DB.", webhookErr);
+          console.error("Discord Webhook network error:", webhookErr);
         }
       }
 
-      setNotice(`Sua mensagem foi entregue para ${activeMessageTarget.name}! ✨`);
-      setActiveMessageTarget(null);
+      // Success Cycle
+      console.log("Message submission successful!");
+      setNotice(`Sua mensagem foi enviada com sucesso! ✨`);
+      
+      // Clear data and close modal
       setVisitorData({ name: '', message: '' });
-      setTimeout(() => setNotice(null), 4000);
-    } catch (err) {
-      console.error("Error sending message:", err);
-      setNotice("Erro ao enviar mensagem. Tente novamente.");
+      setActiveMessageTarget(null);
+      
+      // Clear notice after delay
+      setTimeout(() => setNotice(null), 5000);
+    } catch (err: any) {
+      console.error("CRITICAL ERROR SENDING MESSAGE:", err);
+      setNotice(`Erro ao enviar mensagem: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setIsSending(false);
     }
@@ -307,7 +331,9 @@ export default function Team() {
                 className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl hover:bg-amber-500 transition-all flex items-center justify-center gap-3 disabled:opacity-30 group"
               >
                 {isSending ? (
-                  <Loader2 size={16} className="animate-spin" />
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> ENVIANDO...
+                  </>
                 ) : (
                   <>
                     Enviar Agora <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
