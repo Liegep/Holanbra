@@ -268,7 +268,7 @@ export default function AdminArea() {
       // Get existing one first to know the ID for upsert, or use a fixed ID like 1 if we assume it's a singleton
       const { data: existing } = await supabase.from('land_covenants').select('id').limit(1).maybeSingle();
       
-      const payload = {
+      const payload: any = {
         content_en: covenants.en,
         content_pt: covenants.pt,
         content_es: covenants.es,
@@ -276,7 +276,6 @@ export default function AdminArea() {
       };
 
       if (existing?.id) {
-        // @ts-ignore
         payload.id = existing.id;
       }
 
@@ -289,6 +288,8 @@ export default function AdminArea() {
       showToast("Failed to update covenants", "error");
     }
   };
+
+  const Editor = (ReactQuill as any).default || ReactQuill;
   const [properties, setProperties] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -1921,10 +1922,10 @@ export default function AdminArea() {
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
                   <div className="quill-dark-editor">
-                    <ReactQuill 
+                    <Editor 
                       theme="snow"
                       value={covenants.en}
-                      onChange={(content) => setCovenants({ ...covenants, en: content })}
+                      onChange={(content: string) => setCovenants(prev => ({ ...prev, en: content }))}
                       className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
                       placeholder="Enter English covenant text..."
                     />
@@ -1933,10 +1934,10 @@ export default function AdminArea() {
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
                   <div className="quill-dark-editor">
-                    <ReactQuill 
+                    <Editor 
                       theme="snow"
                       value={covenants.pt}
-                      onChange={(content) => setCovenants({ ...covenants, pt: content })}
+                      onChange={(content: string) => setCovenants(prev => ({ ...prev, pt: content }))}
                       className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
                       placeholder="Insira o texto do covenant em português..."
                     />
@@ -1945,10 +1946,10 @@ export default function AdminArea() {
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
                   <div className="quill-dark-editor">
-                    <ReactQuill 
+                    <Editor 
                       theme="snow"
                       value={covenants.es}
-                      onChange={(content) => setCovenants({ ...covenants, es: content })}
+                      onChange={(content: string) => setCovenants(prev => ({ ...prev, es: content }))}
                       className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
                       placeholder="Ingrese el texto del convenio en español..."
                     />
@@ -1957,10 +1958,10 @@ export default function AdminArea() {
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
                   <div className="quill-dark-editor">
-                    <ReactQuill 
+                    <Editor 
                       theme="snow"
                       value={covenants.nl}
-                      onChange={(content) => setCovenants({ ...covenants, nl: content })}
+                      onChange={(content: string) => setCovenants(prev => ({ ...prev, nl: content }))}
                       className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
                       placeholder="Voer de Nederlandse tekst van het convenant in..."
                     />
