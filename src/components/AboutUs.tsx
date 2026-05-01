@@ -12,7 +12,7 @@ export default function AboutUs() {
           .from('site_settings')
           .select('*')
           .eq('id', 'hero_section')
-          .single();
+          .maybeSingle();
         
         if (data && data.about_image_url) {
           setAboutImage(data.about_image_url);

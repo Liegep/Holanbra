@@ -162,7 +162,7 @@ export default function AdminArea() {
     
     const fetchData = async () => {
       // Fetch Covenants
-      const { data: covenantData } = await supabase.from('site_settings').select('*').eq('id', 'covenant').single();
+      const { data: covenantData } = await supabase.from('site_settings').select('*').eq('id', 'covenant').maybeSingle();
       if (covenantData) {
         // Supporting both structures during migration if needed
         const content = covenantData.content || covenantData;
@@ -175,7 +175,7 @@ export default function AdminArea() {
       }
 
       // Fetch Hero Content - Supports flat columns or JSONB content branch
-      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').single();
+      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').maybeSingle();
       if (heroData) {
         // Map flat columns back to state
         setHeroContent({
@@ -638,19 +638,17 @@ export default function AdminArea() {
     }
 
     try {
-      console.log("Iniciando salvamento na tabela 'gallery'...", galleryFormData);
+      console.log("Iniciando salvamento na tabela 'gallery'...", { url: galleryFormData.imageUrl, caption: galleryFormData.caption });
       
-      const { error, data } = await supabase.from('gallery').insert([{
+      const { error } = await supabase.from('gallery').insert({
         url: galleryFormData.imageUrl,
         caption: galleryFormData.caption
-      }]).select();
+      });
       
       if (error) {
         console.error("SUPABASE GALLERY INSERT ERROR:", error);
         throw error;
       }
-      
-      console.log("Salvo com sucesso na galeria:", data);
       
       setGalleryFormData({ caption: '', imageUrl: '' });
       showToast("Foto adicionada à galeria com sucesso!");
@@ -663,15 +661,23 @@ export default function AdminArea() {
     }
   };
 
-  const handleDeleteGallery = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this gallery image?")) return;
+  const handleDeleteGallery = async (id: number) => {
+    if (!window.confirm("Deseja realmente remover esta foto da galeria?")) return;
+    
     try {
-      const { error } = await supabase.from('gallery').delete().eq('id', id);
+      const { error } = await supabase
+        .from('gallery')
+        .delete()
+        .eq('id', id);
+      
       if (error) throw error;
-      showToast("Image removed from gallery!");
-    } catch (error) {
-      console.error(error);
-      showToast("Error deleting image", "error");
+      
+      showToast("Foto removida!");
+      // Explicitly refresh the list
+      await fetchGallery();
+    } catch (err: any) {
+      console.error("Erro ao deletar foto:", err);
+      showToast("Falha ao remover foto", "error");
     }
   };
 

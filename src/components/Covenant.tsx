@@ -16,7 +16,7 @@ const Covenant: React.FC = () => {
           .from('site_settings')
           .select('*')
           .eq('id', 'covenant')
-          .single();
+          .maybeSingle();
         
         if (data) {
           const contentData = data.content || data;

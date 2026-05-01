@@ -24,7 +24,7 @@ export default function Hero() {
         .from('site_settings')
         .select('*')
         .eq('id', 'hero_section')
-        .single();
+        .maybeSingle();
       
       if (data) {
         setContent({
