@@ -22,6 +22,7 @@ import {
   Clock,
   Calendar,
   CreditCard,
+  Play,
   User as UserIcon,
   ArrowUpRight,
   Mail,
@@ -123,8 +124,9 @@ export default function AdminArea() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos'>('listings');
   const [inboxMessages, setInboxMessages] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
   const [isUploadingSlot, setIsUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -144,6 +146,7 @@ export default function AdminArea() {
     badgeText: 'New Islands Available',
     title1: 'Holanbra',
     title2: 'Sims',
+    virtualTourUrl: '',
     gridImages: ['', '', '', ''],
     aboutImage: ''
   });
@@ -185,6 +188,7 @@ export default function AdminArea() {
           badgeText: heroData.badge_text || '',
           title1: heroData.title_main || '',
           title2: heroData.title_italic || '',
+          virtualTourUrl: heroData.virtual_tour_url || '',
           backgroundImage: heroData.background_url || '',
           aboutImage: heroData.about_image_url || '',
           gridImages: [
@@ -195,6 +199,10 @@ export default function AdminArea() {
           ]
         });
       }
+
+      // Fetch Videos
+      const { data: videosData } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+      if (videosData) setVideos(videosData);
     };
 
     fetchData();
@@ -232,6 +240,7 @@ export default function AdminArea() {
         badge_text: heroContent.badgeText,
         title_main: heroContent.title1,
         title_italic: heroContent.title2,
+        virtual_tour_url: heroContent.virtualTourUrl,
         background_url: heroContent.backgroundImage,
         about_image_url: heroContent.aboutImage,
         grid_photo_1: heroContent.gridImages[0] || '',
@@ -736,6 +745,63 @@ export default function AdminArea() {
     }
   };
 
+  const fetchVideos = async () => {
+    const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+    if (!error) setVideos(data || []);
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setIsUploadingSlot('videos');
+
+    try {
+      const fileName = `video_${Math.random().toString(36).substring(7)}_${file.name}`;
+      const filePath = `videos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('media')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('media')
+        .getPublicUrl(filePath);
+
+      const { error: dbError } = await supabase.from('videos').insert({
+        name: file.name,
+        url: publicUrl
+      });
+
+      if (dbError) throw dbError;
+
+      showToast("Vídeo enviado com sucesso!");
+      fetchVideos();
+    } catch (err: any) {
+      console.error(err);
+      showToast("Erro ao enviar vídeo: " + err.message, "error");
+    } finally {
+      setIsUploading(false);
+      setIsUploadingSlot(null);
+    }
+  };
+
+  const handleDeleteVideo = async (id: number) => {
+    if (!confirm("Excluir este vídeo?")) return;
+    try {
+      const { error } = await supabase.from('videos').delete().eq('id', id);
+      if (error) throw error;
+      showToast("Vídeo excluído!");
+      fetchVideos();
+    } catch (err: any) {
+      showToast("Erro ao excluir vídeo", "error");
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -1015,6 +1081,7 @@ export default function AdminArea() {
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: 'Team', icon: UserIcon },
             { id: 'inbox', name: 'Inbox', icon: Mail },
+            { id: 'videos', name: 'Videos', icon: Video },
             { id: 'add', name: editingId ? 'Editing Property' : 'New Property', icon: Plus },
             { id: 'covenant', name: 'Covenant', icon: FileText },
             { id: 'settings', name: 'Settings', icon: Settings },
@@ -1348,6 +1415,24 @@ export default function AdminArea() {
                           className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
                         />
                       </div>
+
+                      <div className="space-y-2 text-left">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Virtual Tour Video</label>
+                        <select 
+                          name="virtualTourUrl"
+                          value={heroContent.virtualTourUrl}
+                          onChange={(e) => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all appearance-none cursor-pointer"
+                        >
+                          <option value="" className="bg-zinc-900 text-white/40">Selecione um vídeo</option>
+                          {videos.map(v => (
+                            <option key={v.id} value={v.url} className="bg-zinc-900 text-white">{v.name}</option>
+                          ))}
+                        </select>
+                        <p className="text-[8px] text-white/20 uppercase tracking-widest mt-1">
+                          Escolha um vídeo enviado na aba de Vídeos.
+                        </p>
+                      </div>
                     </div>
 
                     <div className="space-y-4 text-left border-l border-white/5 pl-8">
@@ -1394,6 +1479,63 @@ export default function AdminArea() {
             </div>
           )}
 
+          {activeTab === 'videos' && (
+            <div className="max-w-5xl space-y-12">
+              <div className="flex justify-between items-end">
+                <div className="text-left">
+                  <h2 className="text-3xl font-bold font-display text-white">Video Management</h2>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Upload and manage virtual tour videos.</p>
+                </div>
+                
+                <label className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 transition-all cursor-pointer flex items-center gap-2">
+                  <Plus size={16} />
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    accept="video/*" 
+                    onChange={handleVideoUpload}
+                    disabled={isUploading}
+                  />
+                  {isUploading ? 'Uploading...' : 'Upload Video'}
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.map((vid) => (
+                  <div key={vid.id} className="glass-card group p-4 border-white/5 flex flex-col gap-4 overflow-hidden">
+                    <div className="aspect-video bg-black rounded-2xl overflow-hidden relative group">
+                      <video src={vid.url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={() => window.open(vid.url, '_blank')}
+                          className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform"
+                        >
+                          <Play size={16} fill="black" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 px-2 pb-2">
+                      <div className="text-left min-w-0">
+                        <p className="text-[10px] font-bold text-white truncate uppercase tracking-wider">{vid.name}</p>
+                        <p className="text-[8px] text-white/30 font-mono mt-1">{new Date(vid.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteVideo(vid.id)}
+                        className="p-2 text-white/20 hover:text-red-500 transition-colors shrink-0"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {videos.length === 0 && (
+                  <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No videos uploaded yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === 'inbox' && (
             <div className="max-w-5xl space-y-8">
               <div className="flex justify-between items-end">

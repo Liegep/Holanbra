@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { ArrowRight, Play, MapPin } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowRight, Play, MapPin, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export default function Hero() {
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
     badgeText: 'New Islands Available',
     title1: 'Holanbra',
     title2: 'Sims',
+    virtualTourUrl: '',
     gridImages: [
       'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600&q=80',
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
@@ -32,6 +34,7 @@ export default function Hero() {
           badgeText: data.badge_text || '',
           title1: data.title_main || '',
           title2: data.title_italic || '',
+          virtualTourUrl: data.virtual_tour_url || '',
           gridImages: [
             data.grid_photo_1 || '',
             data.grid_photo_2 || '',
@@ -115,11 +118,17 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
-          <button className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]">
+          <button 
+            onClick={() => document.getElementById('imoveis')?.scrollIntoView({ behavior: 'smooth' })}
+            className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
+          >
             Explore Catalog <ArrowRight className="group-hover:translate-x-1 transition-transform" />
           </button>
           
-          <button className="px-10 py-5 rounded-full glass border-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white/20 transition-all">
+          <button 
+            onClick={() => setShowVideoModal(true)}
+            className="px-10 py-5 rounded-full glass border-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-white/20 transition-all"
+          >
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
               <Play size={10} fill="white" />
             </div>
@@ -127,6 +136,47 @@ export default function Hero() {
           </button>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {showVideoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 md:p-12"
+            onClick={() => setShowVideoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 40 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 40 }}
+              className="relative w-full max-w-6xl aspect-video rounded-[2rem] overflow-hidden bg-black shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                onClick={() => setShowVideoModal(false)}
+                className="absolute top-6 right-6 z-[110] p-4 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-xl transition-all"
+              >
+                <X size={24} />
+              </button>
+              
+              {content.virtualTourUrl ? (
+                <video 
+                  src={content.virtualTourUrl} 
+                  className="w-full h-full" 
+                  controls 
+                  autoPlay 
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-white/20 space-y-4">
+                  <Play size={64} />
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum vídeo configurado</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Decorative Circles */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-900/30 rounded-full blur-[120px] pointer-events-none"></div>
