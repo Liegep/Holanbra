@@ -113,7 +113,7 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      if (expiresAt) updateData.expires_at = expiresAt;
+      if (expiresAt) updateData.expiry_date = expiresAt;
       if (rental_price) updateData.rental_price = Number(rental_price);
 
       const { data, error } = await supabase

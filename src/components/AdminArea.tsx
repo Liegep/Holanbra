@@ -40,6 +40,7 @@ import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
@@ -366,8 +367,46 @@ export default function AdminArea() {
     teleport_url: '',
     status: 'available',
     description: '',
-    imageUrl: ''
+    imageUrl: '',
+    expiry_date: ''
   });
+
+  const [activeFilter, setActiveFilter] = useState<'all' | 'expiring'>('all');
+
+  const filteredProperties = properties.filter(prop => {
+    if (activeFilter === 'all') return true;
+    if (!prop.expiry_date) return false;
+    const expiry = new Date(prop.expiry_date);
+    const now = new Date();
+    const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    return diff > 0 && diff <= 7;
+  }).sort((a, b) => {
+    // Sort expiring ones first if filtered
+    if (activeFilter === 'expiring') {
+      return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
+    }
+    return 0;
+  });
+
+  const stats = {
+    total: properties.length,
+    rented: properties.filter(p => p.status === 'rented').length,
+    available: properties.filter(p => p.status === 'available').length,
+    critical: properties.filter(p => {
+      if (!p.expiry_date) return false;
+      const expiry = new Date(p.expiry_date);
+      const now = new Date();
+      const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return diff > 0 && diff <= 3;
+    }).length,
+    attention: properties.filter(p => {
+      if (!p.expiry_date) return false;
+      const expiry = new Date(p.expiry_date);
+      const now = new Date();
+      const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      return diff > 3 && diff <= 7;
+    }).length
+  };
 
   useEffect(() => {
     // Check initial session
@@ -1021,14 +1060,15 @@ export default function AdminArea() {
     }
 
     try {
-      const dataToSave = {
+      const dataToSave: any = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
         teleport_url: formData.teleport_url,
-        status: editingId ? formData.status : 'available'
+        status: editingId ? formData.status : 'available',
+        expiry_date: formData.expiry_date || null
       };
 
       if (editingId) {
@@ -1053,7 +1093,8 @@ export default function AdminArea() {
         teleport_url: '',
         status: 'available',
         description: '',
-        imageUrl: ''
+        imageUrl: '',
+        expiry_date: ''
       });
       setEditingId(null);
       setActiveTab('listings');
@@ -1071,7 +1112,8 @@ export default function AdminArea() {
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
-      imageUrl: prop.image_url || ''
+      imageUrl: prop.image_url || '',
+      expiry_date: prop.expiry_date || ''
     });
     setEditingId(prop.id);
     setActiveTab('add');
@@ -2100,85 +2142,262 @@ export default function AdminArea() {
           )}
 
           {activeTab === 'listings' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold font-display">Manage Properties</h3>
-                <button className="text-xs text-amber-400 hover:underline">Sync CasperLet</button>
+            <div className="space-y-12">
+              <div className="space-y-6">
+                <div className="flex justify-between items-end border-b border-white/5 pb-6">
+                  <div className="space-y-1">
+                    <h3 className="text-4xl font-bold font-display tracking-tight">Executive Dashboard</h3>
+                    <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em]">Operational overview & property management</p>
+                  </div>
+                  <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+                    <RefreshCw size={12} className="text-amber-500" />
+                    Sync CasperLet
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                  <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6 h-fit">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="glass-card p-8 border-white/10 bg-white/5 relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <FileText size={48} className="text-white" />
+                      </div>
+                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
+                      <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
+                      <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
+                    </motion.div>
+
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="glass-card p-8 border-amber-500/10 bg-amber-500/5 relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 p-8 opacity-10">
+                        <CheckCircle size={48} className="text-amber-500" />
+                      </div>
+                      <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Occupancy Rate</p>
+                      <div className="flex items-baseline gap-2">
+                         <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
+                         <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
+                      </div>
+                      <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
+                    </motion.div>
+
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className={cn(
+                        "glass-card p-8 relative overflow-hidden transition-all duration-500",
+                        stats.critical > 0 ? "border-red-500/30 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.1)]" : "border-white/10 bg-white/5"
+                      )}
+                    >
+                      <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
+                        <AlertCircle size={48} />
+                      </div>
+                      <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Issues</p>
+                      <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
+                      <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 3 days</p>
+                    </motion.div>
+
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className={cn(
+                        "glass-card p-8 relative overflow-hidden transition-all duration-500",
+                        stats.attention > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
+                      )}
+                    >
+                      <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
+                        <Clock size={48} />
+                      </div>
+                      <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Attention</p>
+                      <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
+                      <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
+                    </motion.div>
+                  </div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="lg:col-span-4 glass-card p-8 border-white/10 bg-white/5 flex flex-col items-center justify-center min-h-[400px]"
+                  >
+                    <h4 className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-8 self-start">Portfolio Distribution</h4>
+                    <div className="w-full h-64 relative">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Occupied', value: stats.rented },
+                              { name: 'Available', value: stats.available }
+                            ]}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                            <Cell fill="#f59e0b" stroke="none" />
+                            <Cell fill="rgba(255,255,255,0.05)" stroke="none" />
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-3xl font-black text-white">{Math.round((stats.rented / stats.total) * 100) || 0}%</span>
+                        <span className="text-[8px] text-white/40 uppercase font-bold tracking-tighter">Occupancy</span>
+                      </div>
+                    </div>
+                    <div className="w-full mt-8 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-amber-500" />
+                          <span className="text-[10px] text-white/60 uppercase font-bold">Rented</span>
+                        </div>
+                        <span className="text-[10px] text-white font-black">{stats.rented}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-white/10" />
+                          <span className="text-[10px] text-white/60 uppercase font-bold">Available</span>
+                        </div>
+                        <span className="text-[10px] text-white font-black">{stats.available}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
               
-              <div className="grid gap-4">
-                {properties.map((prop) => (
-                  <div key={prop.id} className="glass-card p-4 flex items-center gap-4 group">
-                    <div className="w-20 h-14 rounded-lg bg-white/10 overflow-hidden shrink-0">
-                       <img src={prop.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    </div>
-                    <div className="flex-1 text-left min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-bold text-sm truncate">{prop.name}</h4>
-                        {prop.casperlet_id && (
-                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-[8px] text-amber-500 font-black uppercase tracking-tighter shadow-sm">
-                            <RefreshCw size={8} className="animate-spin-slow" />
-                            Synced
-                          </div>
+              <div className="space-y-6">
+                <div className="flex justify-between items-center bg-white/5 p-2 rounded-2xl border border-white/5">
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setActiveFilter('all')}
+                      className={cn(
+                        "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
+                      )}
+                    >
+                      All Properties ({properties.length})
+                    </button>
+                    <button 
+                      onClick={() => setActiveFilter('expiring')}
+                      className={cn(
+                        "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                        activeFilter === 'expiring' ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-white/40 hover:text-red-400"
+                      )}
+                    >
+                      <Clock size={12} />
+                      Vencimentos Próximos ({stats.critical + stats.attention})
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="grid gap-4">
+                  {filteredProperties.map((prop) => {
+                    const daysRemaining = prop.expiry_date ? Math.ceil((new Date(prop.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+                    const isCritical = daysRemaining !== null && daysRemaining <= 3;
+                    const isAttention = daysRemaining !== null && daysRemaining > 3 && daysRemaining <= 7;
+
+                    return (
+                      <div 
+                        key={prop.id} 
+                        className={cn(
+                          "glass-card p-4 flex items-center gap-4 group transition-all duration-300",
+                          isCritical ? "border-red-500/30 bg-red-500/5 shadow-[0_0_20px_rgba(239,68,68,0.05)] scale-[1.01]" : 
+                          isAttention ? "border-amber-500/30 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]" : 
+                          "border-white/5"
                         )}
-                        {prop.tenant_name && (
+                      >
+                        <div className="w-20 h-14 rounded-lg bg-white/10 overflow-hidden shrink-0">
+                           <img src={prop.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h4 className="font-bold text-sm truncate">{prop.name}</h4>
+                            
+                            {daysRemaining !== null && (
+                              <div className={cn(
+                                "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
+                                isCritical ? "bg-red-500 text-white" : isAttention ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
+                              )}>
+                                <Clock size={8} />
+                                {daysRemaining <= 0 ? 'Expired' : `${daysRemaining} days left`}
+                              </div>
+                            )}
+
+                            {prop.casperlet_id && (
+                              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-[8px] text-amber-500 font-black uppercase tracking-tighter shadow-sm">
+                                <RefreshCw size={8} className="animate-spin-slow" />
+                                Synced
+                              </div>
+                            )}
+                            {prop.tenant_name && (
+                              <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
+                                  <UserIcon size={8} />
+                                  {prop.tenant_name}
+                                </div>
+                                <button 
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if(!confirm(`Desvincular ${prop.tenant_name} deste imóvel?`)) return;
+                                    await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('id', prop.id);
+                                    showToast("Imóvel desvinculado!");
+                                  }}
+                                  className="p-1 hover:text-red-500 text-white/20 transition-colors"
+                                  title="Unlink Resident"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.price}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <div className="flex flex-col items-end gap-1">
+                             <div className={cn(
+                                "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
+                                prop.status === 'available' ? "bg-amber-500/20 text-amber-400" : "bg-white/5 text-white/40"
+                              )}>
+                                {prop.status}
+                             </div>
+                           </div>
                           <div className="flex items-center gap-1">
-                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
-                              <UserIcon size={8} />
-                              {prop.tenant_name}
-                            </div>
                             <button 
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if(!confirm(`Desvincular ${prop.tenant_name} deste imóvel?`)) return;
-                                await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('id', prop.id);
-                                showToast("Imóvel desvinculado!");
-                              }}
-                              className="p-1 hover:text-red-500 text-white/20 transition-colors"
-                              title="Unlink Resident"
+                              onClick={() => handleEdit(prop)}
+                              className="p-2 text-gray-500 hover:text-white transition-colors"
+                              title="Edit Property"
                             >
-                              <X size={10} />
+                              <ChevronRight size={14} />
+                            </button>
+                            <button 
+                              onClick={() => window.open(prop.teleport_url, '_blank')}
+                              className="p-2 text-gray-500 hover:text-amber-500 transition-colors"
+                              title="Teleport to location"
+                            >
+                              <MapPin size={14} />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(prop.id)}
+                              className="p-2 text-red-500/30 hover:text-red-500 transition-colors"
+                              title="Delete Property"
+                            >
+                              <Trash2 size={14} />
                             </button>
                           </div>
-                        )}
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.price}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                       <div className="flex flex-col items-end gap-1">
-                         <div className={cn(
-                            "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                            prop.status === 'available' ? "bg-amber-500/20 text-amber-400" : "bg-white/5 text-white/40"
-                          )}>
-                            {prop.status}
-                         </div>
-                       </div>
-                      <div className="flex items-center gap-1">
-                        <button 
-                          onClick={() => handleEdit(prop)}
-                          className="p-2 text-gray-500 hover:text-white transition-colors"
-                          title="Edit Property"
-                        >
-                          <ChevronRight size={14} />
-                        </button>
-                        <button 
-                          onClick={() => window.open(prop.teleport_url, '_blank')}
-                          className="p-2 text-gray-500 hover:text-amber-500 transition-colors"
-                          title="Teleport to location"
-                        >
-                          <MapPin size={14} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(prop.id)}
-                          className="p-2 text-red-500/30 hover:text-red-500 transition-colors"
-                          title="Delete Property"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
                 
                 {properties.length === 0 && (
                   <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
@@ -2187,7 +2406,8 @@ export default function AdminArea() {
                 )}
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {activeTab === 'add' && (
             <div className="max-w-2xl space-y-8">
@@ -2206,7 +2426,8 @@ export default function AdminArea() {
                         teleport_url: '',
                         status: 'available',
                         description: '',
-                        imageUrl: ''
+                        imageUrl: '',
+                        expiry_date: ''
                       });
                     }}
                     className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
@@ -2255,18 +2476,32 @@ export default function AdminArea() {
                     />
                   </div>
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Teleport Link (SLURL)</label>
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">Expiry Date (Manual)</label>
                     <div className="relative">
-                      <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
                       <input 
-                        type="text" 
-                        name="teleport_url"
-                        value={formData.teleport_url}
+                        type="date" 
+                        name="expiry_date"
+                        value={formData.expiry_date}
                         onChange={handleInputChange}
                         className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                        placeholder="http://maps.secondlife.com/secondlife/..." 
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-left">
+                  <label className="text-xs font-bold text-amber-500/70 uppercase">Teleport Link (SLURL)</label>
+                  <div className="relative">
+                    <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <input 
+                      type="text" 
+                      name="teleport_url"
+                      value={formData.teleport_url}
+                      onChange={handleInputChange}
+                      className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+                      placeholder="http://maps.secondlife.com/secondlife/..." 
+                    />
                   </div>
                 </div>
 
