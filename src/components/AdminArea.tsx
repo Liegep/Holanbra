@@ -588,6 +588,7 @@ export default function AdminArea() {
       
       if (error) {
         console.error("SUPABASE TEAM SAVE ERROR:", error);
+        window.alert("Erro no Banco de Dados: " + JSON.stringify(error, null, 2));
         throw error;
       }
       
