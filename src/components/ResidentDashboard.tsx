@@ -132,8 +132,12 @@ const ResidentDashboard: React.FC = () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
 
-      const avatarName = user?.user_metadata?.avatar_name || residentData.avatar_name || 'Resident';
-      const userId = user?.id || residentData.tenant_id || residentData.avatar_uuid;
+      const avatarName = user?.user_metadata?.avatar_name || 'Resident';
+      const userId = user?.id;
+
+      if (!userId) {
+        throw new Error("User ID is missing.");
+      }
       
       const { data, error } = await supabase
         .from('support_tickets')
