@@ -81,34 +81,50 @@
 
 /* Dark mode Editor fixes (react-simple-wysiwyg) */
 .rsw-editor {
-  @apply bg-white/5 border-white/10! text-white! rounded-2xl overflow-hidden;
+  @apply bg-zinc-900/50! border-white/10! text-white! rounded-2xl overflow-hidden;
 }
 
 .rsw-toolbar {
-  @apply bg-white/5 border-b border-white/10! p-2 gap-1;
+  @apply bg-zinc-800/80! border-b border-white/10! p-2 gap-1 flex items-center;
 }
 
 /* Fix selection color */
 .rsw-content ::selection {
-  background: white !important;
+  background: #fbbf24 !important;
   color: black !important;
 }
 
 /* Fix dropdown/labels visibility */
 .rsw-toolbar span, 
-.rsw-toolbar select, 
-.rsw-toolbar option {
-  color: #fbbf24 !important; /* Amber-400 */
+.rsw-toolbar select {
+  @apply text-amber-500! font-bold text-[10px] uppercase tracking-wider bg-transparent border-none outline-none cursor-pointer;
+}
+
+.rsw-toolbar select option {
+  @apply bg-zinc-900 text-white;
 }
 
 .rsw-toolbar button {
-  @apply hover:bg-white/10! rounded transition-colors;
+  @apply hover:bg-white/10! rounded p-1 transition-colors;
 }
 
 .rsw-toolbar svg {
-  fill: white !important;
+  fill: #f59e0b !important; /* Amber-500 */
 }
 
 .rsw-content {
-  @apply p-6 min-h-[300px] text-white/80 leading-relaxed font-sans;
+  @apply p-8 min-h-[400px] text-white/90! leading-relaxed font-sans text-base;
 }
+
+/* Reset colors for pasted content to ensure readability in dark mode */
+.rsw-content * {
+  color: inherit !important;
+}
+
+.rsw-content h1, .rsw-content h2, .rsw-content h3 {
+  @apply text-amber-500! font-display mb-4 mt-8;
+}
+
+.rsw-content h1 { @apply text-3xl; }
+.rsw-content h2 { @apply text-2xl; }
+.rsw-content h3 { @apply text-xl; }
