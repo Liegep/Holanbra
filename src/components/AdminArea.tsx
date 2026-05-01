@@ -773,12 +773,16 @@ export default function AdminArea() {
     setIsUploadingSlot('videos');
 
     try {
-      const fileName = `video_${Math.random().toString(36).substring(7)}_${file.name}`;
-      const filePath = `videos/${fileName}`;
+      // Fixed path for Hero Video as requested
+      const filePath = `videos/hero-video.mp4`;
 
       const { error: uploadError } = await supabase.storage
         .from('media')
-        .upload(filePath, file);
+        .upload(filePath, file, { 
+          upsert: true,
+          // Support for large files usually involves some client-side settings if using certain libs
+          // but we'll stick to standard upload and hope the network holds.
+        });
 
       if (uploadError) throw uploadError;
 
@@ -786,14 +790,26 @@ export default function AdminArea() {
         .from('media')
         .getPublicUrl(filePath);
 
-      const { error: dbError } = await supabase.from('videos').insert({
-        name: file.name,
+      // Save to videos table (as a record)
+      const { error: dbError } = await supabase.from('videos').upsert({
+        id: 1, // Fixed ID for the hero video record if we want to treat it as a singleton
+        name: 'Hero Virtual Tour',
         url: publicUrl
       });
 
       if (dbError) throw dbError;
 
-      showToast("Vídeo enviado com sucesso!");
+      // Update Hero Section Settings directly
+      const { error: heroUpdateError } = await supabase.from('site_settings').upsert({
+        id: 'hero_section',
+        virtual_tour_url: publicUrl,
+        updated_at: new Date().toISOString()
+      });
+
+      if (heroUpdateError) console.error("Error updating hero settings with new video:", heroUpdateError);
+
+      showToast("Vídeo do Hero atualizado com sucesso!");
+      setHeroContent(prev => ({ ...prev, virtualTourUrl: publicUrl }));
       fetchVideos();
     } catch (err: any) {
       console.error(err);
@@ -801,6 +817,7 @@ export default function AdminArea() {
     } finally {
       setIsUploading(false);
       setIsUploadingSlot(null);
+      setUploadProgress(0);
     }
   };
 
@@ -1510,9 +1527,21 @@ export default function AdminArea() {
                     onChange={handleVideoUpload}
                     disabled={isUploading}
                   />
-                  {isUploading ? 'Uploading...' : 'Upload Video'}
+                  {isUploading ? `Uploading Video...` : 'Upload Video'}
                 </label>
               </div>
+
+              {isUploading && isUploadingSlot === 'videos' && (
+                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: '100%' }}
+                    transition={{ duration: 15, ease: "linear" }}
+                    className="h-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"
+                  />
+                  <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">Uploading high-quality video... please wait.</p>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {videos.map((vid) => (
