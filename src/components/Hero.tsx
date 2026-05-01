@@ -162,11 +162,12 @@ export default function Hero() {
               </button>
               
               {content.virtualTourUrl ? (
-                <video 
-                  src={content.virtualTourUrl} 
-                  className="w-full h-full" 
-                  controls 
-                  autoPlay 
+                <iframe
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${content.virtualTourUrl.split('v=')[1]?.split('&')[0] || content.virtualTourUrl.split('/').pop()}`}
+                  title="Virtual Tour"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-white/20 space-y-4">
