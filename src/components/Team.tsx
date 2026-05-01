@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users } from 'lucide-react';
+import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users, X, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface TeamMember {
@@ -86,14 +86,41 @@ export default function Team() {
   }, []);
 
   const [notice, setNotice] = useState<string | null>(null);
+  const [activeMessageTarget, setActiveMessageTarget] = useState<any>(null);
+  const [visitorData, setVisitorData] = useState({ name: '', message: '' });
+  const [isSending, setIsSending] = useState(false);
 
-  const handleIMClick = (e: React.MouseEvent, url: string) => {
-    if (url === '#') {
-      e.preventDefault();
-      return;
+  const handleSubmitMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!visitorData.name || !visitorData.message || !activeMessageTarget) return;
+
+    setIsSending(true);
+    try {
+      const { error } = await supabase.from('contact_messages').insert([{
+        visitor_name: visitorData.name,
+        message: visitorData.message,
+        recipient_id: activeMessageTarget.id,
+        recipient_name: activeMessageTarget.name,
+        created_at: new Date().toISOString()
+      }]);
+
+      if (error) throw error;
+
+      setNotice(`Sua mensagem foi entregue para ${activeMessageTarget.name}! ✨`);
+      setActiveMessageTarget(null);
+      setVisitorData({ name: '', message: '' });
+      setTimeout(() => setNotice(null), 4000);
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setNotice("Erro ao enviar mensagem. Tente novamente.");
+    } finally {
+      setIsSending(false);
     }
-    setNotice("Abrindo contato no Second Life...");
-    setTimeout(() => setNotice(null), 3000);
+  };
+
+  const handleIMClick = (e: React.MouseEvent, member: any) => {
+    e.preventDefault();
+    setActiveMessageTarget(member);
   };
 
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
@@ -166,10 +193,8 @@ export default function Team() {
                   {/* SL Profile Button */}
                   <div className="absolute top-6 right-6 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
                     <a 
-                      href={member.slProfile} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      onClick={(e) => handleIMClick(e, member.slProfile)}
+                      href="#" 
+                      onClick={(e) => handleIMClick(e, member)}
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
@@ -194,6 +219,80 @@ export default function Team() {
           })}
         </div>
       </div>
+
+      {/* Message Modal */}
+      {activeMessageTarget && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 sm:p-0">
+          <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setActiveMessageTarget(null)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="w-full max-w-md relative bg-[#0a0a0a] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,1)]"
+          >
+            {/* Header */}
+            <div className="relative aspect-video">
+              <img 
+                src={activeMessageTarget.image || activeMessageTarget.photo_url} 
+                className="w-full h-full object-cover grayscale opacity-40" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
+              <div className="absolute bottom-6 left-8 right-8">
+                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Direct Message</p>
+                <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMessageTarget.name}</h4>
+                <p className="text-[10px] text-white/40 font-mono mt-1">{activeMessageTarget.role}</p>
+              </div>
+              <button 
+                onClick={() => setActiveMessageTarget(null)}
+                className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmitMessage} className="p-8 pt-2 space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Seu Nome / Avatar SL</label>
+                  <input 
+                    required
+                    type="text"
+                    value={visitorData.name}
+                    onChange={(e) => setVisitorData({ ...visitorData, name: e.target.value })}
+                    placeholder="Ex: Resident Name"
+                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Mensagem</label>
+                  <textarea 
+                    required
+                    rows={4}
+                    value={visitorData.message}
+                    onChange={(e) => setVisitorData({ ...visitorData, message: e.target.value })}
+                    placeholder="Sua mensagem..."
+                    className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner resize-none"
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={isSending}
+                className="w-full py-5 bg-white text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl hover:bg-amber-500 transition-all flex items-center justify-center gap-3 disabled:opacity-30 group"
+              >
+                {isSending ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <>
+                    Enviar Agora <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }

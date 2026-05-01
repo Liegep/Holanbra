@@ -23,7 +23,9 @@ import {
   Calendar,
   CreditCard,
   User as UserIcon,
-  ArrowUpRight
+  ArrowUpRight,
+  Mail,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
@@ -121,7 +123,8 @@ export default function AdminArea() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox'>('listings');
+  const [inboxMessages, setInboxMessages] = useState<any[]>([]);
   const [isUploadingSlot, setIsUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -512,18 +515,51 @@ export default function AdminArea() {
     }
   };
 
+  const fetchInboxMessages = async () => {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching messages:", error);
+    } else {
+      setInboxMessages(data || []);
+    }
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    if (!confirm("Excluir esta mensagem?")) return;
+    try {
+      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+      if (error) throw error;
+      showToast("Mensagem excluída!");
+      fetchInboxMessages();
+    } catch (error) {
+      console.error(error);
+      showToast("Erro ao excluir mensagem", "error");
+    }
+  };
+
   useEffect(() => {
     if (!user || !isAdmin) return;
 
     fetchGallery();
+    fetchInboxMessages();
 
     const gallerySubscription = supabase
       .channel('gallery_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
       .subscribe();
 
+    const inboxSubscription = supabase
+      .channel('inbox_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
+      .subscribe();
+
     return () => {
       supabase.removeChannel(gallerySubscription);
+      supabase.removeChannel(inboxSubscription);
     };
   }, [user, isAdmin]);
 
@@ -963,6 +999,7 @@ export default function AdminArea() {
             { id: 'gallery', name: 'Gallery', icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: 'Team', icon: UserIcon },
+            { id: 'inbox', name: 'Inbox', icon: Mail },
             { id: 'add', name: editingId ? 'Editing Property' : 'New Property', icon: Plus },
             { id: 'covenant', name: 'Covenant', icon: FileText },
             { id: 'settings', name: 'Settings', icon: Settings },
@@ -1338,6 +1375,71 @@ export default function AdminArea() {
                     <Save size={18} /> Save All Text & Links
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'inbox' && (
+            <div className="max-w-5xl space-y-8">
+              <div className="flex justify-between items-end">
+                <div className="text-left">
+                  <h3 className="text-2xl font-bold font-display text-white italic">Inbox Messages</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Mensagens diretas enviadas para sua equipe.</p>
+                </div>
+                <button 
+                  onClick={fetchInboxMessages}
+                  className="p-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
+                >
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {inboxMessages.length > 0 ? (
+                  inboxMessages.map((msg) => (
+                    <motion.div 
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="glass-card p-8 border-white/5 group hover:border-amber-500/20 transition-all flex flex-col md:flex-row gap-6 items-start"
+                    >
+                      <div className="shrink-0 flex flex-col items-center gap-1">
+                        <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-black font-black">
+                          {msg.visitor_name?.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-[8px] text-white/20 font-mono tracking-tighter">
+                          {new Date(msg.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 space-y-4 text-left">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">Para:</span>
+                              <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{msg.recipient_name}</span>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <p className="text-sm text-white/60 leading-relaxed italic border-l-2 border-white/5 pl-4 py-1">
+                          "{msg.message}"
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
+                    <Mail size={40} className="mx-auto text-white/5 mb-4" />
+                    <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">Caixa de entrada vazia</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
