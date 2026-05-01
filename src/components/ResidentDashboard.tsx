@@ -195,18 +195,27 @@ const ResidentDashboard: React.FC = () => {
           
           <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div className="w-[120px] h-[120px] rounded-full overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
+              <div className="w-[140px] h-[140px] aspect-square rounded-[32px] overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-background-dark/50">
                 <img 
-                  src={`https://img.secondlife.com/id/${residentData?.avatar_uuid}/image.png`} 
+                  src={`https://api.secondlife.com/get_agent_resources?agent_id=${residentData?.avatar_uuid}&magick=avatar_picker`} 
                   alt="SL Avatar"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-opacity duration-500"
+                  referrerPolicy="no-referrer"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=f59e0b&color=000`;
+                    const target = e.target as HTMLImageElement;
+                    const fallbackUrl = `https://my-secondlife-s3-amazon-aws.com/users/${residentData?.avatar_uuid}/thumb_user_image.png`;
+                    const avatarFallback = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=f59e0b&color=000&size=128`;
+                    
+                    if (target.src.includes('avatar_picker')) {
+                      target.src = fallbackUrl;
+                    } else if (target.src.includes('amazon-aws')) {
+                      target.src = avatarFallback;
+                    }
                   }}
                 />
               </div>
-              <div className="absolute bottom-1 right-1 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-full flex items-center justify-center shadow-lg">
-                <ShieldCheck size={16} className="text-white" />
+              <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 border-4 border-background-dark rounded-2xl flex items-center justify-center shadow-lg">
+                <ShieldCheck size={20} className="text-white" />
               </div>
             </div>
             
