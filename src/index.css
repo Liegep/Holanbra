@@ -151,16 +151,28 @@
   line-height: 1.8 !important;
 }
 
-/* CRITICAL: Force white text on everything inside the content area */
+/* CRITICAL: Force visible text color and remove background from pasted content */
 .rsw-content, 
 .rsw-content *, 
 .rsw-content span, 
 .rsw-content p, 
 .rsw-content li {
   color: #ffffff !important;
+  background-color: transparent !important;
 }
 
-.rsw-content h1, .rsw-content h2, .rsw-content h3 {
+/* Also apply to the public display of covenants */
+.covenant-rich-content,
+.covenant-rich-content *,
+.covenant-rich-content span,
+.covenant-rich-content p,
+.covenant-rich-content li {
+  color: #fef3c7 !important; /* Amber-100/70 equivalent approx */
+  background-color: transparent !important;
+}
+
+.rsw-content h1, .rsw-content h2, .rsw-content h3,
+.covenant-rich-content h1, .covenant-rich-content h2, .covenant-rich-content h3 {
   color: #fbbf24 !important;
   font-weight: 700 !important;
   margin-top: 2rem !important;

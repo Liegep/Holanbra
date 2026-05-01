@@ -287,6 +287,12 @@ export default function AdminArea() {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+  };
+
   const [properties, setProperties] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -1947,7 +1953,7 @@ export default function AdminArea() {
               <div className="grid grid-cols-1 gap-12">
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
-                  <div className="editor-container">
+                  <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.en}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, en: e.target.value }))}
@@ -1957,7 +1963,7 @@ export default function AdminArea() {
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
-                  <div className="editor-container">
+                  <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.pt}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, pt: e.target.value }))}
@@ -1967,7 +1973,7 @@ export default function AdminArea() {
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
-                  <div className="editor-container">
+                  <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.es}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, es: e.target.value }))}
@@ -1977,7 +1983,7 @@ export default function AdminArea() {
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
-                  <div className="editor-container">
+                  <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.nl}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, nl: e.target.value }))}
