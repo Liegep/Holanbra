@@ -995,12 +995,18 @@ export default function AdminArea() {
                 <div className="flex justify-between items-center">
                   {renterFormData.avatarUuid && (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/30">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-amber-500/30 bg-zinc-900">
                         <img 
                           src={`https://img.secondlife.com/id/${renterFormData.avatarUuid}/image.png`} 
                           alt="Preview" 
                           className="w-full h-full object-cover"
-                          onError={(e) => (e.target as HTMLImageElement).src = `https://api.secondlife.com/get_agent_resources?agent_id=${renterFormData.avatarUuid}&magick=avatar_picker`}
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.src.includes('ui-avatars')) {
+                              target.src = `https://ui-avatars.com/api/?name=SL&background=111&color=f59e0b`;
+                            }
+                          }}
                         />
                       </div>
                       <span className="text-[10px] font-bold uppercase text-amber-500/60">SL Profile Preview</span>
@@ -1033,12 +1039,18 @@ export default function AdminArea() {
                 {renters.map((renter) => (
                   <div key={renter.id} className="glass-card p-6 border-white/5 hover:border-amber-500/30 transition-all group relative overflow-hidden">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
                         <img 
                           src={`https://img.secondlife.com/id/${renter.tenant_id || renter.avatar_uuid}/image.png`} 
                           alt={renter.avatar_name}
                           className="w-full h-full object-cover"
-                          onError={(e) => (e.target as HTMLImageElement).src = `https://api.secondlife.com/get_agent_resources?agent_id=${renter.tenant_id || renter.avatar_uuid}&magick=avatar_picker`}
+                          referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.src.includes('ui-avatars')) {
+                              target.src = `https://ui-avatars.com/api/?name=${renter.avatar_name}&background=111&color=f59e0b`;
+                            }
+                          }}
                         />
                       </div>
                       <div className="text-left min-w-0">

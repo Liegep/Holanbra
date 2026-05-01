@@ -196,7 +196,7 @@ const ResidentDashboard: React.FC = () => {
           
           <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div className="w-[120px] h-[120px] aspect-square rounded-[24px] overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
+              <div className="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
                 <img 
                   src={`https://img.secondlife.com/id/${residentData?.tenant_id || residentData?.avatar_uuid}/image.png`} 
                   alt="SL Avatar"
@@ -204,9 +204,8 @@ const ResidentDashboard: React.FC = () => {
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    const id = residentData?.tenant_id || residentData?.avatar_uuid;
-                    if (!target.src.includes('avatar_picker')) {
-                      target.src = `https://api.secondlife.com/get_agent_resources?agent_id=${id}&magick=avatar_picker`;
+                    if (!target.src.includes('ui-avatars')) {
+                       target.src = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=111&color=f59e0b&size=200`;
                     }
                   }}
                 />
