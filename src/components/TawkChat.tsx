@@ -48,13 +48,12 @@ export default function TawkChat() {
           id="custom-tawk-trigger"
           initial={{ opacity: 0, scale: 0.8, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.1, backgroundColor: '#ffffff' }}
+          whileTap={{ scale: 0.9 }}
           onClick={toggleChat}
-          className="fixed bottom-8 right-8 z-[100] flex items-center gap-3 px-6 py-4 bg-[#F59E0B] text-black rounded-full shadow-2xl shadow-amber-500/30 font-black uppercase text-[11px] tracking-[0.2em] transition-all hover:bg-white border-2 border-black/5"
+          className="fixed bottom-8 right-8 z-[100] w-14 h-14 flex items-center justify-center bg-[#fad02c] text-black rounded-full shadow-[0_10px_40px_rgba(250,208,44,0.3)] transition-all border-2 border-black/5 cursor-pointer"
         >
-          <MessageCircle size={18} strokeWidth={3} />
-          <span>Chat ao Vivo</span>
+          <MessageCircle size={24} strokeWidth={2.5} />
         </motion.button>
       )}
     </AnimatePresence>
