@@ -669,7 +669,7 @@ export default function AdminArea() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage' | 'gridImage', gridIdx?: number) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage' | 'gridImage' | 'gallery', gridIdx?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -684,7 +684,7 @@ export default function AdminArea() {
       
       if (isImage) {
         let maxWidth = 1920;
-        if (targetField === 'gridImage' || targetField === 'image') maxWidth = 800;
+        if (targetField === 'gridImage' || targetField === 'image' || targetField === 'gallery') maxWidth = 1200;
 
         const options = {
           maxSizeMB: 0.8,
@@ -699,7 +699,8 @@ export default function AdminArea() {
       const fileExt = isImage ? 'webp' : file.name.split('.').pop();
       const cleanName = targetField === 'backgroundImage' ? 'hero_bg' : 
                         targetField === 'gridImage' ? `hero_grid_${gridIdx}` : 
-                        targetField === 'aboutImage' ? 'hero_about' : targetField;
+                        targetField === 'aboutImage' ? 'hero_about' : 
+                        targetField === 'gallery' ? 'gallery_item' : targetField;
       
       const fileName = `${cleanName}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `media/${fileName}`;
@@ -722,6 +723,8 @@ export default function AdminArea() {
         setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
       } else if (targetField === 'image') {
         setTeamFormData(prev => ({ ...prev, image: publicUrl }));
+      } else if (targetField === 'gallery') {
+        setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
       } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
         const updatedHero = { ...heroContent, [targetField]: publicUrl };
         setHeroContent(updatedHero);
@@ -1493,64 +1496,100 @@ export default function AdminArea() {
           )}
 
           {activeTab === 'gallery' && (
-            <div className="max-w-4xl space-y-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold font-display text-left text-white">Sim Gallery</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest text-left">Upload photos of the islands to show in the gallery.</p>
+            <div className="max-w-5xl space-y-12">
+              <div className="text-left">
+                <h3 className="text-2xl font-bold font-display text-white">Gestão da Galeria</h3>
+                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Adicione fotos ilimitadas com legendas. Compactação WebP automática ativa.</p>
               </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Upload Section */}
+                <div className="lg:col-span-1 space-y-6">
+                   <div className="glass-card p-8 border-white/5 space-y-6">
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Nova Foto</label>
+                        <div className="relative group aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-white/10 bg-white/5 hover:border-amber-500/50 transition-all">
+                           {galleryFormData.imageUrl ? (
+                             <img src={galleryFormData.imageUrl} className="w-full h-full object-cover" />
+                           ) : (
+                             <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20 gap-3">
+                                <ImageIcon size={32} />
+                                <span className="text-[9px] font-black uppercase tracking-tighter">Escolher Arquivo</span>
+                             </div>
+                           )}
+                           
+                           <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={(e) => handleFileUpload(e, 'gallery')}
+                                disabled={isUploadingSlot === 'gallery'}
+                              />
+                              <div className="bg-white text-black p-3 rounded-full">
+                                <Plus size={20} />
+                              </div>
+                           </label>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div className="space-y-4 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">New Photo Caption (Optional)</label>
-                    <input 
-                      type="text"
-                      value={galleryFormData.caption}
-                      onChange={(e) => setGalleryFormData({ ...galleryFormData, caption: e.target.value })}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                      placeholder="e.g. Sunset at Holanbra North"
-                    />
-                  </div>
-
-                  <div className="space-y-4 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Image URL</label>
-                    <input 
-                      type="text"
-                      value={galleryFormData.imageUrl}
-                      onChange={(e) => setGalleryFormData({ ...galleryFormData, imageUrl: e.target.value })}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                      placeholder="Paste image URL here..."
-                    />
-                    
-                    {galleryFormData.imageUrl && (
-                      <div className="aspect-video rounded-xl overflow-hidden border border-white/10">
-                        <img src={galleryFormData.imageUrl} alt="Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                           {isUploadingSlot === 'gallery' && (
+                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                                <Loader2 className="text-amber-500 animate-spin" size={24} />
+                             </div>
+                           )}
+                        </div>
                       </div>
-                    )}
 
-                    <button 
-                      onClick={handleGallerySave}
-                      className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
-                    >
-                      <Save size={18} /> Save to Gallery
-                    </button>
-                  </div>
+                      <div className="space-y-4 text-left">
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Legenda (Opcional)</label>
+                        <input 
+                          type="text"
+                          value={galleryFormData.caption}
+                          onChange={(e) => setGalleryFormData({ ...galleryFormData, caption: e.target.value })}
+                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
+                          placeholder="Ex: Pôr do sol no píer..."
+                        />
+                      </div>
+
+                      <button 
+                        onClick={handleGallerySave}
+                        disabled={!galleryFormData.imageUrl || isUploading}
+                        className="w-full py-4 rounded-xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
+                      >
+                        <Save size={16} /> Adicionar à Galeria
+                      </button>
+                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-gray-500 uppercase block text-left">Existing Photos</label>
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Grid Section */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="flex justify-between items-center px-2">
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Fotos Atuais ({galleryImages.length})</label>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {galleryImages.map((img) => (
-                      <div key={img.id} className="relative aspect-video rounded-xl bg-white/5 overflow-hidden group">
-                        <img src={img.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" referrerPolicy="no-referrer" />
-                        <button 
-                          onClick={() => handleDeleteGallery(img.id)}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500/80 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                      <div key={img.id} className="group relative aspect-square rounded-2xl bg-zinc-900 overflow-hidden border border-white/5 hover:border-amber-500/50 transition-all">
+                        <img src={img.url} className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
+                        
+                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
+                           <p className="text-[9px] text-white font-bold truncate leading-tight">{img.caption || 'Sem legenda'}</p>
+                        </div>
+
+                        <div className="absolute top-2 right-2 flex gap-2 translate-y-[-120%] group-hover:translate-y-0 transition-transform">
+                          <button 
+                            onClick={() => handleDeleteGallery(img.id)}
+                            className="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full hover:bg-red-600 shadow-xl"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
                     ))}
+                    {galleryImages.length === 0 && (
+                      <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                         <p className="text-white/10 text-[10px] uppercase font-black tracking-widest">Nenhuma foto na galeria</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
