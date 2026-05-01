@@ -150,7 +150,7 @@ const ResidentDashboard: React.FC = () => {
       showToast("Ticket submitted successfully!");
     } catch (err) {
       console.error("Ticket error:", err);
-      showToast("Failed to submit ticket", "error");
+      showToast(`Failed to submit ticket: ${err instanceof Error ? err.message : 'Unknown error'}`, "error");
     } finally {
       setIsSubmittingTicket(false);
     }
