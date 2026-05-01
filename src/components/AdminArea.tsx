@@ -1947,44 +1947,40 @@ export default function AdminArea() {
               <div className="grid grid-cols-1 gap-12">
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
-                  <div className="quill-dark-editor">
+                  <div className="editor-container">
                     <Editor 
                       value={covenants.en}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, en: e.target.value }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Enter English covenant text..."
                     />
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
-                  <div className="quill-dark-editor">
+                  <div className="editor-container">
                     <Editor 
                       value={covenants.pt}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, pt: e.target.value }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Insira o texto do covenant em português..."
                     />
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
-                  <div className="quill-dark-editor">
+                  <div className="editor-container">
                     <Editor 
                       value={covenants.es}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, es: e.target.value }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Ingrese el texto del convenio en español..."
                     />
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
-                  <div className="quill-dark-editor">
+                  <div className="editor-container">
                     <Editor 
                       value={covenants.nl}
                       onChange={(e: any) => setCovenants(prev => ({ ...prev, nl: e.target.value }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Voer de Nederlandse tekst van het convenant in..."
                     />
                   </div>

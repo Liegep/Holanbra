@@ -79,22 +79,36 @@
   @apply text-amber-500 underline;
 }
 
-/* Dark mode Quill fixes */
-.quill-dark-editor .ql-toolbar {
-  @apply bg-white/5 border-white/10!;
+/* Dark mode Editor fixes (react-simple-wysiwyg) */
+.rsw-editor {
+  @apply bg-white/5 border-white/10! text-white! rounded-2xl overflow-hidden;
 }
-.quill-dark-editor .ql-container {
-  @apply border-white/10! min-h-[300px] font-sans text-base;
+
+.rsw-toolbar {
+  @apply bg-white/5 border-b border-white/10! p-2 gap-1;
 }
-.quill-dark-editor .ql-stroke {
-  stroke: white !important;
+
+/* Fix selection color */
+.rsw-content ::selection {
+  background: white !important;
+  color: black !important;
 }
-.quill-dark-editor .ql-fill {
+
+/* Fix dropdown/labels visibility */
+.rsw-toolbar span, 
+.rsw-toolbar select, 
+.rsw-toolbar option {
+  color: #fbbf24 !important; /* Amber-400 */
+}
+
+.rsw-toolbar button {
+  @apply hover:bg-white/10! rounded transition-colors;
+}
+
+.rsw-toolbar svg {
   fill: white !important;
 }
-.quill-dark-editor .ql-picker {
-  color: white !important;
-}
-.quill-dark-editor .ql-picker-options {
-  background-color: #18181b !important;
+
+.rsw-content {
+  @apply p-6 min-h-[300px] text-white/80 leading-relaxed font-sans;
 }
