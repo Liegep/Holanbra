@@ -60,10 +60,15 @@ export default function Team() {
       setLoading(true);
       const { data, error } = await supabase
         .from('team')
-        .select('*');
+        .select('*')
+        .order('display_order', { ascending: true });
       
       if (data) {
-        setTeam(data.map(m => ({ ...m, slProfile: m.sl_profile })));
+        setTeam(data.map(m => ({ 
+          ...m, 
+          image: m.photo_url || m.image, // Fallback to image if photo_url is empty during transition
+          slProfile: m.sl_url || m.sl_profile || '#'
+        })));
       }
       setLoading(false);
     };

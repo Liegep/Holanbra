@@ -533,7 +533,8 @@ export default function AdminArea() {
     const fetchTeam = async () => {
       const { data, error } = await supabase
         .from('team')
-        .select('*');
+        .select('*')
+        .order('display_order', { ascending: true });
       
       if (error) {
         console.error(error);
@@ -566,29 +567,31 @@ export default function AdminArea() {
     }
 
     try {
-      const dataToSave = {
+      const dataToSave: any = {
         name: teamFormData.name,
         role: teamFormData.role,
         bio: teamFormData.bio,
-        image: teamFormData.image,
+        photo_url: teamFormData.image,
         icon: teamFormData.icon,
-        sl_profile: teamFormData.slProfile
+        sl_url: teamFormData.slProfile,
+        display_order: parseInt(teamFormData.order) || 0
       };
 
       if (editingTeamId) {
-        const { error } = await supabase
-          .from('team')
-          .update(dataToSave)
-          .eq('id', editingTeamId);
-        if (error) throw error;
-        showToast("Team member updated!");
-      } else {
-        const { error } = await supabase
-          .from('team')
-          .insert([dataToSave]);
-        if (error) throw error;
-        showToast("Team member added!");
+        dataToSave.id = editingTeamId;
       }
+
+      console.log("Saving team member to Supabase...", dataToSave);
+      const { error } = await supabase
+        .from('team')
+        .upsert(dataToSave);
+      
+      if (error) {
+        console.error("SUPABASE TEAM SAVE ERROR:", error);
+        throw error;
+      }
+      
+      showToast(editingTeamId ? "Membro da equipe atualizado!" : "Membro da equipe adicionado!");
 
       setTeamFormData({
         name: '',
@@ -623,10 +626,10 @@ export default function AdminArea() {
       name: item.name || '',
       role: item.role || '',
       bio: item.bio || '',
-      image: item.image || '',
+      image: item.photo_url || '',
       icon: item.icon || 'Users',
-      slProfile: item.slProfile || '#',
-      order: item.order?.toString() || '0'
+      slProfile: item.sl_url || '#',
+      order: item.display_order?.toString() || '0'
     });
     setEditingTeamId(item.id);
   };
@@ -1484,11 +1487,14 @@ export default function AdminArea() {
                     {teamMembers.map((member) => (
                       <div key={member.id} className="glass-card p-4 flex items-center gap-4 group">
                         <div className="w-12 h-16 rounded-lg bg-white/10 overflow-hidden shrink-0">
-                          <img src={member.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-opacity" referrerPolicy="no-referrer" />
+                          <img src={member.photo_url || member.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-opacity" referrerPolicy="no-referrer" />
                         </div>
                         <div className="flex-1 text-left min-w-0">
                           <h4 className="font-bold text-sm truncate text-white">{member.name}</h4>
-                          <p className="text-[10px] text-amber-500/60 uppercase tracking-widest truncate">{member.role}</p>
+                          <div className="flex items-center gap-2">
+                             <p className="text-[10px] text-amber-500/60 uppercase tracking-widest truncate">{member.role}</p>
+                             <span className="text-[8px] text-white/20 font-black">#{member.display_order}</span>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <button 
