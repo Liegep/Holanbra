@@ -161,6 +161,7 @@ export default function Team() {
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
+      window.alert("Erro ao enviar mensagem: " + (err.message || "Erro desconhecido. Verifique o console do navegador."));
       setNotice(`Erro ao enviar mensagem: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setIsSending(false);
