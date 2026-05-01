@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { 
   Home, 
@@ -12,9 +12,16 @@ import {
   Loader2,
   ShieldCheck,
   User,
-  Lock
+  Lock,
+  MessageSquare,
+  Plus,
+  History,
+  CheckCircle2,
+  AlertCircle,
+  Tag
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 
 const ResidentDashboard: React.FC = () => {
@@ -33,7 +40,17 @@ const ResidentDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [residentData, setResidentData] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'rentals' | 'support'>('rentals');
   const [error, setError] = useState('');
+  
+  // Ticket Form State
+  const [ticketForm, setTicketForm] = useState({
+    subject: '',
+    category: 'Financeiro',
+    message: ''
+  });
+  const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
 
   // Auto-login if session exists
   useEffect(() => {
@@ -80,6 +97,14 @@ const ResidentDashboard: React.FC = () => {
 
       if (propError) throw propError;
 
+      // Step 3: Fetch tickets
+      const { data: userTickets } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('user_id', residentId)
+        .order('created_at', { ascending: false });
+
+      setTickets(userTickets || []);
       setProperties(userProperties || []);
       setIsLoggedIn(true);
       localStorage.setItem('sl_resident_name', name);
@@ -94,10 +119,48 @@ const ResidentDashboard: React.FC = () => {
     }
   };
 
+  const handleSubmitTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ticketForm.subject || !ticketForm.message) {
+      showToast("Please fill all required fields", "info");
+      return;
+    }
+
+    setIsSubmittingTicket(true);
+    const userId = residentData.tenant_id || residentData.avatar_uuid;
+    
+    try {
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: userId,
+          avatar_name: residentData.avatar_name,
+          subject: ticketForm.subject,
+          category: ticketForm.category,
+          message: ticketForm.message,
+          status: 'open'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setTickets([data, ...tickets]);
+      setTicketForm({ subject: '', category: 'Financeiro', message: '' });
+      showToast("Ticket submitted successfully!");
+    } catch (err) {
+      console.error("Ticket error:", err);
+      showToast("Failed to submit ticket", "error");
+    } finally {
+      setIsSubmittingTicket(false);
+    }
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setResidentData(null);
     setProperties([]);
+    setTickets([]);
     setResidentName('');
     setPassword('');
     localStorage.removeItem('sl_resident_name');
@@ -231,94 +294,261 @@ const ResidentDashboard: React.FC = () => {
           </div>
         </div>
 
-        {properties.length === 0 ? (
-          <div className="glass-card p-20 text-center space-y-6 border-white/5">
-             <Home size={60} className="mx-auto text-white/10" />
-             <div className="space-y-2">
-                <p className="text-xl text-white font-medium">No active rentals</p>
-                <p className="text-white/40 max-w-md mx-auto">We couldn't find any properties currently assigned to this account.</p>
-             </div>
-             <Link to="/#imoveis" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
-               Browse Catalog
-             </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {properties.map((prop) => {
-              const expiresAt = prop.expires_at || prop.next_payment;
-              const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
-              
-              return (
-                <motion.div 
-                  key={prop.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="glass-card rounded-[40px] overflow-hidden border-white/5 group"
-                >
-                  {/* Property Image Header */}
-                  <div className="relative h-64 overflow-hidden">
-                    <img src={prop.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
-                    <div className="absolute bottom-6 left-8">
-                      <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
-                      <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
-                        <MapPin size={12} /> HOLANBRA
-                      </div>
+        {/* Tab Navigation */}
+        <div className="flex justify-center gap-4 border-b border-white/5 pb-4">
+          <button 
+            onClick={() => setActiveTab('rentals')}
+            className={cn(
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'rentals' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
+            )}
+          >
+            <Home size={14} /> My Rentals ({properties.length})
+          </button>
+          <button 
+            onClick={() => setActiveTab('support')}
+            className={cn(
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
+            )}
+          >
+            <MessageSquare size={14} /> Support ({tickets.length})
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === 'rentals' ? (
+            <motion.div 
+              key="rentals"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-8"
+            >
+              {properties.length === 0 ? (
+                <div className="glass-card p-20 text-center space-y-6 border-white/5">
+                   <Home size={60} className="mx-auto text-white/10" />
+                   <div className="space-y-2">
+                      <p className="text-xl text-white font-medium">No active rentals</p>
+                      <p className="text-white/40 max-w-md mx-auto">We couldn't find any properties currently assigned to this account.</p>
+                   </div>
+                   <Link to="/#imoveis" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
+                     Browse Catalog
+                   </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {properties.map((prop) => {
+                    const expiresAt = prop.expiry_date || prop.expires_at || prop.next_payment;
+                    const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
+                    
+                    return (
+                      <motion.div 
+                        key={prop.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="glass-card rounded-[40px] overflow-hidden border-white/5 group"
+                      >
+                        {/* Property Image Header */}
+                        <div className="relative h-64 overflow-hidden">
+                          <img src={prop.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
+                          <div className="absolute bottom-6 left-8">
+                            <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
+                            <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
+                              <MapPin size={12} /> HOLANBRA
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Rental Stats */}
+                        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Clock className="text-amber-500" size={20} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Status</span>
+                            </div>
+                            <div>
+                              <p className={`text-4xl font-display font-black ${daysLeft <= 0 ? 'text-red-500' : 'text-white'}`}>
+                                  {daysLeft <= 0 ? 'Expired' : `${daysLeft} Days`}
+                              </p>
+                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Time remaining on lease</p>
+                            </div>
+                          </div>
+
+                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Calendar className="text-amber-500" size={20} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Expiraton Date</span>
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : 'Active'}</p>
+                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">End of current cycle</p>
+                            </div>
+                          </div>
+
+                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4 col-span-full">
+                             <div className="flex items-center justify-between">
+                               <div className="flex items-center gap-3">
+                                 <CreditCard className="text-amber-500" size={20} />
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Price</span>
+                               </div>
+                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / wk</div>
+                             </div>
+                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
+                                <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
+                                  Manage your extension via in-world terminal at {prop.name}.
+                                </p>
+                                <button 
+                                  onClick={() => window.open(prop.teleport_url, '_blank')}
+                                  className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                >
+                                  <MapPin size={12} /> Visit Property
+                                </button>
+                             </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="support"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            >
+              {/* New Ticket Form */}
+              <div className="lg:col-span-1 space-y-6">
+                <div className="glass-card p-8 border-white/5 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-black">
+                      <Plus size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold font-display">New Support Ticket</h3>
+                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Submit a request to staff</p>
                     </div>
                   </div>
 
-                  {/* Rental Stats */}
-                  <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Clock className="text-amber-500" size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Status</span>
-                      </div>
-                      <div>
-                        <p className={`text-4xl font-display font-black ${daysLeft <= 0 ? 'text-red-500' : 'text-white'}`}>
-                            {daysLeft <= 0 ? 'Expired' : `${daysLeft} Days`}
-                        </p>
-                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Time remaining on lease</p>
+                  <form onSubmit={handleSubmitTicket} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Assunto</label>
+                      <input 
+                        type="text"
+                        value={ticketForm.subject}
+                        onChange={(e) => setTicketForm({...ticketForm, subject: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white text-sm outline-none focus:border-amber-500/50"
+                        placeholder="Ex: Problema com pagamento"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Categoria</label>
+                      <div className="relative">
+                        <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={14} />
+                        <select 
+                          value={ticketForm.category}
+                          onChange={(e) => setTicketForm({...ticketForm, category: e.target.value})}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
+                        >
+                          <option value="Financeiro" className="bg-zinc-900">Financeiro</option>
+                          <option value="Problema na Terra" className="bg-zinc-900">Problema na Terra</option>
+                          <option value="Outros" className="bg-zinc-900">Outros</option>
+                        </select>
                       </div>
                     </div>
 
-                    <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Calendar className="text-amber-500" size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Expiraton Date</span>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : 'Active'}</p>
-                        <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">End of current cycle</p>
-                      </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Mensagem</label>
+                      <textarea 
+                        rows={5}
+                        value={ticketForm.message}
+                        onChange={(e) => setTicketForm({...ticketForm, message: e.target.value})}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-amber-500/50 resize-none"
+                        placeholder="Descreva seu problema em detalhes..."
+                      />
                     </div>
 
-                    <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4 col-span-full">
-                       <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                           <CreditCard className="text-amber-500" size={20} />
-                           <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Price</span>
-                         </div>
-                         <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / wk</div>
-                       </div>
-                       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
-                          <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
-                            Manage your extension via in-world terminal at {prop.name}.
-                          </p>
-                          <button 
-                            onClick={() => window.open(prop.teleport_url, '_blank')}
-                            className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
-                          >
-                            <MapPin size={12} /> Visit Property
-                          </button>
-                       </div>
-                    </div>
+                    <button 
+                      type="submit"
+                      disabled={isSubmittingTicket}
+                      className="w-full py-4 bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-amber-400 transition-all disabled:opacity-50"
+                    >
+                      {isSubmittingTicket ? <Loader2 className="animate-spin" size={14} /> : <Plus size={14} />}
+                      Submit Ticket
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Ticket History */}
+              <div className="lg:col-span-2 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <History className="text-white/20" size={20} />
+                    <h3 className="text-lg font-bold font-display">Recent Tickets</h3>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                </div>
+
+                <div className="space-y-4">
+                  {tickets.length === 0 ? (
+                    <div className="glass-card p-20 text-center border-dashed border-white/5">
+                      <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">No tickets found</p>
+                    </div>
+                  ) : (
+                    tickets.map((ticket) => (
+                      <div key={ticket.id} className="glass-card p-6 border-white/5 space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              {ticket.status === 'open' ? (
+                                <AlertCircle className="text-amber-500" size={14} />
+                              ) : (
+                                <CheckCircle2 className="text-green-500" size={14} />
+                              )}
+                              <span className={cn(
+                                "text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded",
+                                ticket.status === 'open' ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500"
+                              )}>
+                                {ticket.status}
+                              </span>
+                              <span className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-2">
+                                {ticket.category}
+                              </span>
+                            </div>
+                            <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
+                            <p className="text-white/40 text-[10px] uppercase font-bold">
+                              Opened on {new Date(ticket.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                          <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
+                        </div>
+
+                        {ticket.response && (
+                          <div className="space-y-3 pl-4 border-l-2 border-amber-500/30">
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="text-amber-500" size={14} />
+                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Staff Response</span>
+                            </div>
+                            <p className="text-sm text-white/60 leading-relaxed">{ticket.response}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <Toast 
           message={toast.message} 
           type={toast.type} 

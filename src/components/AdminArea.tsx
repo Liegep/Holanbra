@@ -13,6 +13,8 @@ import {
   Save,
   CheckCircle,
   AlertCircle,
+  ShieldCheck,
+  Tag,
   LogIn,
   LogOut,
   Loader2,
@@ -131,8 +133,12 @@ export default function AdminArea() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets'>('listings');
   const [inboxMessages, setInboxMessages] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
+  const [adminResponse, setAdminResponse] = useState('');
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [videos, setVideos] = useState<any[]>([]);
   const [isUploadingSlot, setIsUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -174,6 +180,11 @@ export default function AdminArea() {
   useEffect(() => {
     if (!user || !isAdmin) return;
     
+    const fetchTickets = async () => {
+      const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+      setTickets(data || []);
+    };
+
     const fetchData = async () => {
       // Fetch Covenants from land_covenants
       const { data: covenantData } = await supabase.from('land_covenants').select('*').limit(1).maybeSingle();
@@ -209,6 +220,9 @@ export default function AdminArea() {
       // Fetch Videos
       const { data: videosData } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
       if (videosData) setVideos(videosData);
+
+      // Fetch Tickets
+      await fetchTickets();
     };
 
     fetchData();
@@ -404,7 +418,9 @@ export default function AdminArea() {
       const now = new Date();
       const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
       return diff > 3 && diff <= 7;
-    }).length
+    }).length,
+    openTickets: tickets.filter(t => t.status === 'open').length,
+    totalTickets: tickets.length
   };
 
   useEffect(() => {
@@ -1130,6 +1146,47 @@ export default function AdminArea() {
     }
   };
 
+  const handleResolveTicket = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ status: 'resolved' })
+        .eq('id', id);
+
+      if (error) throw error;
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
+      showToast("Ticket resolved");
+    } catch (err) {
+      console.error(err);
+      showToast("Error resolving ticket", "error");
+    }
+  };
+
+  const handleSendResponse = async (id: string) => {
+    if (!adminResponse.trim()) return;
+    setIsSubmittingResponse(true);
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ 
+          response: adminResponse,
+          status: 'resolved'
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, response: adminResponse, status: 'resolved' } : t));
+      setReplyingTicketId(null);
+      setAdminResponse('');
+      showToast("Response sent and ticket resolved");
+    } catch (err) {
+      console.error(err);
+      showToast("Error sending response", "error");
+    } finally {
+      setIsSubmittingResponse(false);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center space-y-8">
@@ -1222,6 +1279,7 @@ export default function AdminArea() {
             { id: 'team', name: 'Team', icon: UserIcon },
             { id: 'inbox', name: 'Inbox', icon: Mail },
             { id: 'videos', name: 'Videos', icon: Video },
+            { id: 'tickets', name: 'Support Tickets', icon: MessageSquare },
             { id: 'add', name: editingId ? 'Editing Property' : 'New Property', icon: Plus },
             { id: 'covenant', name: 'Covenant', icon: FileText },
             { id: 'settings', name: 'Settings', icon: Settings },
@@ -1244,6 +1302,153 @@ export default function AdminArea() {
 
         {/* Content */}
         <main className="flex-1 space-y-8">
+          {activeTab === 'tickets' && (
+            <div className="max-w-6xl space-y-8">
+              <div className="flex justify-between items-end">
+                <div className="text-left">
+                  <h3 className="text-2xl font-bold font-display text-white">Support Tickets</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Manage resident requests and technical issues.</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                    <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} Open</span>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+                      setTickets(data || []);
+                    }}
+                    className="p-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
+                  >
+                    <RefreshCw size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {tickets.length === 0 ? (
+                  <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[40px]">
+                    <MessageSquare size={48} className="mx-auto text-white/5 mb-4" />
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No help requests at the moment</p>
+                  </div>
+                ) : (
+                  tickets.map((ticket) => (
+                    <motion.div 
+                      key={ticket.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={cn(
+                        "glass-card p-0 overflow-hidden border-white/5 transition-all group",
+                        ticket.status === 'open' ? "ring-1 ring-amber-500/20 shadow-[0_0_50px_rgba(245,158,11,0.05)]" : "opacity-60"
+                      )}
+                    >
+                      <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5">
+                        {/* Meta Data */}
+                        <div className="lg:w-64 p-8 space-y-6 shrink-0 bg-white/[0.02]">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <span className={cn(
+                                "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
+                                ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
+                              )}>
+                                {ticket.status}
+                              </span>
+                              <span className="text-[8px] text-white/20 font-mono tracking-tighter">
+                                {new Date(ticket.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-amber-500">
+                                <UserIcon size={18} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-white truncate">{ticket.avatar_name}</p>
+                                <p className="text-[8px] text-white/20 uppercase font-black tracking-tighter truncate">{ticket.user_id}</p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2">
+                              <Tag size={12} className="text-amber-500/40" />
+                              <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">{ticket.category}</span>
+                            </div>
+                          </div>
+
+                          {ticket.status === 'open' && (
+                            <button 
+                              onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
+                              className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
+                            >
+                              {replyingTicketId === ticket.id ? 'Cancel Reply' : 'Reply & Resolve'}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 p-8 space-y-6">
+                          <div className="space-y-2 text-left">
+                            <h4 className="text-xl font-bold text-white tracking-tight">{ticket.subject}</h4>
+                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+                              <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
+                            </div>
+                          </div>
+
+                          {ticket.response && (
+                            <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
+                              <div className="flex items-center gap-2">
+                                <ShieldCheck className="text-amber-500" size={14} />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Official Response</span>
+                              </div>
+                              <p className="text-sm text-white/60 leading-relaxed">{ticket.response}</p>
+                            </div>
+                          )}
+
+                          <AnimatePresence>
+                            {replyingTicketId === ticket.id && (
+                              <motion.div 
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="pt-4 space-y-4">
+                                  <textarea 
+                                    value={adminResponse}
+                                    onChange={(e) => setAdminResponse(e.target.value)}
+                                    placeholder="Type your response here... (The ticket will be marked as resolved)"
+                                    className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
+                                    rows={4}
+                                  />
+                                  <div className="flex justify-end gap-3">
+                                    <button 
+                                      onClick={() => handleResolveTicket(ticket.id)}
+                                      className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
+                                    >
+                                      Mark as Resolved (No Reply)
+                                    </button>
+                                    <button 
+                                      onClick={() => handleSendResponse(ticket.id)}
+                                      disabled={isSubmittingResponse || !adminResponse.trim()}
+                                      className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
+                                    >
+                                      {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
+                                      Send & Resolve
+                                    </button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'renters' && (
             <div className="max-w-4xl space-y-8">
               <div className="flex justify-between items-end">
@@ -2154,7 +2359,8 @@ export default function AdminArea() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                  {/* Total Portfolio Card */}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -2169,6 +2375,26 @@ export default function AdminArea() {
                     <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
                   </motion.div>
 
+                  {/* Support Tickets Card */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    onClick={() => setActiveTab('tickets')}
+                    className={cn(
+                      "glass-card p-8 relative overflow-hidden transition-all duration-500 cursor-pointer group hover:scale-[1.02]",
+                      stats.openTickets > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
+                    )}
+                  >
+                    <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
+                      <MessageSquare size={48} />
+                    </div>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>Open Tickets</p>
+                    <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} Total Tickets</p>
+                  </motion.div>
+
+                  {/* Occupancy Rate Card */}
                   <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
