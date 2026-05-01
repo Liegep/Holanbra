@@ -103,7 +103,7 @@ export default function Team() {
 
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
-        content: visitorData.message, // Renamed from 'message' to 'content'
+        message: visitorData.message, 
         recipient_id: activeMessageTarget.id,
         recipient_name: activeMessageTarget.name,
         created_at: new Date().toISOString(),

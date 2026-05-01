@@ -1464,7 +1464,7 @@ export default function AdminArea() {
                           </div>
                         </div>
                         <p className="text-sm text-white/60 leading-relaxed italic border-l-2 border-white/5 pl-4 py-1">
-                          "{msg.content || msg.message}"
+                          "{msg.message}"
                         </p>
                       </div>
                     </motion.div>
