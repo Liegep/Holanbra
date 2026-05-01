@@ -127,14 +127,19 @@ const ResidentDashboard: React.FC = () => {
     }
 
     setIsSubmittingTicket(true);
-    const userId = residentData.tenant_id || residentData.avatar_uuid;
     
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      const avatarName = user?.user_metadata?.avatar_name || residentData.avatar_name || 'Resident';
+      const userId = user?.id || residentData.tenant_id || residentData.avatar_uuid;
+      
       const { data, error } = await supabase
         .from('support_tickets')
         .insert({
           user_id: userId,
-          avatar_name: residentData.avatar_name,
+          avatar_name: avatarName,
           subject: ticketForm.subject,
           category: ticketForm.category,
           message: ticketForm.message,
@@ -147,10 +152,10 @@ const ResidentDashboard: React.FC = () => {
 
       setTickets([data, ...tickets]);
       setTicketForm({ subject: '', category: 'Financeiro', message: '' });
-      showToast("Ticket submitted successfully!");
+      showToast("Ticket enviado com sucesso!");
     } catch (err: any) {
       console.error("Erro Detalhado:", err.message, err.details, err.hint);
-      showToast(`Failed to submit ticket: ${err.message || 'Unknown error'}`, "error");
+      showToast(`Erro ao enviar ticket: ${err.message || 'Erro desconhecido'}`, "error");
     } finally {
       setIsSubmittingTicket(false);
     }

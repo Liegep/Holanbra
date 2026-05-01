@@ -16,28 +16,40 @@ i18n
         translation: {
           "welcome": "Bem-vindo",
           "submit": "Enviar",
-          "subject": "Assunto"
+          "subject": "Assunto",
+          "dashboard": "Painel de Controle",
+          "rentals": "Meus Aluguéis",
+          "support": "Suporte"
         }
       },
       en: {
         translation: {
           "welcome": "Welcome",
           "submit": "Submit",
-          "subject": "Subject"
+          "subject": "Subject",
+          "dashboard": "Dashboard",
+          "rentals": "My Rentals",
+          "support": "Support"
         }
       },
       es: {
         translation: {
           "welcome": "Bienvenido",
           "submit": "Enviar",
-          "subject": "Asunto"
+          "subject": "Asunto",
+          "dashboard": "Panel de Control",
+          "rentals": "Mis Alquileres",
+          "support": "Soporte"
         }
       },
       nl: {
         translation: {
           "welcome": "Welkom",
           "submit": "Verzenden",
-          "subject": "Onderwerp"
+          "subject": "Onderwerp",
+          "dashboard": "Dashboard",
+          "rentals": "Mijn Verhuur",
+          "support": "Ondersteuning"
         }
       }
     }
