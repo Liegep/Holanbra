@@ -40,7 +40,6 @@ import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
-import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
@@ -2155,122 +2154,70 @@ export default function AdminArea() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                  <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6 h-fit">
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="glass-card p-8 border-white/10 bg-white/5 relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <FileText size={48} className="text-white" />
-                      </div>
-                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
-                      <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-                      <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
-                    </motion.div>
-
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 }}
-                      className="glass-card p-8 border-amber-500/10 bg-amber-500/5 relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <CheckCircle size={48} className="text-amber-500" />
-                      </div>
-                      <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Occupancy Rate</p>
-                      <div className="flex items-baseline gap-2">
-                         <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
-                         <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
-                      </div>
-                      <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
-                    </motion.div>
-
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
-                      className={cn(
-                        "glass-card p-8 relative overflow-hidden transition-all duration-500",
-                        stats.critical > 0 ? "border-red-500/30 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.1)]" : "border-white/10 bg-white/5"
-                      )}
-                    >
-                      <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
-                        <AlertCircle size={48} />
-                      </div>
-                      <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Issues</p>
-                      <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-                      <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 3 days</p>
-                    </motion.div>
-
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className={cn(
-                        "glass-card p-8 relative overflow-hidden transition-all duration-500",
-                        stats.attention > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
-                      )}
-                    >
-                      <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
-                        <Clock size={48} />
-                      </div>
-                      <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Attention</p>
-                      <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-                      <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
-                    </motion.div>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="glass-card p-8 border-white/10 bg-white/5 relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                      <FileText size={48} className="text-white" />
+                    </div>
+                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
+                    <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
+                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
+                  </motion.div>
 
                   <motion.div 
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="lg:col-span-4 glass-card p-8 border-white/10 bg-white/5 flex flex-col items-center justify-center min-h-[400px]"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="glass-card p-8 border-amber-500/10 bg-amber-500/5 relative overflow-hidden"
                   >
-                    <h4 className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-8 self-start">Portfolio Distribution</h4>
-                    <div className="w-full h-64 relative">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={[
-                              { name: 'Occupied', value: stats.rented },
-                              { name: 'Available', value: stats.available }
-                            ]}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                            stroke="none"
-                          >
-                            <Cell fill="#f59e0b" stroke="none" />
-                            <Cell fill="rgba(255,255,255,0.05)" stroke="none" />
-                          </Pie>
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-3xl font-black text-white">{Math.round((stats.rented / stats.total) * 100) || 0}%</span>
-                        <span className="text-[8px] text-white/40 uppercase font-bold tracking-tighter">Occupancy</span>
-                      </div>
+                    <div className="absolute top-0 right-0 p-8 opacity-10">
+                      <CheckCircle size={48} className="text-amber-500" />
                     </div>
-                    <div className="w-full mt-8 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-amber-500" />
-                          <span className="text-[10px] text-white/60 uppercase font-bold">Rented</span>
-                        </div>
-                        <span className="text-[10px] text-white font-black">{stats.rented}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-white/10" />
-                          <span className="text-[10px] text-white/60 uppercase font-bold">Available</span>
-                        </div>
-                        <span className="text-[10px] text-white font-black">{stats.available}</span>
-                      </div>
+                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Occupancy Rate</p>
+                    <div className="flex items-baseline gap-2">
+                       <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
+                       <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
                     </div>
+                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
+                  </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className={cn(
+                      "glass-card p-8 relative overflow-hidden transition-all duration-500",
+                      stats.critical > 0 ? "border-red-500/30 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.1)]" : "border-white/10 bg-white/5"
+                    )}
+                  >
+                    <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
+                      <AlertCircle size={48} />
+                    </div>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Issues</p>
+                    <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 3 days</p>
+                  </motion.div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className={cn(
+                      "glass-card p-8 relative overflow-hidden transition-all duration-500",
+                      stats.attention > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
+                    )}
+                  >
+                    <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
+                      <Clock size={48} />
+                    </div>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Attention</p>
+                    <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
                   </motion.div>
                 </div>
               </div>
