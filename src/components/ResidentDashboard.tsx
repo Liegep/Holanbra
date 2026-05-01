@@ -196,18 +196,11 @@ const ResidentDashboard: React.FC = () => {
           
           <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div className="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
+              <div className="w-32 h-32 aspect-square rounded-2xl overflow-hidden border border-[#f59e0b] shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
                 <img 
-                  src={`/api/avatar/${residentData?.tenant_id || residentData?.avatar_uuid}`} 
-                  alt="SL Avatar"
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
+                  alt="Avatar"
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    if (!target.src.includes('ui-avatars')) {
-                       target.src = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=111&color=f59e0b&size=200`;
-                    }
-                  }}
                 />
               </div>
               <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">

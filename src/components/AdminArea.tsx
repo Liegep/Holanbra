@@ -995,18 +995,11 @@ export default function AdminArea() {
                 <div className="flex justify-between items-center">
                   {renterFormData.avatarUuid && (
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-amber-500/30 bg-zinc-900">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#f59e0b] bg-zinc-900">
                         <img 
-                          src={`/api/avatar/${renterFormData.avatarUuid}`} 
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(renterFormData.avatarName || 'SL')}&background=111111&color=f59e0b&size=200&bold=true&format=svg`} 
                           alt="Preview" 
                           className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (!target.src.includes('ui-avatars')) {
-                              target.src = `https://ui-avatars.com/api/?name=SL&background=111&color=f59e0b`;
-                            }
-                          }}
                         />
                       </div>
                       <span className="text-[10px] font-bold uppercase text-amber-500/60">SL Profile Preview</span>
@@ -1039,18 +1032,11 @@ export default function AdminArea() {
                 {renters.map((renter) => (
                   <div key={renter.id} className="glass-card p-6 border-white/5 hover:border-amber-500/30 transition-all group relative overflow-hidden">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#f59e0b] bg-zinc-900">
                         <img 
-                          src={`/api/avatar/${renter.tenant_id || renter.avatar_uuid}`} 
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(renter.avatar_name)}&background=111111&color=f59e0b&size=200&bold=true&format=svg`} 
                           alt={renter.avatar_name}
                           className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (!target.src.includes('ui-avatars')) {
-                              target.src = `https://ui-avatars.com/api/?name=${renter.avatar_name}&background=111&color=f59e0b`;
-                            }
-                          }}
                         />
                       </div>
                       <div className="text-left min-w-0">
