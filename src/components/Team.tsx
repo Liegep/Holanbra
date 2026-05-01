@@ -106,6 +106,31 @@ export default function Team() {
 
       if (error) throw error;
 
+      // Discord Webhook Notification
+      const discordUrl = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
+      if (discordUrl) {
+        try {
+          await fetch(discordUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              embeds: [{
+                title: '📬 Nova Mensagem do Site',
+                color: 0xF59E0B, // Amber
+                fields: [
+                  { name: 'De:', value: visitorData.name, inline: true },
+                  { name: 'Para:', value: activeMessageTarget.name, inline: true },
+                  { name: 'Mensagem:', value: visitorData.message }
+                ],
+                timestamp: new Date().toISOString()
+              }]
+            })
+          });
+        } catch (webhookErr) {
+          console.warn("Discord Webhook failed, but message was saved to DB.", webhookErr);
+        }
+      }
+
       setNotice(`Sua mensagem foi entregue para ${activeMessageTarget.name}! ✨`);
       setActiveMessageTarget(null);
       setVisitorData({ name: '', message: '' });
