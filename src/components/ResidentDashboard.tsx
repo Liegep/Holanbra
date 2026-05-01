@@ -71,11 +71,12 @@ const ResidentDashboard: React.FC = () => {
 
       setResidentData(renter);
 
-      // Step 2: Fetch properties linked to this resident (tenant_id == avatar_uuid)
+      // Step 2: Fetch properties linked to this resident
+      const residentId = renter.tenant_id || renter.avatar_uuid;
       const { data: userProperties, error: propError } = await supabase
         .from('properties')
         .select('*')
-        .eq('tenant_id', renter.avatar_uuid);
+        .eq('tenant_id', residentId);
 
       if (propError) throw propError;
 
@@ -195,27 +196,23 @@ const ResidentDashboard: React.FC = () => {
           
           <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div className="w-[140px] h-[140px] aspect-square rounded-[32px] overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-background-dark/50">
+              <div className="w-[120px] h-[120px] aspect-square rounded-[24px] overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
                 <img 
-                  src={`https://api.secondlife.com/get_agent_resources?agent_id=${residentData?.avatar_uuid}&magick=avatar_picker`} 
+                  src={`https://img.secondlife.com/id/${residentData?.tenant_id || residentData?.avatar_uuid}/image.png`} 
                   alt="SL Avatar"
-                  className="w-full h-full object-cover transition-opacity duration-500"
+                  className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    const fallbackUrl = `https://my-secondlife-s3-amazon-aws.com/users/${residentData?.avatar_uuid}/thumb_user_image.png`;
-                    const avatarFallback = `https://ui-avatars.com/api/?name=${residentData?.avatar_name}&background=f59e0b&color=000&size=128`;
-                    
-                    if (target.src.includes('avatar_picker')) {
-                      target.src = fallbackUrl;
-                    } else if (target.src.includes('amazon-aws')) {
-                      target.src = avatarFallback;
+                    const id = residentData?.tenant_id || residentData?.avatar_uuid;
+                    if (!target.src.includes('avatar_picker')) {
+                      target.src = `https://api.secondlife.com/get_agent_resources?agent_id=${id}&magick=avatar_picker`;
                     }
                   }}
                 />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 border-4 border-background-dark rounded-2xl flex items-center justify-center shadow-lg">
-                <ShieldCheck size={20} className="text-white" />
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">
+                <ShieldCheck size={16} className="text-white" />
               </div>
             </div>
             
@@ -223,12 +220,12 @@ const ResidentDashboard: React.FC = () => {
               <div className="flex items-center justify-center gap-3 text-amber-500">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Authenticated</span>
               </div>
-              <h1 className="text-5xl font-display font-bold tracking-tighter capitalize text-white">
+              <h1 className="text-4xl font-display font-bold tracking-tighter capitalize text-white">
                 {residentData?.avatar_name}
               </h1>
               <div className="flex items-center justify-center gap-2">
-                <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                  {residentData?.avatar_uuid}
+                <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-md border border-white/5">
+                  {residentData?.tenant_id || residentData?.avatar_uuid}
                 </p>
               </div>
             </div>
