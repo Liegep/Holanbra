@@ -142,6 +142,7 @@ export default function AdminArea() {
     password: ''
   });
   const [covenants, setCovenants] = useState({ en: '', pt: '', es: '', nl: '' });
+  const [isDirty, setIsDirty] = useState(false);
   const [heroContent, setHeroContent] = useState<any>({
     backgroundImage: '',
     badgeText: 'New Islands Available',
@@ -280,6 +281,7 @@ export default function AdminArea() {
       const { error } = await supabase.from('land_covenants').upsert(payload);
       
       if (error) throw error;
+      setIsDirty(false);
       showToast("Covenants updated successfully!");
     } catch (error) {
       console.error(error);
@@ -1956,7 +1958,10 @@ export default function AdminArea() {
                   <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.en}
-                      onChange={(e: any) => setCovenants(prev => ({ ...prev, en: e.target.value }))}
+                      onChange={(e: any) => {
+                        setCovenants(prev => ({ ...prev, en: e.target.value }));
+                        setIsDirty(true);
+                      }}
                       placeholder="Enter English covenant text..."
                     />
                   </div>
@@ -1966,7 +1971,10 @@ export default function AdminArea() {
                   <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.pt}
-                      onChange={(e: any) => setCovenants(prev => ({ ...prev, pt: e.target.value }))}
+                      onChange={(e: any) => {
+                        setCovenants(prev => ({ ...prev, pt: e.target.value }));
+                        setIsDirty(true);
+                      }}
                       placeholder="Insira o texto do covenant em português..."
                     />
                   </div>
@@ -1976,7 +1984,10 @@ export default function AdminArea() {
                   <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.es}
-                      onChange={(e: any) => setCovenants(prev => ({ ...prev, es: e.target.value }))}
+                      onChange={(e: any) => {
+                        setCovenants(prev => ({ ...prev, es: e.target.value }));
+                        setIsDirty(true);
+                      }}
                       placeholder="Ingrese el texto del convenio en español..."
                     />
                   </div>
@@ -1986,7 +1997,10 @@ export default function AdminArea() {
                   <div className="editor-container" onPaste={handlePaste}>
                     <Editor 
                       value={covenants.nl}
-                      onChange={(e: any) => setCovenants(prev => ({ ...prev, nl: e.target.value }))}
+                      onChange={(e: any) => {
+                        setCovenants(prev => ({ ...prev, nl: e.target.value }));
+                        setIsDirty(true);
+                      }}
                       placeholder="Voer de Nederlandse tekst van het convenant in..."
                     />
                   </div>
@@ -1999,6 +2013,20 @@ export default function AdminArea() {
               >
                 <Save size={18} /> Update Covenants
               </button>
+
+              <AnimatePresence>
+                {isDirty && (
+                  <motion.button
+                    initial={{ y: 50, opacity: 0, scale: 0.8 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                    exit={{ y: 50, opacity: 0, scale: 0.8 }}
+                    onClick={handleSaveCovenant}
+                    className="fixed bottom-12 right-12 z-[100] px-10 py-5 rounded-full bg-amber-500 text-black font-black flex items-center gap-3 shadow-[0_15px_60px_rgba(245,158,11,0.5)] hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] text-[10px]"
+                  >
+                    <Save size={16} /> Save Covenants
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
           )}
 

@@ -94,6 +94,14 @@
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+}
+
+.editor-container {
+  position: relative;
 }
 
 /* Fix selection color */
