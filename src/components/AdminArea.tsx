@@ -592,7 +592,7 @@ export default function AdminArea() {
         throw error;
       }
       
-      showToast(editingTeamId ? "Membro da equipe atualizado!" : "Membro da equipe adicionado!");
+      showToast("Membro da equipe atualizado com sucesso! ✨");
 
       setTeamFormData({
         name: '',

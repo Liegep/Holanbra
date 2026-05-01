@@ -85,10 +85,27 @@ export default function Team() {
     };
   }, []);
 
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const handleIMClick = (e: React.MouseEvent, url: string) => {
+    if (url === '#') {
+      e.preventDefault();
+      return;
+    }
+    setNotice("Abrindo contato no Second Life...");
+    setTimeout(() => setNotice(null), 3000);
+  };
+
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
 
   return (
     <section id="team" className="py-32 px-6 bg-background-light relative overflow-hidden">
+      {/* Quick Notice Overlay */}
+      {notice && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-black text-white rounded-2xl shadow-2xl font-black text-[10px] uppercase tracking-widest border border-white/10 animate-in fade-in slide-in-from-top-4">
+          ✨ {notice}
+        </div>
+      )}
       {/* Background Accents */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 blur-[150px] -mr-64 -mt-64" />
       <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-amber-500/5 blur-[100px] -ml-32 -mb-32" />
@@ -152,6 +169,7 @@ export default function Team() {
                       href={member.slProfile} 
                       target="_blank" 
                       rel="noreferrer"
+                      onClick={(e) => handleIMClick(e, member.slProfile)}
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
