@@ -81,50 +81,88 @@
 
 /* Dark mode Editor fixes (react-simple-wysiwyg) */
 .rsw-editor {
-  @apply bg-zinc-900/50! border-white/10! text-white! rounded-2xl overflow-hidden;
+  background-color: #000000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 1.5rem !important;
+  overflow: hidden !important;
 }
 
 .rsw-toolbar {
-  @apply bg-zinc-800/80! border-b border-white/10! p-2 gap-1 flex items-center;
+  background-color: #111111 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 /* Fix selection color */
 .rsw-content ::selection {
   background: #fbbf24 !important;
-  color: black !important;
+  color: #000000 !important;
 }
 
-/* Fix dropdown/labels visibility */
-.rsw-toolbar span, 
+/* Dropdown/labels visibility */
 .rsw-toolbar select {
-  @apply text-amber-500! font-bold text-[10px] uppercase tracking-wider bg-transparent border-none outline-none cursor-pointer;
+  background-color: #222222 !important;
+  color: #fbbf24 !important;
+  font-weight: 800 !important;
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  cursor: pointer !important;
 }
 
 .rsw-toolbar select option {
-  @apply bg-zinc-900 text-white;
+  background-color: #111111 !important;
+  color: #ffffff !important;
 }
 
 .rsw-toolbar button {
-  @apply hover:bg-white/10! rounded p-1 transition-colors;
+  color: #ffffff !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px !important;
+  transition: all 0.2s !important;
+}
+
+.rsw-toolbar button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .rsw-toolbar svg {
-  fill: #f59e0b !important; /* Amber-500 */
+  fill: #f59e0b !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .rsw-content {
-  @apply p-8 min-h-[400px] text-white/90! leading-relaxed font-sans text-base;
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  padding: 40px !important;
+  min-height: 400px !important;
+  font-family: inherit !important;
+  font-size: 1rem !important;
+  line-height: 1.8 !important;
 }
 
-/* Reset colors for pasted content to ensure readability in dark mode */
-.rsw-content * {
-  color: inherit !important;
+/* CRITICAL: Force white text on everything inside the content area */
+.rsw-content, 
+.rsw-content *, 
+.rsw-content span, 
+.rsw-content p, 
+.rsw-content li {
+  color: #ffffff !important;
 }
 
 .rsw-content h1, .rsw-content h2, .rsw-content h3 {
-  @apply text-amber-500! font-display mb-4 mt-8;
+  color: #fbbf24 !important;
+  font-weight: 700 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
 }
-
-.rsw-content h1 { @apply text-3xl; }
-.rsw-content h2 { @apply text-2xl; }
-.rsw-content h3 { @apply text-xl; }
