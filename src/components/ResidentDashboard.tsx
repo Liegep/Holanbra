@@ -189,13 +189,15 @@ const ResidentDashboard: React.FC = () => {
     <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
       <div className="max-w-6xl mx-auto space-y-12">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-white/5 p-8 rounded-[40px] border border-white/5">
-          <div className="flex items-center gap-6">
+        {/* Header - Profile Section */}
+        <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-12 rounded-[40px] border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
+          
+          <div className="flex flex-col items-center gap-6">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+              <div className="w-[120px] h-[120px] rounded-full overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)]">
                 <img 
-                  src={`https://api.secondlife.com/get_agent_resources?agent_id=${residentData?.avatar_uuid}&magick=avatar_picker`} 
+                  src={`https://img.secondlife.com/id/${residentData?.avatar_uuid}/image.png`} 
                   alt="SL Avatar"
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -203,26 +205,32 @@ const ResidentDashboard: React.FC = () => {
                   }}
                 />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-full"></div>
+              <div className="absolute bottom-1 right-1 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-full flex items-center justify-center shadow-lg">
+                <ShieldCheck size={16} className="text-white" />
+              </div>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 text-amber-500">
-                <ShieldCheck size={16} />
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-3 text-amber-500">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Authenticated</span>
               </div>
-              <h1 className="text-4xl font-display font-bold tracking-tighter capitalize">
+              <h1 className="text-5xl font-display font-bold tracking-tighter capitalize text-white">
                 {residentData?.avatar_name}
               </h1>
-              <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest">{residentData?.avatar_uuid}</p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                  {residentData?.avatar_uuid}
+                </p>
+              </div>
             </div>
+
+            <button 
+              onClick={handleLogout}
+              className="mt-4 flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
+            >
+              <LogOut size={14} /> Sign Out
+            </button>
           </div>
-          
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-6 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20"
-          >
-            <LogOut size={14} /> Sign Out
-          </button>
         </div>
 
         {properties.length === 0 ? (
