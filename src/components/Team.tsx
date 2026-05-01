@@ -96,38 +96,31 @@ export default function Team() {
 
     setIsSending(true);
     try {
-      console.log("Attempting to save message to Supabase...", {
-        visitor_name: visitorData.name,
-        recipient_name: activeMessageTarget.name
-      });
+      console.log("Saving message to Supabase (Strict Columns Mode)...");
 
+      // Sending ONLY the requested columns
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
-        message: visitorData.message, 
-        recipient_id: activeMessageTarget.id,
-        recipient_name: activeMessageTarget.name,
-        created_at: new Date().toISOString(),
-        is_read: false
+        message: visitorData.message,
+        recipient_name: activeMessageTarget.name
       }]);
 
       if (supabaseError) {
-        console.error("Supabase Insert Error:", supabaseError);
+        console.error("Supabase error:", supabaseError);
         throw supabaseError;
       }
 
-      // Discord Webhook Notification
+      // 2. Discord Webhook Notification
       const discordUrl = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
-      console.log("Discord Webhook URL present:", !!discordUrl);
-      
       if (discordUrl) {
         try {
-          const response = await fetch(discordUrl, {
+          await fetch(discordUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               embeds: [{
                 title: '📬 Nova Mensagem do Site',
-                color: 16096779, // Amber (#F59E0B hex to decimal)
+                color: 16096779,
                 fields: [
                   { name: 'De:', value: visitorData.name || 'Anônimo', inline: true },
                   { name: 'Para:', value: activeMessageTarget.name || 'Equipe', inline: true },
@@ -138,32 +131,22 @@ export default function Team() {
               }]
             })
           });
-
-          if (!response.ok) {
-            console.error("Discord Webhook responded with error status:", response.status);
-          } else {
-            console.log("Discord Webhook sent successfully");
-          }
         } catch (webhookErr) {
-          console.error("Discord Webhook network error:", webhookErr);
+          console.warn("Discord Webhook network error (Message saved to DB):", webhookErr);
         }
       }
 
-      // Success Cycle
-      console.log("Message submission successful!");
-      window.alert(`Sua mensagem para ${activeMessageTarget.name} foi enviada com sucesso! ✨`);
+      // 3. Success Cycle: Feedback, Modal Close, and Clear Form
+      window.alert(`Mensagem Enviada! ✨ Sua mensagem foi entregue para ${activeMessageTarget.name}.`);
       
-      // Clear data and close modal IMMEDIATELY
-      setVisitorData({ name: '', message: '' });
       setActiveMessageTarget(null);
-      setNotice(`Mensagem entregue com sucesso!`);
+      setVisitorData({ name: '', message: '' });
+      setNotice(`Mensagem enviada com sucesso!`);
       
-      // Clear notice after delay
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
-      window.alert("Erro ao enviar mensagem: " + (err.message || "Erro desconhecido. Verifique o console do navegador."));
-      setNotice(`Erro ao enviar mensagem: ${err.message || 'Erro desconhecido'}`);
+      window.alert("Erro ao enviar: " + (err.message || "Verifique a conexão com o banco."));
     } finally {
       setIsSending(false);
     }
