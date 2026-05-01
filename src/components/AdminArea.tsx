@@ -997,7 +997,7 @@ export default function AdminArea() {
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg overflow-hidden border border-amber-500/30 bg-zinc-900">
                         <img 
-                          src={`https://img.secondlife.com/id/${renterFormData.avatarUuid}/image.png`} 
+                          src={`/api/avatar/${renterFormData.avatarUuid}`} 
                           alt="Preview" 
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"
@@ -1041,7 +1041,7 @@ export default function AdminArea() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 bg-zinc-900">
                         <img 
-                          src={`https://img.secondlife.com/id/${renter.tenant_id || renter.avatar_uuid}/image.png`} 
+                          src={`/api/avatar/${renter.tenant_id || renter.avatar_uuid}`} 
                           alt={renter.avatar_name}
                           className="w-full h-full object-cover"
                           referrerPolicy="no-referrer"

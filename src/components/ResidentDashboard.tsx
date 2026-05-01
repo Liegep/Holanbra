@@ -198,7 +198,7 @@ const ResidentDashboard: React.FC = () => {
             <div className="relative">
               <div className="w-32 h-32 aspect-square rounded-3xl overflow-hidden border-4 border-amber-500 shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
                 <img 
-                  src={`https://img.secondlife.com/id/${residentData?.tenant_id || residentData?.avatar_uuid}/image.png`} 
+                  src={`/api/avatar/${residentData?.tenant_id || residentData?.avatar_uuid}`} 
                   alt="SL Avatar"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

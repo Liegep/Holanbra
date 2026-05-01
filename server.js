@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import axios from 'axios';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -187,6 +188,33 @@ async function startServer() {
       res.json({ status: config.status, managers: [{ slName: config.slName, status: config.status, slId: config.slId }] });
     } catch (error) {
       res.json({ status: "offline", managers: [] });
+    }
+  });
+
+  // Avatar Image Proxy - Resolves DNS issues (NXDOMAIN) for img.secondlife.com
+  app.get('/api/avatar/:uuid', async (req, res) => {
+    const { uuid } = req.params;
+    if (!uuid || uuid === 'null' || uuid === 'undefined') {
+      return res.status(400).send('Invalid UUID');
+    }
+
+    try {
+      const imageUrl = `https://img.secondlife.com/id/${uuid}/image.png`;
+      const response = await axios.get(imageUrl, {
+        responseType: 'arraybuffer',
+        timeout: 5000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+
+      res.set('Content-Type', response.headers['content-type'] || 'image/png');
+      res.set('Cache-Control', 'public, max-age=86400'); // Cache for 24 hours
+      res.send(response.data);
+    } catch (error) {
+      console.error(`Proxy Error for UUID ${uuid}:`, error.message);
+      // Fallback to UI Avatars if Second Life fails
+      res.redirect(`https://ui-avatars.com/api/?name=SL&background=111&color=f59e0b&size=512`);
     }
   });
 
