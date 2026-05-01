@@ -148,9 +148,9 @@ const ResidentDashboard: React.FC = () => {
       setTickets([data, ...tickets]);
       setTicketForm({ subject: '', category: 'Financeiro', message: '' });
       showToast("Ticket submitted successfully!");
-    } catch (err) {
-      console.error("Ticket error:", err);
-      showToast(`Failed to submit ticket: ${err instanceof Error ? err.message : 'Unknown error'}`, "error");
+    } catch (err: any) {
+      console.error("Erro Detalhado:", err.message, err.details, err.hint);
+      showToast(`Failed to submit ticket: ${err.message || 'Unknown error'}`, "error");
     } finally {
       setIsSubmittingTicket(false);
     }
