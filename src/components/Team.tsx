@@ -103,7 +103,7 @@ export default function Team() {
 
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
-        message: visitorData.message,
+        content: visitorData.message, // Renamed from 'message' to 'content'
         recipient_id: activeMessageTarget.id,
         recipient_name: activeMessageTarget.name,
         created_at: new Date().toISOString(),
@@ -151,11 +151,12 @@ export default function Team() {
 
       // Success Cycle
       console.log("Message submission successful!");
-      setNotice(`Sua mensagem foi enviada com sucesso! ✨`);
+      window.alert(`Sua mensagem para ${activeMessageTarget.name} foi enviada com sucesso! ✨`);
       
-      // Clear data and close modal
+      // Clear data and close modal IMMEDIATELY
       setVisitorData({ name: '', message: '' });
       setActiveMessageTarget(null);
+      setNotice(`Mensagem entregue com sucesso!`);
       
       // Clear notice after delay
       setTimeout(() => setNotice(null), 5000);
