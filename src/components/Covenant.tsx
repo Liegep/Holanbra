@@ -13,18 +13,17 @@ const Covenant: React.FC = () => {
     const fetchCovenant = async () => {
       try {
         const { data, error } = await supabase
-          .from('site_settings')
+          .from('land_covenants')
           .select('*')
-          .eq('id', 'covenant')
+          .limit(1)
           .maybeSingle();
         
         if (data) {
-          const contentData = data.content || data;
           setContent({
-            en: contentData.en || '',
-            pt: contentData.pt || '',
-            es: contentData.es || '',
-            nl: contentData.nl || ''
+            en: data.content_en || '',
+            pt: data.content_pt || '',
+            es: data.content_es || '',
+            nl: data.content_nl || ''
           });
         }
       } catch (error) {

@@ -167,16 +167,14 @@ export default function AdminArea() {
     if (!user || !isAdmin) return;
     
     const fetchData = async () => {
-      // Fetch Covenants
-      const { data: covenantData } = await supabase.from('site_settings').select('*').eq('id', 'covenant').maybeSingle();
+      // Fetch Covenants from land_covenants
+      const { data: covenantData } = await supabase.from('land_covenants').select('*').limit(1).maybeSingle();
       if (covenantData) {
-        // Supporting both structures during migration if needed
-        const content = covenantData.content || covenantData;
         setCovenants({
-          en: content.en || '',
-          pt: content.pt || '',
-          es: content.es || '',
-          nl: content.nl || ''
+          en: covenantData.content_en || '',
+          pt: covenantData.content_pt || '',
+          es: covenantData.content_es || '',
+          nl: covenantData.content_nl || ''
         });
       }
 
@@ -211,6 +209,7 @@ export default function AdminArea() {
     const settingsSubscription = supabase
       .channel('settings_changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
       .subscribe();
 
     return () => {
@@ -263,11 +262,22 @@ export default function AdminArea() {
 
   const handleSaveCovenant = async () => {
     try {
-      const { error } = await supabase.from('site_settings').upsert({
-        id: 'covenant',
-        content: covenants,
-        updated_at: new Date().toISOString()
-      });
+      // Get existing one first to know the ID for upsert, or use a fixed ID like 1 if we assume it's a singleton
+      const { data: existing } = await supabase.from('land_covenants').select('id').limit(1).maybeSingle();
+      
+      const payload = {
+        content_en: covenants.en,
+        content_pt: covenants.pt,
+        content_es: covenants.es,
+        content_nl: covenants.nl,
+      };
+
+      if (existing?.id) {
+        // @ts-ignore
+        payload.id = existing.id;
+      }
+
+      const { error } = await supabase.from('land_covenants').upsert(payload);
       
       if (error) throw error;
       showToast("Covenants updated successfully!");
