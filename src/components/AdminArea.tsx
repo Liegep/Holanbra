@@ -499,20 +499,21 @@ export default function AdminArea() {
     };
   }, [user, isAdmin]);
 
+  const fetchGallery = async () => {
+    const { data, error } = await supabase
+      .from('gallery')
+      .select('*')
+      .order('id', { ascending: false }); // Show newest first
+    
+    if (error) {
+      console.error("Error fetching gallery:", error);
+    } else {
+      setGalleryImages(data || []);
+    }
+  };
+
   useEffect(() => {
     if (!user || !isAdmin) return;
-
-    const fetchGallery = async () => {
-      const { data, error } = await supabase
-        .from('gallery')
-        .select('*');
-      
-      if (error) {
-        console.error(error);
-      } else {
-        setGalleryImages(data || []);
-      }
-    };
 
     fetchGallery();
 
@@ -632,23 +633,33 @@ export default function AdminArea() {
 
   const handleGallerySave = async () => {
     if (!galleryFormData.imageUrl) {
-      showToast("Please provide an image URL.", "info");
+      showToast("Por favor, carregue uma imagem primeiro.", "info");
       return;
     }
 
     try {
-      const { error } = await supabase.from('gallery').insert([{
+      console.log("Iniciando salvamento na tabela 'gallery'...", galleryFormData);
+      
+      const { error, data } = await supabase.from('gallery').insert([{
         url: galleryFormData.imageUrl,
         caption: galleryFormData.caption
-      }]);
+      }]).select();
       
-      if (error) throw error;
+      if (error) {
+        console.error("SUPABASE GALLERY INSERT ERROR:", error);
+        throw error;
+      }
+      
+      console.log("Salvo com sucesso na galeria:", data);
       
       setGalleryFormData({ caption: '', imageUrl: '' });
-      showToast("Gallery image saved!");
+      showToast("Foto adicionada à galeria com sucesso!");
+      
+      // Força a atualização da lista
+      await fetchGallery();
     } catch (err: any) {
-      console.error(err);
-      showToast("Gallery save failed", "error");
+      console.error("Erro completo ao salvar galeria:", err);
+      showToast(`Erro ao salvar na galeria: ${err.message || 'Erro desconhecido'}`, "error");
     }
   };
 
