@@ -17,7 +17,7 @@ import {
   X,
   Plus
 } from 'lucide-react';
-import { Link, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Properties from './components/Properties';
@@ -66,6 +66,11 @@ export default function App() {
             </>
           } />
           <Route path="/admin/*" element={<AdminArea />} />
+          <Route path="/properties" element={
+            <div className="pt-20">
+              <Properties />
+            </div>
+          } />
           <Route path="/covenant" element={<Covenant />} />
           <Route path="/resident" element={<ResidentDashboard />} />
         </Routes>

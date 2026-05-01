@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Play, MapPin, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -118,12 +119,12 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.8 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
-          <button 
-            onClick={() => document.getElementById('imoveis')?.scrollIntoView({ behavior: 'smooth' })}
+          <Link 
+            to="/properties"
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
             Explore Catalog <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
           
           <button 
             onClick={() => setShowVideoModal(true)}
