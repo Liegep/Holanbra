@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import Editor from 'react-simple-wysiwyg';
 import { 
   BarChart3, 
   Settings, 
@@ -33,9 +34,6 @@ import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
-
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 
 function AdminAuthForm() {
   const [loading, setLoading] = useState(false);
@@ -289,7 +287,6 @@ export default function AdminArea() {
     }
   };
 
-  const Editor = (ReactQuill as any).default || ReactQuill;
   const [properties, setProperties] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -1952,10 +1949,9 @@ export default function AdminArea() {
                   <label className="text-xs font-bold text-amber-500/70 uppercase">English Version</label>
                   <div className="quill-dark-editor">
                     <Editor 
-                      theme="snow"
                       value={covenants.en}
-                      onChange={(content: string) => setCovenants(prev => ({ ...prev, en: content }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      onChange={(e: any) => setCovenants(prev => ({ ...prev, en: e.target.value }))}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Enter English covenant text..."
                     />
                   </div>
@@ -1964,10 +1960,9 @@ export default function AdminArea() {
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Portuguese Version</label>
                   <div className="quill-dark-editor">
                     <Editor 
-                      theme="snow"
                       value={covenants.pt}
-                      onChange={(content: string) => setCovenants(prev => ({ ...prev, pt: content }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      onChange={(e: any) => setCovenants(prev => ({ ...prev, pt: e.target.value }))}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Insira o texto do covenant em português..."
                     />
                   </div>
@@ -1976,10 +1971,9 @@ export default function AdminArea() {
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Spanish Version</label>
                   <div className="quill-dark-editor">
                     <Editor 
-                      theme="snow"
                       value={covenants.es}
-                      onChange={(content: string) => setCovenants(prev => ({ ...prev, es: content }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      onChange={(e: any) => setCovenants(prev => ({ ...prev, es: e.target.value }))}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Ingrese el texto del convenio en español..."
                     />
                   </div>
@@ -1988,10 +1982,9 @@ export default function AdminArea() {
                   <label className="text-xs font-bold text-amber-500/70 uppercase">Dutch Version</label>
                   <div className="quill-dark-editor">
                     <Editor 
-                      theme="snow"
                       value={covenants.nl}
-                      onChange={(content: string) => setCovenants(prev => ({ ...prev, nl: content }))}
-                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white"
+                      onChange={(e: any) => setCovenants(prev => ({ ...prev, nl: e.target.value }))}
+                      className="bg-white/5 rounded-2xl overflow-hidden border border-white/10 text-white min-h-[300px] p-4"
                       placeholder="Voer de Nederlandse tekst van het convenant in..."
                     />
                   </div>

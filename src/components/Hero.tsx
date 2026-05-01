@@ -123,7 +123,7 @@ export default function Hero() {
             to="/properties"
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
-            Explore Catalog <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            Ver Propriedades <ArrowRight className="group-hover:translate-x-1 transition-transform" />
           </Link>
           
           <button 
