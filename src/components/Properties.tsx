@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ interface Property {
 }
 
 export default function Properties() {
+  const { t, i18n } = useTranslation();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -114,34 +116,42 @@ export default function Properties() {
     setCurrentImgIdx((prev) => (prev - 1 + selectedProperty.gallery.length) % selectedProperty.gallery.length);
   };
 
+  const getLocalizedDescription = (p: any) => {
+    const lang = i18n.language.split('-')[0];
+    const descKey = `description_${lang}`;
+    if (p[descKey]) return p[descKey];
+    if (p.description) return p.description;
+    return t('default_property_desc');
+  };
+
   return (
     <section id="imoveis" className="py-32 px-6 md:px-12 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
           <div className="space-y-4 text-left">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">Available Properties</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">{t('available_properties')}</h2>
             <div className="space-y-2">
               <p className="text-amber-600/60 max-w-lg text-sm uppercase tracking-widest font-medium">
-                Find your next place.
+                {t('find_place')}
               </p>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">
-                {properties.filter(p => p.status === 'available').length} {properties.filter(p => p.status === 'available').length === 1 ? 'place' : 'places'} ready to move in
+                {properties.filter(p => p.status === 'available').length} {properties.filter(p => p.status === 'available').length === 1 ? t('place') : t('places')} {t('ready_to_move')}
               </p>
             </div>
           </div>
           
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex gap-2">
-              {['All', 'Lands', 'Furnished'].map((t) => (
+              {['All', 'Lands', 'Furnished'].map((typeName) => (
                 <button 
-                  key={t}
-                  onClick={() => setFilter({ ...filter, type: t })}
+                  key={typeName}
+                  onClick={() => setFilter({ ...filter, type: typeName })}
                   className={cn(
                     "px-6 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all",
-                    filter.type === t ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-black/5 border-black/5 text-black/60 hover:text-black"
+                    filter.type === typeName ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-black/5 border-black/5 text-black/60 hover:text-black"
                   )}
                 >
-                  {t}
+                  {t(typeName.toLowerCase())}
                 </button>
               ))}
             </div>
@@ -152,9 +162,9 @@ export default function Properties() {
                 onChange={(e) => setFilter({ ...filter, status: e.target.value })}
                 className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
               >
-                <option value="all">All Status</option>
-                <option value="available">Available</option>
-                <option value="rented">Rented</option>
+                <option value="all">{t('all_status')}</option>
+                <option value="available">{t('available')}</option>
+                <option value="rented">{t('rented')}</option>
               </select>
 
               <select 
@@ -162,15 +172,15 @@ export default function Properties() {
                 onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
                 className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
               >
-                <option value="price-low">Lowest Price</option>
-                <option value="price-high">Highest Price</option>
-                <option value="name-az">Name (A-Z)</option>
-                <option value="name-za">Name (Z-A)</option>
+                <option value="price-low">{t('price_low')}</option>
+                <option value="price-high">{t('price_high')}</option>
+                <option value="name-az">{t('name_az')}</option>
+                <option value="name-za">{t('name_za')}</option>
               </select>
             </div>
 
             <div className="flex items-center gap-3 bg-black/5 border-black/5 rounded-full px-6 py-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">Up to L$ {filter.maxPrice}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">{t('up_to')} L$ {filter.maxPrice}</span>
               <input 
                 type="range" 
                 min="500" 
@@ -212,7 +222,7 @@ export default function Properties() {
                   "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit mb-3",
                   property.status === 'available' ? "bg-amber-500 text-black" : "bg-white/20 text-white"
                 )}>
-                  {property.status === 'available' ? 'Available' : 'Rented'}
+                  {property.status === 'available' ? t('available') : t('rented')}
                 </div>
                 <h3 className="text-3xl font-bold tracking-tight text-white">{property.name}</h3>
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
@@ -220,7 +230,7 @@ export default function Properties() {
                 </p>
                 <div className="flex items-center gap-4 pt-2">
                   <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
-                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
+                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ {t('week')}</span>
                   </div>
                 </div>
 
@@ -233,7 +243,7 @@ export default function Properties() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
                   >
                     <MapPin size={12} />
-                    Teleport
+                    {t('teleport')}
                   </button>
                   <button 
                     onClick={(e) => {
@@ -243,7 +253,7 @@ export default function Properties() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
                   >
                     <ExternalLink size={12} />
-                    Saber Mais
+                    {t('learn_more')}
                   </button>
                 </div>
               </div>
@@ -252,14 +262,14 @@ export default function Properties() {
           
           {sortedAndFilteredProperties.length === 0 && (
             <div className="col-span-full py-20 text-center bg-black/5 rounded-[2rem] border-2 border-dashed border-black/10">
-              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">No properties found with these filters</p>
+              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">{t('no_properties_found')}</p>
             </div>
           )}
         </div>
 
         <div className="flex justify-center pt-12">
            <button className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5">
-             View All Properties <ExternalLink size={16} className="text-amber-500" />
+             {t('view_all_properties')} <ExternalLink size={16} className="text-amber-500" />
            </button>
         </div>
       </div>
@@ -348,7 +358,7 @@ export default function Properties() {
                         "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit",
                         selectedProperty.status === 'available' ? "bg-amber-500 text-black" : "bg-zinc-100 text-zinc-400"
                       )}>
-                        {selectedProperty.status === 'available' ? 'Available' : 'Rented'}
+                        {selectedProperty.status === 'available' ? t('available') : t('rented')}
                       </div>
                       <h2 className="text-4xl md:text-5xl font-display font-bold leading-none tracking-tight text-black">
                         {selectedProperty.name}
@@ -367,26 +377,26 @@ export default function Properties() {
 
                   <div className="space-y-4">
                     <div className="text-3xl font-display font-medium text-black">
-                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">/ week</span>
+                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">/ {t('week')}</span>
                     </div>
                     
                     <div className="flex gap-4">
                       {selectedProperty.bedrooms !== undefined && selectedProperty.bedrooms > 0 && (
                         <div className="px-4 py-2 bg-zinc-100 rounded-xl">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bedrooms} BR</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bedrooms} {t('br')}</span>
                         </div>
                       )}
                       {selectedProperty.bathrooms !== undefined && selectedProperty.bathrooms > 0 && (
                         <div className="px-4 py-2 bg-zinc-100 rounded-xl">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bathrooms} BA</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bathrooms} {t('ba')}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="pt-4 border-t border-zinc-100">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Description</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">{t('description')}</h3>
                       <p className="text-sm text-zinc-600 leading-relaxed font-light">
-                        {selectedProperty.description || "Experience unparalleled luxury and comfort in this premium property at Holanbra. Designed for sophisticated residents seeking the finest in Virtual World living."}
+                        {getLocalizedDescription(selectedProperty)}
                       </p>
                     </div>
                   </div>
@@ -398,7 +408,7 @@ export default function Properties() {
                     className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-full bg-amber-500 text-black text-xs font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-2xl shadow-amber-500/30"
                   >
                     <MapPin size={18} />
-                    Teleportar agora
+                    {t('teleport_now')}
                   </button>
                   
                   {selectedProperty.status === 'available' && (
@@ -406,7 +416,7 @@ export default function Properties() {
                       to="/resident"
                       className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
                     >
-                      Process Rental
+                      {t('process_rental')}
                     </Link>
                   )}
                 </div>

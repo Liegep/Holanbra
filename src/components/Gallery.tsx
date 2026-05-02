@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Maximize2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -19,6 +20,7 @@ const DEFAULT_IMAGES: GalleryImage[] = [
 ];
 
 export default function Gallery() {
+  const { t } = useTranslation();
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
@@ -51,12 +53,12 @@ export default function Gallery() {
     <section id="gallery" className="py-32 bg-black">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">Atmosphere</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('atmosphere')}</span>
           <h2 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tighter italic">
-            LIFE AT <span className="font-light not-italic">HOLANBRA</span>
+            {t('life_at_title')} <span className="font-light not-italic">HOLANBRA</span>
           </h2>
           <p className="text-amber-100/40 max-w-lg mx-auto text-sm uppercase tracking-widest font-medium pt-2">
-            Moments captured across our islands
+            {t('gallery_subtitle')}
           </p>
         </div>
 

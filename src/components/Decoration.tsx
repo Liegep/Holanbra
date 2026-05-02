@@ -1,9 +1,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Paintbrush, Sparkles, Layout, ArrowUpRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 
 export default function Decoration() {
+  const { t } = useTranslation();
+
   return (
     <section id="servicos" className="py-32 px-6 md:px-12 bg-background-light relative overflow-hidden">
       {/* Background Decor */}
@@ -20,7 +23,7 @@ export default function Decoration() {
               className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-amber-500/20 bg-amber-500/5 text-amber-600 text-[10px] font-black uppercase tracking-[0.3em]"
             >
               <Paintbrush size={14} />
-              Decoration Services
+              {t('decoration_services')}
             </motion.div>
             
             <motion.h2 
@@ -28,8 +31,8 @@ export default function Decoration() {
               whileInView={{ opacity: 1, y: 0 }}
               className="text-5xl md:text-7xl font-display font-bold tracking-tighter leading-none text-black"
             >
-              LEVEL UP YOUR <br /> 
-              <span className="text-amber-600 italic">VIRTUAL ABODE</span>
+              {t('level_up_title')} <br /> 
+              <span className="text-amber-600 italic">{t('virtual_abode')}</span>
             </motion.h2>
             
             <motion.p 
@@ -38,7 +41,7 @@ export default function Decoration() {
               transition={{ delay: 0.1 }}
               className="text-lg text-black/50 leading-relaxed max-w-md font-light"
             >
-              Elevate your virtual living space with our expertly curated selection of furnishings, décor, and personalized design solutions.
+              {t('decoration_desc')}
             </motion.p>
 
             <motion.div
@@ -48,12 +51,12 @@ export default function Decoration() {
               className="p-8 bento-card bg-amber-500 text-black group overflow-hidden relative shadow-2xl"
             >
               <div className="relative z-10 space-y-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Creative Realm</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">{t('creative_realm')}</p>
                 <p className="text-xl font-bold leading-tight">
-                  Step into the boundless realm of creativity and transform your virtual abode with our premier decoration services.
+                  {t('creative_realm_desc')}
                 </p>
                 <button className="px-6 py-3 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform">
-                  Request Project
+                  {t('request_project')}
                 </button>
               </div>
               <Sparkles className="absolute -bottom-4 -right-4 w-32 h-32 text-black/5 -rotate-12 group-hover:scale-110 transition-transform" />
@@ -71,9 +74,9 @@ export default function Decoration() {
             >
               <span className="text-6xl font-display font-black text-black/5">01</span>
               <div className="text-left">
-                <h3 className="text-2xl font-bold text-black mb-4">Find your style</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">{t('find_style')}</h3>
                 <p className="text-black/40 text-sm leading-relaxed uppercase tracking-widest font-medium">
-                  We work with you to define the perfect aesthetic that resonates with your digital identity.
+                  {t('find_style_desc')}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-full border border-amber-500/20 flex items-center justify-center">
@@ -90,9 +93,9 @@ export default function Decoration() {
             >
               <span className="text-6xl font-display font-black text-black/10">02</span>
               <div className="text-left">
-                <h3 className="text-2xl font-bold text-black mb-4">Specially selected furnishings</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">{t('selected_furnishings')}</h3>
                 <p className="text-black/60 text-sm leading-relaxed uppercase tracking-widest font-medium">
-                  Exclusive furniture and high-definition textures to make your home unforgettable.
+                  {t('selected_furnishings_desc')}
                 </p>
               </div>
               <div className="w-12 h-12 rounded-full bg-black/10 flex items-center justify-center">
@@ -116,9 +119,9 @@ export default function Decoration() {
               <div className="relative z-10 p-10 flex flex-col justify-between h-full">
                 <span className="text-6xl font-display font-black text-white/5">03</span>
                 <div className="text-left">
-                  <h3 className="text-2xl font-bold text-amber-500 mb-4 uppercase tracking-tighter">Your dreams</h3>
+                  <h3 className="text-2xl font-bold text-amber-500 mb-4 uppercase tracking-tighter">{t('your_dreams')}</h3>
                   <p className="text-white/40 text-sm leading-relaxed uppercase tracking-widest font-medium">
-                    From concept to execution, we'll work closely with you to ensure every detail reflects your unique style.
+                    {t('your_dreams_desc')}
                   </p>
                 </div>
               </div>
@@ -133,9 +136,9 @@ export default function Decoration() {
             >
               <span className="text-6xl font-display font-black text-black/5">04</span>
               <div className="text-left">
-                <h3 className="text-2xl font-bold text-black mb-4">Have it your way</h3>
+                <h3 className="text-2xl font-bold text-black mb-4">{t('have_it_way')}</h3>
                 <p className="text-black/40 text-sm leading-relaxed uppercase tracking-widest font-medium">
-                  Cozy retreat or sleek modern haven? Our designers bring your vision to life exactly as you imagined.
+                  {t('have_it_way_desc')}
                 </p>
               </div>
               <div className="relative w-full h-24 rounded-2xl overflow-hidden grayscale brightness-125">
@@ -154,8 +157,8 @@ export default function Decoration() {
                   <Paintbrush className="text-amber-400" />
                 </div>
                 <div className="text-left">
-                  <h4 className="text-xl font-bold text-white">Ready to transform your island?</h4>
-                  <p className="text-white/40 text-xs uppercase tracking-widest">Free initial consultation for Holanbra SL members</p>
+                  <h4 className="text-xl font-bold text-white">{t('transform_island')}</h4>
+                  <p className="text-white/40 text-xs uppercase tracking-widest">{t('free_consultation')}</p>
                 </div>
               </div>
               <button className="p-4 bg-white text-black rounded-full hover:bg-amber-400 transition-colors">

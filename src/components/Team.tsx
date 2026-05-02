@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users, X, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -52,6 +53,7 @@ const DEFAULT_TEAM: TeamMember[] = [
 ];
 
 export default function Team() {
+  const { t, i18n } = useTranslation();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,8 +98,6 @@ export default function Team() {
 
     setIsSending(true);
     try {
-      console.log("Saving message to Supabase (Strict Columns Mode)...");
-
       // Sending ONLY the requested columns
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
@@ -105,48 +105,15 @@ export default function Team() {
         recipient_name: activeMessageTarget.name
       }]);
 
-      if (supabaseError) {
-        console.error("Supabase error:", supabaseError);
-        throw supabaseError;
-      }
+      if (supabaseError) throw supabaseError;
 
-      // 2. Discord Webhook Notification
-      const discordUrl = import.meta.env.VITE_DISCORD_WEBHOOK_URL;
-      if (discordUrl) {
-        try {
-          await fetch(discordUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              embeds: [{
-                title: '📬 Nova Mensagem do Site',
-                color: 16096779,
-                fields: [
-                  { name: 'De:', value: visitorData.name || 'Anônimo', inline: true },
-                  { name: 'Para:', value: activeMessageTarget.name || 'Equipe', inline: true },
-                  { name: 'Mensagem:', value: visitorData.message || '(Vazio)' }
-                ],
-                footer: { text: "Holanbra Real Estate System" },
-                timestamp: new Date().toISOString()
-              }]
-            })
-          });
-        } catch (webhookErr) {
-          console.warn("Discord Webhook network error (Message saved to DB):", webhookErr);
-        }
-      }
-
-      // 3. Success Cycle: Feedback, Modal Close, and Clear Form
-      window.alert(`Mensagem Enviada! ✨ Sua mensagem foi entregue para ${activeMessageTarget.name}.`);
-      
+      setNotice(t('im_sent_success'));
       setActiveMessageTarget(null);
       setVisitorData({ name: '', message: '' });
-      setNotice(`Mensagem enviada com sucesso!`);
-      
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
-      window.alert("Erro ao enviar: " + (err.message || "Verifique a conexão com o banco."));
+      window.alert(t('error_msg') + ": " + (err.message || ""));
     } finally {
       setIsSending(false);
     }
@@ -158,6 +125,11 @@ export default function Team() {
   };
 
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
+
+  const translateRole = (role: string) => {
+    const slug = role.toLowerCase().replace(/ /g, '_').replace(/&/g, '');
+    return i18n.exists(slug) ? t(slug) : role;
+  };
 
   return (
     <section id="team" className="py-32 px-6 bg-background-light relative overflow-hidden">
@@ -181,7 +153,7 @@ export default function Team() {
                className="flex items-center gap-3 text-amber-600"
             >
               <div className="w-12 h-[1px] bg-amber-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">The Minds Behind</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('team_subtitle')}</span>
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -189,7 +161,7 @@ export default function Team() {
               viewport={{ once: true }}
               className="text-6xl md:text-8xl font-display font-bold tracking-tighter text-black"
             >
-              OUR TEAM
+              {t('our_team').toUpperCase()}
             </motion.h2>
           </div>
           <motion.p 
@@ -198,7 +170,7 @@ export default function Team() {
             viewport={{ once: true }}
             className="text-black/40 max-w-sm text-sm uppercase tracking-widest leading-relaxed"
           >
-            A diverse group of professionals dedicated to redefining the virtual real estate experience in Second Life.
+            {t('team_desc')}
           </motion.p>
         </div>
 
@@ -232,14 +204,14 @@ export default function Team() {
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      Send IM
+                      {t('send_im')}
                     </a>
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/80 backdrop-blur-xl border border-white/20 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 rounded-3xl shadow-lg">
                      <div className="flex items-center gap-2 text-amber-600 mb-2">
                         <IconComponent size={14} />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{member.role}</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest">{translateRole(member.role)}</span>
                      </div>
                      <h3 className="text-xl font-bold text-black tracking-tight">{member.name}</h3>
                   </div>
@@ -268,12 +240,13 @@ export default function Team() {
               <img 
                 src={activeMessageTarget.image || activeMessageTarget.photo_url} 
                 className="w-full h-full object-cover grayscale opacity-40" 
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
               <div className="absolute bottom-6 left-8 right-8">
-                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Direct Message</p>
+                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">{t('direct_message')}</p>
                 <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMessageTarget.name}</h4>
-                <p className="text-[10px] text-white/40 font-mono mt-1">{activeMessageTarget.role}</p>
+                <p className="text-[10px] text-white/40 font-mono mt-1">{translateRole(activeMessageTarget.role)}</p>
               </div>
               <button 
                 onClick={() => setActiveMessageTarget(null)}
@@ -287,7 +260,7 @@ export default function Team() {
             <form onSubmit={handleSubmitMessage} className="p-8 pt-2 space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Seu Nome / Avatar SL</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('your_name_sl')}</label>
                   <input 
                     required
                     type="text"
@@ -298,13 +271,13 @@ export default function Team() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Mensagem</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('your_message')}</label>
                   <textarea 
                     required
                     rows={4}
                     value={visitorData.message}
                     onChange={(e) => setVisitorData({ ...visitorData, message: e.target.value })}
-                    placeholder="Sua mensagem..."
+                    placeholder={t('message_placeholder')}
                     className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner resize-none"
                   />
                 </div>
@@ -317,11 +290,11 @@ export default function Team() {
               >
                 {isSending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> ENVIANDO...
+                    <Loader2 size={16} className="animate-spin" /> {t('loading').toUpperCase()}
                   </>
                 ) : (
                   <>
-                    Enviar Agora <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    {t('send_message')} <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </>
                 )}
               </button>

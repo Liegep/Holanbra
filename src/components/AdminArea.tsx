@@ -42,8 +42,10 @@ import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
+import { useTranslation } from 'react-i18next';
 
 function AdminAuthForm() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -72,9 +74,9 @@ function AdminAuthForm() {
         </motion.div>
         
         <div className="space-y-2">
-          <h3 className="text-white font-bold uppercase tracking-[0.3em] text-sm">Secure Access</h3>
+          <h3 className="text-white font-bold uppercase tracking-[0.3em] text-sm">{t('security')}</h3>
           <p className="text-white/30 text-[10px] uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto">
-            Administrative authentication required.
+            {t('admin_portal_auth_desc')}
           </p>
         </div>
 
@@ -111,7 +113,7 @@ function AdminAuthForm() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Login with Google
+              {t('login_google')}
             </>
           )}
         </button>
@@ -121,6 +123,7 @@ function AdminAuthForm() {
 }
 
 export default function AdminArea() {
+  const { t } = useTranslation();
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -1270,19 +1273,19 @@ export default function AdminArea() {
             </div>
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">Admin Panel</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin_dashboard')}</h2>
           {[
-            { id: 'listings', name: 'Properties', icon: BarChart3 },
-            { id: 'renters', name: 'Residents', icon: UserIcon },
-            { id: 'gallery', name: 'Gallery', icon: ImageIcon },
+            { id: 'listings', name: t('properties'), icon: BarChart3 },
+            { id: 'renters', name: t('residents'), icon: UserIcon },
+            { id: 'gallery', name: t('gallery'), icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
-            { id: 'team', name: 'Team', icon: UserIcon },
-            { id: 'inbox', name: 'Inbox', icon: Mail },
-            { id: 'videos', name: 'Videos', icon: Video },
-            { id: 'tickets', name: 'Support Tickets', icon: MessageSquare },
-            { id: 'add', name: editingId ? 'Editing Property' : 'New Property', icon: Plus },
-            { id: 'covenant', name: 'Covenant', icon: FileText },
-            { id: 'settings', name: 'Settings', icon: Settings },
+            { id: 'team', name: t('team'), icon: UserIcon },
+            { id: 'inbox', name: t('inbox'), icon: Mail },
+            { id: 'videos', name: t('videos'), icon: Video },
+            { id: 'tickets', name: t('recent_tickets'), icon: MessageSquare },
+            { id: 'add', name: editingId ? t('edit') : t('add_new'), icon: Plus },
+            { id: 'covenant', name: t('covenant'), icon: FileText },
+            { id: 'settings', name: t('settings'), icon: Settings },
           ].map((item) => (
             <button
               key={item.id}
@@ -1306,13 +1309,13 @@ export default function AdminArea() {
             <div className="max-w-6xl space-y-8">
               <div className="flex justify-between items-end">
                 <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white">Support Tickets</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Manage resident requests and technical issues.</p>
+                  <h3 className="text-2xl font-bold font-display text-white">{t('recent_tickets')}</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_tickets_desc')}</p>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
                     <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                    <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} Open</span>
+                    <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} {t('open')}</span>
                   </div>
                   <button 
                     onClick={async () => {
@@ -1330,7 +1333,7 @@ export default function AdminArea() {
                 {tickets.length === 0 ? (
                   <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[40px]">
                     <MessageSquare size={48} className="mx-auto text-white/5 mb-4" />
-                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No help requests at the moment</p>
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_tickets_found')}</p>
                   </div>
                 ) : (
                   tickets.map((ticket) => (
@@ -1352,7 +1355,7 @@ export default function AdminArea() {
                                 "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
                                 ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
                               )}>
-                                {ticket.status}
+                                {ticket.status === 'open' ? t('open') : t('resolved')}
                               </span>
                               <span className="text-[8px] text-white/20 font-mono tracking-tighter">
                                 {new Date(ticket.created_at).toLocaleDateString()}
@@ -1380,7 +1383,7 @@ export default function AdminArea() {
                               onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
                               className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
                             >
-                              {replyingTicketId === ticket.id ? 'Cancel Reply' : 'Reply & Resolve'}
+                              {replyingTicketId === ticket.id ? t('cancel_reply') : t('reply_resolve')}
                             </button>
                           )}
                         </div>
@@ -1398,7 +1401,7 @@ export default function AdminArea() {
                             <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
                               <div className="flex items-center gap-2">
                                 <ShieldCheck className="text-amber-500" size={14} />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Official Response</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('official_response')}</span>
                               </div>
                               <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
                             </div>
@@ -1416,7 +1419,7 @@ export default function AdminArea() {
                                   <textarea 
                                     value={adminResponse}
                                     onChange={(e) => setAdminResponse(e.target.value)}
-                                    placeholder="Type your response here... (The ticket will be marked as resolved)"
+                                    placeholder={t('type_response_placeholder')}
                                     className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
                                     rows={4}
                                   />
@@ -1425,7 +1428,7 @@ export default function AdminArea() {
                                       onClick={() => handleResolveTicket(ticket.id)}
                                       className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
                                     >
-                                      Mark as Resolved (No Reply)
+                                      {t('mark_resolved_no_reply')}
                                     </button>
                                     <button 
                                       onClick={() => handleSendResponse(ticket.id)}
@@ -1433,7 +1436,7 @@ export default function AdminArea() {
                                       className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
                                     >
                                       {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
-                                      Send & Resolve
+                                      {t('send_resolve')}
                                     </button>
                                   </div>
                                 </div>
@@ -1453,15 +1456,15 @@ export default function AdminArea() {
             <div className="max-w-4xl space-y-8">
               <div className="flex justify-between items-end">
                 <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white">Resident Management</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Manage SL residents, UUIDs and access passwords.</p>
+                  <h3 className="text-2xl font-bold font-display text-white">{t('resident_management')}</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_residents_desc')}</p>
                 </div>
               </div>
 
               <div className="glass-card p-8 border-white/10 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar Name (SL)</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_name_sl')}</label>
                     <input 
                       type="text" 
                       name="avatarName"
@@ -1472,7 +1475,7 @@ export default function AdminArea() {
                     />
                   </div>
                   <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar UUID</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_uuid')}</label>
                     <input 
                       type="text" 
                       name="avatarUuid"
@@ -1483,7 +1486,7 @@ export default function AdminArea() {
                     />
                   </div>
                   <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Login Password</label>
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('login_password')}</label>
                     <input 
                       type="text" 
                       name="password"
@@ -1498,8 +1501,8 @@ export default function AdminArea() {
                 {/* Property Assignment in Renter Tab */}
                 <div className="space-y-4 text-left border-t border-white/5 pt-6">
                   <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Assign Properties</label>
-                    <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} Selected</span>
+                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('assign_properties')}</label>
+                    <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} {t('selected_count')}</span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {properties
@@ -1524,7 +1527,7 @@ export default function AdminArea() {
                             <img src={prop.image_url} className="w-full h-full object-cover" />
                             {prop.status !== 'available' && !selectedPropertyIds.includes(prop.id) && (
                               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">Ocupado</span>
+                                <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">{t('occupied')}</span>
                               </div>
                             )}
                           </div>
@@ -1555,7 +1558,7 @@ export default function AdminArea() {
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <span className="text-[10px] font-bold uppercase text-amber-500/60">SL Profile Preview</span>
+                      <span className="text-[10px] font-bold uppercase text-amber-500/60">{t('sl_profile_preview')}</span>
                     </div>
                   )}
                   <div className="flex gap-4">
@@ -1568,14 +1571,14 @@ export default function AdminArea() {
                         }}
                         className="px-6 py-3 rounded-xl border border-white/10 text-white text-[10px] font-bold uppercase"
                       >
-                        Cancel
+                        {t('cancel')}
                       </button>
                     )}
                     <button 
                       onClick={handleSaveRenter}
                       className="px-8 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
                     >
-                      {editingRenterId ? 'Update Resident' : 'Register Resident'}
+                      {editingRenterId ? t('update_resident') : t('register_resident')}
                     </button>
                   </div>
                 </div>
@@ -1639,8 +1642,8 @@ export default function AdminArea() {
           {activeTab === 'hero' && (
             <div className="max-w-4xl space-y-12">
               <div className="text-left">
-                <h3 className="text-2xl font-bold font-display text-white">Hero Management</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Layout espelhado com compressão WebP automática.</p>
+                <h3 className="text-2xl font-bold font-display text-white">{t('hero_management')}</h3>
+                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('hero_management_desc')}</p>
               </div>
 
               <div className="space-y-12">
@@ -1648,7 +1651,7 @@ export default function AdminArea() {
                 <div className="space-y-8">
                   <div className="space-y-4 text-left">
                     <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                       < ImageIcon size={14} /> Background Photo (Full Page)
+                       < ImageIcon size={14} /> {t('background_photo')}
                     </label>
                     <div className="relative group aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                       {heroContent.backgroundImage ? (
@@ -1669,7 +1672,7 @@ export default function AdminArea() {
                              onChange={(e) => handleFileUpload(e, 'backgroundImage')}
                              disabled={isUploadingSlot === 'backgroundImage'}
                            />
-                           {isUploadingSlot === 'backgroundImage' ? 'Gravando...' : 'Mudar Fundo'}
+                           {isUploadingSlot === 'backgroundImage' ? t('recording') : t('change_background')}
                         </label>
                       </div>
 
@@ -1683,7 +1686,7 @@ export default function AdminArea() {
 
                   <div className="space-y-4 text-left">
                     <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                       < ImageIcon size={14} /> Front Cards Grid (4 Photos)
+                       < ImageIcon size={14} /> {t('front_cards_grid')}
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[0, 1, 2, 3].map((idx) => (
@@ -1719,7 +1722,7 @@ export default function AdminArea() {
                             </div>
                           )}
                           
-                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">Slot {idx + 1}</div>
+                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">{t('slot')} {idx + 1}</div>
                         </div>
                       ))}
                     </div>
@@ -1731,7 +1734,7 @@ export default function AdminArea() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                       <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Badge Highlight</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('badge_highlight')}</label>
                         <input 
                           type="text"
                           name="badgeText"
@@ -1741,7 +1744,7 @@ export default function AdminArea() {
                         />
                       </div>
                       <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title Part 1 (Main)</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('title_part_1')}</label>
                         <input 
                           type="text"
                           name="title1"
@@ -1751,7 +1754,7 @@ export default function AdminArea() {
                         />
                       </div>
                       <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title Part 2 (Italic)</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('title_part_2')}</label>
                         <input 
                           type="text"
                           name="title2"
@@ -1762,26 +1765,26 @@ export default function AdminArea() {
                       </div>
 
                       <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Virtual Tour Video</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('virtual_tour_video')}</label>
                         <select 
                           name="virtualTourUrl"
                           value={heroContent.virtualTourUrl}
                           onChange={(e) => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: e.target.value }))}
                           className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all appearance-none cursor-pointer"
                         >
-                          <option value="" className="bg-zinc-900 text-white/40">Selecione um vídeo</option>
+                          <option value="" className="bg-zinc-900 text-white/40">{t('select_video')}</option>
                           {videos.map(v => (
                             <option key={v.id} value={v.url} className="bg-zinc-900 text-white">{v.name}</option>
                           ))}
                         </select>
                         <p className="text-[8px] text-white/20 uppercase tracking-widest mt-1">
-                          Escolha um vídeo enviado na aba de Vídeos.
+                          {t('choose_video_desc')}
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-4 text-left border-l border-white/5 pl-8">
-                       <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">About Section Image</label>
+                       <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('about_section_image')}</label>
                        <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
                           {heroContent.aboutImage ? (
                             <img src={heroContent.aboutImage} className="w-full h-full object-cover" />
@@ -1817,7 +1820,7 @@ export default function AdminArea() {
                     onClick={handleSaveHero}
                     className="w-full py-5 rounded-2xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-amber-500 transition-all uppercase tracking-widest text-[10px] shadow-2xl"
                   >
-                    <Save size={18} /> Save All Text & Links
+                    <Save size={18} /> {t('save_all')}
                   </button>
                 </div>
               </div>
@@ -1828,8 +1831,8 @@ export default function AdminArea() {
             <div className="max-w-5xl space-y-12">
               <div className="flex justify-between items-end">
                 <div className="text-left">
-                  <h2 className="text-3xl font-bold font-display text-white">Video Management</h2>
-                  <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Upload and manage virtual tour videos.</p>
+                  <h2 className="text-3xl font-bold font-display text-white">{t('video_management')}</h2>
+                  <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('video_management_desc')}</p>
                 </div>
                 
                 <label className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 transition-all cursor-pointer flex items-center gap-2">
@@ -1841,7 +1844,7 @@ export default function AdminArea() {
                     onChange={handleVideoUpload}
                     disabled={isUploading}
                   />
-                  {isUploading ? `Uploading Video...` : 'Upload Video'}
+                  {isUploading ? t('uploading_video') : t('upload_video')}
                 </label>
               </div>
 
@@ -1853,7 +1856,7 @@ export default function AdminArea() {
                     transition={{ duration: 15, ease: "linear" }}
                     className="h-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"
                   />
-                  <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">Uploading high-quality video... please wait.</p>
+                  <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">{t('uploading_high_quality_desc')}</p>
                 </div>
               )}
 
@@ -1887,7 +1890,7 @@ export default function AdminArea() {
                 ))}
                 {videos.length === 0 && (
                   <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No videos uploaded yet</p>
+                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_videos_uploaded')}</p>
                   </div>
                 )}
               </div>
@@ -1897,8 +1900,8 @@ export default function AdminArea() {
             <div className="max-w-5xl space-y-8">
               <div className="flex justify-between items-end">
                 <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white italic">Inbox Messages</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Mensagens diretas enviadas para sua equipe.</p>
+                  <h3 className="text-2xl font-bold font-display text-white italic">{t('inbox_messages')}</h3>
+                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('inbox_messages_desc')}</p>
                 </div>
                 <button 
                   onClick={fetchInboxMessages}
@@ -1938,11 +1941,11 @@ export default function AdminArea() {
                             <div className="flex items-center gap-3">
                               <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
                               {!msg.is_read && (
-                                <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">New</span>
+                                <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">{t('new')}</span>
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">Para:</span>
+                              <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">{t('to')}:</span>
                               <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{msg.recipient_name}</span>
                             </div>
                           </div>
@@ -1971,7 +1974,7 @@ export default function AdminArea() {
                 ) : (
                   <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
                     <Mail size={40} className="mx-auto text-white/5 mb-4" />
-                    <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">Caixa de entrada vazia</p>
+                    <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">{t('empty_inbox')}</p>
                   </div>
                 )}
               </div>
@@ -1981,7 +1984,7 @@ export default function AdminArea() {
           {activeTab === 'team' && (
             <div className="max-w-4xl space-y-8">
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold font-display text-left text-white">Team Management</h3>
+                <h3 className="text-2xl font-bold font-display text-left text-white">{t('team_management')}</h3>
                 <button 
                   onClick={() => {
                     setEditingTeamId(null);
@@ -1997,7 +2000,7 @@ export default function AdminArea() {
                   }}
                   className="text-[10px] font-black uppercase text-amber-500 tracking-widest hover:underline"
                 >
-                  Reset Form
+                  {t('reset_form')}
                 </button>
               </div>
 
@@ -2006,7 +2009,7 @@ export default function AdminArea() {
                 <div className="space-y-6">
                   <div className="space-y-4">
                     <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-amber-500/70 uppercase">Name</label>
+                      <label className="text-xs font-bold text-amber-500/70 uppercase">{t('member_name')}</label>
                       <input 
                         type="text"
                         name="name"
@@ -2017,7 +2020,7 @@ export default function AdminArea() {
                       />
                     </div>
                     <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">Role</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_role')}</label>
                       <input 
                         type="text"
                         name="role"
@@ -2029,7 +2032,7 @@ export default function AdminArea() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2 text-left">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Icon</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase">{t('member_icon')}</label>
                         <select 
                           name="icon"
                           value={teamFormData.icon}
@@ -2044,7 +2047,7 @@ export default function AdminArea() {
                         </select>
                       </div>
                       <div className="space-y-2 text-left">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Order</label>
+                        <label className="text-xs font-bold text-gray-500 uppercase">{t('member_order')}</label>
                         <input 
                           type="number"
                           name="order"
@@ -2055,7 +2058,7 @@ export default function AdminArea() {
                       </div>
                     </div>
                     <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">Profile/SLURL</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_sl_profile')}</label>
                       <input 
                         type="text"
                         name="slProfile"
@@ -2066,7 +2069,7 @@ export default function AdminArea() {
                       />
                     </div>
                     <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">Bio</label>
+                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_bio')}</label>
                       <textarea 
                         name="bio"
                         value={teamFormData.bio}
@@ -2079,7 +2082,7 @@ export default function AdminArea() {
                   </div>
 
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Portrait Photo</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">{t('portrait_photo')}</label>
                     <div className="space-y-4">
                       <div className="flex gap-4">
                         <input 
@@ -2088,7 +2091,7 @@ export default function AdminArea() {
                           value={teamFormData.image}
                           onChange={handleTeamInputChange}
                           className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder="Paste portrait URL or upload..."
+                          placeholder={t('paste_url_or_upload')}
                         />
                         <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
                           <input 
@@ -2113,13 +2116,13 @@ export default function AdminArea() {
                     onClick={handleSaveTeam}
                     className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
                   >
-                    <Save size={18} /> {editingTeamId ? 'Update Member' : 'Add to Team'}
+                    <Save size={18} /> {editingTeamId ? t('update_member') : t('add_to_team')}
                   </button>
                 </div>
 
                 {/* List */}
                 <div className="space-y-4">
-                  <label className="text-xs font-bold text-gray-500 uppercase block text-left">Current Team</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase block text-left">{t('current_team')}</label>
                   <div className="grid gap-4">
                     {teamMembers.map((member) => (
                       <div key={member.id} className="glass-card p-4 flex items-center gap-4 group">
@@ -2158,8 +2161,8 @@ export default function AdminArea() {
           {activeTab === 'gallery' && (
             <div className="max-w-5xl space-y-12">
               <div className="text-left">
-                <h3 className="text-2xl font-bold font-display text-white">Gestão da Galeria</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Adicione fotos ilimitadas com legendas. Compactação WebP automática ativa.</p>
+                <h3 className="text-2xl font-bold font-display text-white">{t('gallery_management')}</h3>
+                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('gallery_subtitle')}</p>
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -2200,13 +2203,13 @@ export default function AdminArea() {
                       </div>
 
                       <div className="space-y-4 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Legenda (Opcional)</label>
+                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('gallery_caption_label')}</label>
                         <input 
                           type="text"
                           value={galleryFormData.caption}
                           onChange={(e) => setGalleryFormData({ ...galleryFormData, caption: e.target.value })}
                           className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
-                          placeholder="Ex: Pôr do sol no píer..."
+                          placeholder={t('gallery_placeholder')}
                         />
                       </div>
 
@@ -2215,7 +2218,7 @@ export default function AdminArea() {
                         disabled={!galleryFormData.imageUrl || isUploading}
                         className="w-full py-4 rounded-xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
                       >
-                        <Save size={16} /> Adicionar à Galeria
+                        <Save size={16} /> {t('add_to_gallery')}
                       </button>
                    </div>
                 </div>
@@ -2223,7 +2226,7 @@ export default function AdminArea() {
                 {/* Grid Section */}
                 <div className="lg:col-span-2 space-y-6">
                   <div className="flex justify-between items-center px-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Fotos Atuais ({galleryImages.length})</label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('current_photos')} ({galleryImages.length})</label>
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -2232,7 +2235,7 @@ export default function AdminArea() {
                         <img src={img.url} className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
                         
                         <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
-                           <p className="text-[9px] text-white font-bold truncate leading-tight">{img.caption || 'Sem legenda'}</p>
+                           <p className="text-[9px] text-white font-bold truncate leading-tight">{img.caption || t('no_caption')}</p>
                         </div>
 
                         <div className="absolute top-2 right-2 flex gap-2 translate-y-[-120%] group-hover:translate-y-0 transition-transform">
@@ -2247,7 +2250,7 @@ export default function AdminArea() {
                     ))}
                     {galleryImages.length === 0 && (
                       <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                         <p className="text-white/10 text-[10px] uppercase font-black tracking-widest">Nenhuma foto na galeria</p>
+                         <p className="text-white/10 text-[10px] uppercase font-black tracking-widest">{t('no_photos_gallery')}</p>
                       </div>
                     )}
                   </div>
@@ -2260,8 +2263,8 @@ export default function AdminArea() {
             <div className="space-y-12 max-w-4xl mx-auto pb-32">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
-                  <h2 className="text-4xl font-bold font-display text-amber-500 tracking-tighter">Covenant Management</h2>
-                  <p className="text-white/40 uppercase tracking-[0.3em] text-[10px]">Edit legal documentation (Select text to format - Adobe Style).</p>
+                  <h2 className="text-4xl font-bold font-display text-amber-500 tracking-tighter">{t('covenant_management')}</h2>
+                  <p className="text-white/40 uppercase tracking-[0.3em] text-[10px]">{t('edit_legal_desc')}</p>
                 </div>
               </div>
 
@@ -2269,7 +2272,7 @@ export default function AdminArea() {
 
               <div className="grid grid-cols-1 gap-12">
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">English Version</label>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('english_version')}</label>
                   <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.en}
@@ -2282,7 +2285,7 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Portuguese Version</label>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('portuguese_version')}</label>
                   <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.pt}
@@ -2295,7 +2298,7 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Spanish Version</label>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('spanish_version')}</label>
                   <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.es}
@@ -2308,7 +2311,7 @@ export default function AdminArea() {
                   </div>
                 </div>
                 <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">Dutch Version</label>
+                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('dutch_version')}</label>
                   <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
                     <Editor 
                       value={covenants.nl}
@@ -2326,7 +2329,7 @@ export default function AdminArea() {
                 onClick={handleSaveCovenant}
                 className="w-full py-6 bg-white/5 border border-white/10 rounded-3xl text-sm font-bold uppercase tracking-[0.4em] hover:bg-white/10 transition-all flex items-center justify-center gap-3"
               >
-                <Save size={18} /> Update Covenants
+                <Save size={18} /> {t('update_covenants')}
               </button>
 
               <AnimatePresence>
@@ -2338,7 +2341,7 @@ export default function AdminArea() {
                     onClick={handleSaveCovenant}
                     className="fixed bottom-12 right-12 z-[150] px-10 py-5 rounded-full bg-amber-500 text-black font-black flex items-center gap-3 shadow-[0_15px_60px_rgba(245,158,11,0.5)] hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] text-[10px]"
                   >
-                    <Save size={16} /> Save Changes
+                    <Save size={16} /> {t('save_changes')}
                   </motion.button>
                 )}
               </AnimatePresence>
@@ -2350,12 +2353,12 @@ export default function AdminArea() {
               <div className="space-y-6">
                 <div className="flex justify-between items-end border-b border-white/5 pb-6">
                   <div className="space-y-1">
-                    <h3 className="text-4xl font-bold font-display tracking-tight">Executive Dashboard</h3>
-                    <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em]">Operational overview & property management</p>
+                    <h3 className="text-4xl font-bold font-display tracking-tight">{t('executive_dashboard')}</h3>
+                    <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em]">{t('operational_overview_desc')}</p>
                   </div>
                   <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
                     <RefreshCw size={12} className="text-amber-500" />
-                    Sync CasperLet
+                    {t('sync_casperlet')}
                   </button>
                 </div>
 
@@ -2370,9 +2373,9 @@ export default function AdminArea() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <FileText size={48} className="text-white" />
                     </div>
-                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
+                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('total_portfolio')}</p>
                     <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
+                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('units_all_sims')}</p>
                   </motion.div>
 
                   {/* Support Tickets Card */}
@@ -2389,9 +2392,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
                       <MessageSquare size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>Open Tickets</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('open_tickets')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} Total Tickets</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('total_tickets')}</p>
                   </motion.div>
 
                   {/* Occupancy Rate Card */}
@@ -2404,12 +2407,12 @@ export default function AdminArea() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <CheckCircle size={48} className="text-amber-500" />
                     </div>
-                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Occupancy Rate</p>
+                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('occupancy_rate')}</p>
                     <div className="flex items-baseline gap-2">
                        <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
                        <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
                     </div>
-                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
+                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('available_for_rent')}</p>
                   </motion.div>
 
                   <motion.div 
@@ -2424,9 +2427,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
                       <AlertCircle size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Issues</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('critical_issues')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 3 days</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('expiring_3_days')}</p>
                   </motion.div>
 
                   <motion.div 
@@ -2441,9 +2444,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
                       <Clock size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Attention</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('attention')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('expiring_7_days')}</p>
                   </motion.div>
                 </div>
               </div>
@@ -2458,7 +2461,7 @@ export default function AdminArea() {
                         activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
                       )}
                     >
-                      All Properties ({properties.length})
+                      {t('all_properties')} ({properties.length})
                     </button>
                     <button 
                       onClick={() => setActiveFilter('expiring')}
@@ -2468,7 +2471,7 @@ export default function AdminArea() {
                       )}
                     >
                       <Clock size={12} />
-                      Vencimentos Próximos ({stats.critical + stats.attention})
+                      {t('expiring_soon')} ({stats.critical + stats.attention})
                     </button>
                   </div>
                 </div>

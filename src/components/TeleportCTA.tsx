@@ -1,7 +1,9 @@
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function TeleportCTA() {
+  const { t } = useTranslation();
   const teleportUrl = "secondlife:///app/teleport/Holanbra/128/128/22";
 
   return (
@@ -14,8 +16,8 @@ export default function TeleportCTA() {
           className="space-y-10"
         >
           <h2 className="text-4xl md:text-6xl font-display font-bold text-white leading-tight">
-            We’re looking forward to <br />
-            <span className="text-amber-400 italic font-light">seeing you at Holanbra!</span>
+            {t('cta_title')} <br />
+            <span className="text-amber-400 italic font-light">{t('cta_italic')}</span>
           </h2>
           
           <div className="flex flex-col items-center gap-6">
@@ -24,12 +26,12 @@ export default function TeleportCTA() {
               className="group relative px-12 py-6 bg-amber-500 text-black rounded-full font-bold text-lg uppercase tracking-widest hover:bg-white transition-all duration-300 flex items-center gap-3 shadow-2xl shadow-amber-500/20"
             >
               <MapPin className="group-hover:animate-bounce" size={24} />
-              Teleport to Holanbra
+              {t('teleport_to_holanbra')}
               <ArrowRight className="group-hover:translate-x-2 transition-transform" size={24} />
             </a>
             
             <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.4em]">
-              Requires Second Life Viewer
+              {t('requires_viewer')}
             </p>
           </div>
         </motion.div>

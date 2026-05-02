@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation, Trans } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 export default function AboutUs() {
+  const { t } = useTranslation();
   const [aboutImage, setAboutImage] = useState('https://images.unsplash.com/photo-1600585154340-be6199f3e009?w=1200&q=80');
 
   useEffect(() => {
@@ -36,27 +38,29 @@ export default function AboutUs() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">History</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('history')}</span>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tighter text-left">
-                ABOUT <span className="italic font-light text-amber-400">US</span>
+                {t('about_us_title').split(' ')[0]} <span className="italic font-light text-amber-400">{t('about_us_title').split(' ')[1]}</span>
               </h2>
             </div>
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                Back in 2010, <span className="text-white font-medium">Ymir Coronet</span>, from Holland, and <span className="text-white font-medium">Marie Whitfield</span>, originating from Brazil, joined forces to craft exquisitely designed virtual worlds. In those early days, the concept of sims featuring streets reminiscent of real cities was a rarity, lending a distinct charm to their creations.
+                <Trans i18nKey="about_us_p1">
+                  Em 2010, <span className="text-white font-medium">Ymir Coronet</span>, da Holanda, e <span className="text-white font-medium">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.
+                </Trans>
               </p>
               
               <p>
-                As the years unfolded, Holanbra, their brainchild, continued to thrive and evolve.
+                {t('about_us_p2')}
               </p>
               
               <p className="border-l-2 border-amber-500/30 pl-8 py-2 italic font-normal">
-                Today, it stands as a testament to their enduring partnership, now adorned with meticulously decorated homes curated by Marie Whitfield herself.
+                {t('about_us_p3')}
               </p>
               
               <p>
-                With an innate knack for detail and a keen eye for trends, stepping into a home in Holanbra feels like stepping into a cozy haven, a testament to the unwavering dedication of its creators.
+                {t('about_us_p4')}
               </p>
             </div>
           </motion.div>
