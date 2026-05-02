@@ -1,7 +1,6 @@
 {
   "available_properties": "Imóveis Disponíveis",
   "learn_more": "Saiba Mais",
-  "LEARN_MORE": "SAIBA MAIS",
   "find_place": "Encontre o seu próximo lugar.",
   "all_status": "Todos os Status",
   "place": "lugar",
@@ -13,7 +12,7 @@
   "name_za": "Nome (Z-A)",
   "up_to": "Até",
   "week": "semana",
-  "no_properties_found": "Nenhum imóvel encontrado com estes filtros",
+  "no_properties_found": "Nenhum imóvel encontrado",
   "available": "Disponível",
   "rented": "Alugado",
   "br": "Quartos",
