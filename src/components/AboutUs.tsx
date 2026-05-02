@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { useTranslation, Trans } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 export default function AboutUs() {
-  const { t } = useTranslation();
   const [aboutImage, setAboutImage] = useState('https://images.unsplash.com/photo-1600585154340-be6199f3e009?w=1200&q=80');
 
   useEffect(() => {
@@ -38,29 +36,27 @@ export default function AboutUs() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('common.history')}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">História</span>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tighter text-left">
-                {t('sections.about_us_title').split(' ')[0]} <span className="italic font-light text-amber-400">{t('sections.about_us_title').split(' ')[1]}</span>
+                SOBRE <span className="italic font-light text-amber-400">NÓS</span>
               </h2>
             </div>
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                <Trans i18nKey="sections.about_us_p1">
-                  Em 2010, <span className="text-white font-medium">Ymir Coronet</span>, da Holanda, e <span className="text-white font-medium">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.
-                </Trans>
+                Em 2010, <span className="text-white font-medium">Ymir Coronet</span>, da Holanda, e <span className="text-white font-medium">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.
               </p>
               
               <p>
-                {t('sections.about_us_p2')}
+                À medida que os anos passaram e a tecnologia evoluiu, expandimos nossa visão, trazendo elegância e sofisticação para cada projeto.
               </p>
               
               <p className="border-l-2 border-amber-500/30 pl-8 py-2 italic font-normal">
-                {t('sections.about_us_p3')}
+                Hoje, somos referência em imóveis de luxo no Second Life, criando experiências únicas para nossos residentes.
               </p>
               
               <p>
-                {t('sections.about_us_p4')}
+                Nossa dedicação é inabalável em proporcionar os melhores espaços, sempre com foco no conforto e na beleza.
               </p>
             </div>
           </motion.div>

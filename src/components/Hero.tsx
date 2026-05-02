@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { ArrowRight, Play, MapPin, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export default function Hero() {
-  const { t, i18n } = useTranslation();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
-    badgeText: 'New Islands Available',
+    badgeText: 'Novas Ilhas Disponíveis',
     title1: 'Holanbra',
     title2: 'Sims',
     virtualTourUrl: '',
@@ -25,7 +23,6 @@ export default function Hero() {
 
   useEffect(() => {
     const fetchHero = async () => {
-      const currentLang = i18n.language.split('-')[0];
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
@@ -35,9 +32,9 @@ export default function Hero() {
       if (data) {
         setContent({
           backgroundImage: data.background_url || content.backgroundImage,
-          badgeText: data[`badge_text_${currentLang}`] || data.badge_text || content.badgeText,
-          title1: data[`title_main_${currentLang}`] || data.title_main || content.title1,
-          title2: data[`title_italic_${currentLang}`] || data.title_italic || content.title2,
+          badgeText: data.badge_text || content.badgeText,
+          title1: data.title_main || content.title1,
+          title2: data.title_italic || content.title2,
           virtualTourUrl: data.virtual_tour_url || content.virtualTourUrl,
           gridImages: [
             data.grid_photo_1 || content.gridImages[0],
@@ -97,7 +94,7 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center gap-8 mb-4">
              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">{t('welcome')}</span>
+                <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">Bem-vindo</span>
                 <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
                   <span className="text-amber-500">{content.title1}</span>
                   <span className="italic font-light flex items-center gap-4">
@@ -126,7 +123,7 @@ export default function Hero() {
             to="/properties"
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
-            {t('view_properties')} <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            Ver Imóveis <ArrowRight className="group-hover:translate-x-1 transition-transform" />
           </Link>
           
           <button 
@@ -136,7 +133,7 @@ export default function Hero() {
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
               <Play size={10} fill="white" />
             </div>
-            {t('virtual_tour')}
+            Tour Virtual
           </button>
         </motion.div>
       </div>
@@ -175,7 +172,7 @@ export default function Hero() {
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-white/20 space-y-4">
                   <Play size={64} />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">{t('no_video_configured')}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum vídeo configurado</p>
                 </div>
               )}
             </motion.div>
