@@ -11,8 +11,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: 'en',
-    lng: 'pt', // Force PT as default for now to see if it fixes things
+    fallbackLng: 'pt',
+    lng: 'pt', 
     supportedLngs: ['pt', 'en', 'es', 'nl'],
     load: 'languageOnly',
     interpolation: {

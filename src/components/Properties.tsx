@@ -233,7 +233,7 @@ export default function Properties() {
                   HOLANBRA | PRIMA OCEAN
                 </p>
                 <div className="flex items-center gap-4 pt-2">
-                  <div className="text-2xl font-light text-white underline underline-offset-8 decoration-amber-500/50">
+                  <div className="text-2xl font-light text-white decoration-amber-500/50">
                     L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ {t('week')}</span>
                   </div>
                 </div>
