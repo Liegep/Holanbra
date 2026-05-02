@@ -4,6 +4,23 @@
   "LEARN_MORE": "APRENDE MÁS",
   "find_place": "Encuentra tu próximo lugar.",
   "all_status": "Todos los Estados",
+  "place": "lugar",
+  "places": "Unidades",
+  "ready_to_move": "listas para habitar",
+  "price_low": "Menor Precio",
+  "price_high": "Mayor Precio",
+  "name_az": "Nombre (A-Z)",
+  "name_za": "Nombre (Z-A)",
+  "up_to": "Hasta",
+  "week": "semana",
+  "no_properties_found": "Nenhum imóvel encontrado con estos filtros",
+  "available": "Disponible",
+  "rented": "Alquilado",
+  "br": "BR",
+  "ba": "BA",
+  "quote_title": "El hogar no es solo un lugar;",
+  "quote_italic": "es un sentimiento de calidez,",
+  "quote_end": "Lienzo de vida.",
   "common": {
     "home": "Inicio",
     "about": "Nosotros",
@@ -48,6 +65,24 @@
     "no_rentals": "Sin alquileres activos",
     "browse_catalog": "Ver Catálogo"
   },
+  "tickets": {
+    "new_ticket": "Nuevo Ticket",
+    "subject": "Asunto",
+    "category": "Categoría",
+    "message": "Mensaje",
+    "recent_tickets": "Tickets Recientes",
+    "open": "Abierto",
+    "resolved": "Resuelto"
+  },
+  "admin": {
+    "admin": "Admin",
+    "admin_panel": "Panel Admin",
+    "settings_saved": "¡Guardado!",
+    "save_fail": "Fallo",
+    "unknown_error": "Error desconocido",
+    "fill_all_fields": "Complete todo.",
+    "save_error": "Error"
+  },
   "property": {
     "available_properties": "Propiedades Disponibles",
     "find_place": "Encuentra tu próximo lugar.",
@@ -67,5 +102,36 @@
     "available": "Disponible",
     "rented": "Alquilado",
     "process_rental": "Iniciar Alquiler"
+  },
+  "hero": {
+    "welcome": "Bienvenido",
+    "view_properties": "Ver Propiedades",
+    "virtual_tour": "Tour Virtual"
+  },
+  "gallery": {
+    "atmosphere": "Atmósfera",
+    "life_at_title": "LA VIDA EN",
+    "gallery_subtitle": "Momentos capturados"
+  },
+  "team": {
+    "our_team": "Nuestro Equipo",
+    "team_subtitle": "Las Mentes Detrás",
+    "send_im": "Enviar IM"
+  },
+  "sections": {
+    "history": "Historia",
+    "about_us_title": "SOBRE NOSOTROS"
+  },
+  "quotes": {
+    "philosophy": "Filosofía",
+    "quote_title": "El hogar no es solo un lugar;",
+    "quote_italic": "es un sentimiento de calidez,",
+    "quote_end": "Lienzo de vida.",
+    "quote_subtitle": "Vida Virtual Curada."
+  },
+  "cta": {
+    "cta_title": "Ansiosos por",
+    "cta_italic": "verte!",
+    "teleport_to_holanbra": "Teletranspórtate a Holanbra"
   }
 }

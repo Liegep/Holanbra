@@ -12,7 +12,9 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    lng: 'pt', // Force PT as default for now to see if it fixes things
     supportedLngs: ['pt', 'en', 'es', 'nl'],
+    load: 'languageOnly',
     interpolation: {
       escapeValue: false,
     },
@@ -23,6 +25,10 @@ i18n
       nl: { translation: nl },
     },
     defaultNS: 'translation',
+    detection: {
+      order: ['querystring', 'cookie', 'localStorage', 'navigator', 'path', 'subdomain'],
+      caches: ['localStorage', 'cookie'],
+    }
   });
 
 export default i18n;

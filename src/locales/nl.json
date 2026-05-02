@@ -4,6 +4,23 @@
   "LEARN_MORE": "MEER LEREN",
   "find_place": "Vind je volgende plek.",
   "all_status": "Alle Status",
+  "place": "plek",
+  "places": "Eenheden",
+  "ready_to_move": "klaar om in te trekken",
+  "price_low": "Laagste Prijs",
+  "price_high": "Hoogste Prijs",
+  "name_az": "Naam (A-Z)",
+  "name_za": "Naam (Z-A)",
+  "up_to": "Tot",
+  "week": "week",
+  "no_properties_found": "Geen woningen gevonden met deze filters",
+  "available": "Beschikbaar",
+  "rented": "Verhuurd",
+  "br": "BR",
+  "ba": "BA",
+  "quote_title": "Thuis is niet zomaar een plek;",
+  "quote_italic": "het is een gevoel van warmte,",
+  "quote_end": "Canvas van het leven.",
   "common": {
     "home": "Home",
     "about": "Over ons",
@@ -47,6 +64,24 @@
     "no_rentals": "Geen actieve huren",
     "browse_catalog": "Catalogus Bekijken"
   },
+  "tickets": {
+    "new_ticket": "Nieuw Ticket",
+    "subject": "Onderwerp",
+    "category": "Categorie",
+    "message": "Bericht",
+    "recent_tickets": "Recente Tickets",
+    "open": "Open",
+    "resolved": "Opgelost"
+  },
+  "admin": {
+    "admin": "Admin",
+    "admin_panel": "Admin Paneel",
+    "settings_saved": "Opgeslagen!",
+    "save_fail": "Mislukt",
+    "unknown_error": "Onbekende fout",
+    "fill_all_fields": "Vul alles in.",
+    "save_error": "Fout"
+  },
   "property": {
     "available_properties": "Beschikbare Woningen",
     "find_place": "Vind je volgende plek.",
@@ -66,5 +101,36 @@
     "available": "Beschikbaar",
     "rented": "Verhuurd",
     "process_rental": "Huur Starten"
+  },
+  "hero": {
+    "welcome": "Welkom",
+    "view_properties": "Bekijk Woningen",
+    "virtual_tour": "Virtuele Tour"
+  },
+  "gallery": {
+    "atmosphere": "Sfeer",
+    "life_at_title": "HET LEVEN IN",
+    "gallery_subtitle": "Momenten vastgelegd"
+  },
+  "team": {
+    "our_team": "Ons Team",
+    "team_subtitle": "De Mensen Erachter",
+    "send_im": "Stuur IM"
+  },
+  "sections": {
+    "history": "Geschiedenis",
+    "about_us_title": "OVER ONS"
+  },
+  "quotes": {
+    "philosophy": "Filosofie",
+    "quote_title": "Thuis is niet zomaar een plek;",
+    "quote_italic": "het is een gevoel van warmte,",
+    "quote_end": "Canvas van het leven.",
+    "quote_subtitle": "Gecureerd Virtueel Wonen."
+  },
+  "cta": {
+    "cta_title": "We kijken ernaar uit om",
+    "cta_italic": "u te zien!",
+    "teleport_to_holanbra": "Teleporteer naar Holanbra"
   }
 }
