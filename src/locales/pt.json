@@ -1,4 +1,23 @@
 {
+  "available_properties": "Imóveis Disponíveis",
+  "learn_more": "Saiba Mais",
+  "LEARN_MORE": "SAIBA MAIS",
+  "find_place": "Encontre o seu próximo lugar.",
+  "all_status": "Todos os Status",
+  "place": "lugar",
+  "places": "Unidades",
+  "ready_to_move": "prontas para morar",
+  "price_low": "Menor Preço",
+  "price_high": "Maior Preço",
+  "name_az": "Nome (A-Z)",
+  "name_za": "Nome (Z-A)",
+  "up_to": "Até",
+  "week": "semana",
+  "no_properties_found": "Nenhum imóvel encontrado com estes filtros",
+  "available": "Disponível",
+  "rented": "Alugado",
+  "br": "Quartos",
+  "ba": "Banheiros",
   "common": {
     "home": "Home",
     "about": "Sobre",
@@ -200,11 +219,11 @@
     "save_fail": "Falha ao salvar",
     "unknown_error": "Erro desconhecido",
     "fill_all_fields": "Por favor, preencha todos os campos.",
-    "invalid_uuid_error": "O UUID do Avatar fornecido não é um UUID válido. Formato esperado: 00000000-0000-0000-0000-000000000000",
+    "invalid_uuid_error": "O UUID do Avatar fornecido não é um UUID válido.",
     "resident_update_success": "Residente e vínculos de imóveis atualizados!",
     "save_error": "Erro no salvamento",
-    "delete_renter_confirm": "Tem certeza? Isso redefinirá os imóveis dele para Disponíveis e impedirá o login.",
-    "renter_removed_success": "Residente removido e imóveis redefinidos para Disponível!",
+    "delete_renter_confirm": "Tem certeza?",
+    "renter_removed_success": "Residente removido!",
     "delete_renter_error": "Erro ao excluir residente",
     "status_update_error": "Erro ao atualizar status",
     "delete_message_confirm": "Excluir esta mensagem?",
@@ -218,8 +237,8 @@
     "video_deleted_success": "Vídeo excluído com sucesso!",
     "video_delete_error": "Erro ao excluir vídeo",
     "delete_video_confirm": "Excluir este vídeo?",
-    "delete_property_confirm": "Tem certeza? Esta ação é permanente.",
-    "property_deleted_success": "Propriedade excluída com sucesso!",
+    "delete_property_confirm": "Tem certeza?",
+    "property_deleted_success": "Propriedade excluída!",
     "property_delete_error": "Erro ao excluir propriedade",
     "ticket_resolve_error": "Erro ao resolver ticket",
     "send_response_error": "Erro ao enviar resposta"
@@ -231,6 +250,7 @@
     "places": "Unidades",
     "ready_to_move": "prontas para morar",
     "lands": "Terras",
+    "all": "Todos",
     "furnished": "Mobiliados",
     "all_status": "Todos os Status",
     "price_low": "Menor Preço",
@@ -239,11 +259,13 @@
     "name_za": "Nome (Z-A)",
     "up_to": "Até",
     "week": "semana",
-    "no_properties_found": "Nenhum imóvel encontrado com estes filtros",
+    "no_properties_found": "Nenhum imóvel encontrado",
     "br": "Quartos",
     "ba": "Banheiros",
+    "available": "Disponível",
+    "rented": "Alugado",
     "process_rental": "Iniciar Aluguel",
-    "default_property_desc": "Experimente luxo e conforto inigualáveis nesta propriedade premium em Holanbra. Projetada para residentes sofisticados que buscam o melhor em moradia no Mundo Virtual."
+    "default_property_desc": "Experimente luxo e conforto inigualáveis em Holanbra."
   },
   "hero": {
     "welcome": "Bem-vindo",
@@ -257,7 +279,7 @@
     "gallery_subtitle": "Momentos capturados em nossas ilhas",
     "new_photo": "Nova Foto",
     "choose_photo": "Escolher Foto",
-    "photo_added_success": "Foto adicionada à galeria! ✨",
+    "photo_added_success": "Foto adicionada à galeria!",
     "delete_photo_confirm": "Excluir esta foto?",
     "photo_deleted_success": "Foto removida!",
     "item_1_caption": "Vida à Beira do Lago",
@@ -270,7 +292,7 @@
   "team": {
     "our_team": "Nossa Equipe",
     "team_subtitle": "As Mentes Por Trás",
-    "team_desc": "Um grupo diversificado de profissionais dedicados a redefinir a experiência imobiliária virtual no Second Life.",
+    "team_desc": "Redefinindo a experiência imobiliária virtual no Second Life.",
     "send_im": "Enviar IM",
     "direct_message": "Mensagem Direta",
     "your_name_sl": "Seu Nome / Avatar SL",
@@ -278,39 +300,34 @@
     "creative_director": "Diretora Criativa",
     "founder_architect": "Fundador e Arquiteto",
     "community_manager": "Gestora de Comunidade",
-    "im_sent_success": "Mensagem enviada com sucesso! ✨",
-    "message_placeholder": "Digite sua mensagem aqui...",
-    "fill_required_fields": "Por favor, preencha o nome, cargo e envie uma foto.",
-    "member_update_success": "Membro da equipe atualizado com sucesso! ✨",
-    "delete_member_confirm": "Tem certeza que deseja remover este membro?",
-    "member_deleted_success": "Membro removido.",
-    "delete_member_error": "Erro ao excluir membro",
+    "im_sent_success": "Mensagem enviada! ✨",
+    "message_placeholder": "Digite aqui...",
     "bios": {
-      "marie": "Especialista em design de interiores e paisagismo. Transformando pixels em lares aconchegantes desde 2010.",
-      "ymir": "Arquiteto visionário por trás da Holanbra. Dedicado à criação de mundos virtuais com design único.",
-      "victoria": "Garantindo que cada residente se sinta em casa e cada problema seja resolvido com um sorriso."
+      "marie": "Especialista em design de interiores.",
+      "ymir": "Arquiteto visionário.",
+      "victoria": "Gestão de comunidade."
     }
   },
   "sections": {
     "history": "História",
     "about_us_title": "SOBRE NÓS",
-    "about_us_p1": "Em 2010, <span className=\"text-white font-medium\">Ymir Coronet</span>, da Holanda, e <span className=\"text-white font-medium\">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.",
-    "about_us_p2": "À medida que os anos passaram, a Holanbra, sua criação, continuou a prosperar e evoluir.",
-    "about_us_p3": "Hoje, ela serve como um testemunho de sua parceria duradoura, agora adornada com casas meticulosamente decoradas pela própria Marie Whitfield.",
-    "about_us_p4": "Com um talento inato para detalhes e um olhar atento às tendências, entrar em uma casa em Holanbra é como entrar em um refúgio acolhedor, um testemunho da dedicação inabalável de seus criadores.",
-    "footer_desc": "Especialistas em imóveis de luxo no Second Life. Transformando pixels em sonhos."
+    "about_us_p1": "Em 2010...",
+    "about_us_p2": "À medida que os anos passaram...",
+    "about_us_p3": "Hoje...",
+    "about_us_p4": "Dedicação inabalável.",
+    "footer_desc": "Especialistas em imóveis de luxo no Second Life."
   },
   "quotes": {
     "philosophy": "Filosofia",
     "quote_title": "O lar não é apenas um lugar;",
-    "quote_italic": "é um sentimento de calor, um refúgio de amor,",
-    "quote_end": "e a tela sobre a qual a vida se desenrola.",
-    "quote_subtitle": "Vida Virtual Curada • Elite do Second Life"
+    "quote_italic": "é um sentimento de calor,",
+    "quote_end": "Canvas da vida.",
+    "quote_subtitle": "Vida Virtual Curada."
   },
   "cta": {
-    "cta_title": "Estamos ansiosos para",
-    "cta_italic": "ver você em Holanbra!",
+    "cta_title": "Ansiosos para",
+    "cta_italic": "ver você!",
     "teleport_to_holanbra": "Teleporte para Holanbra",
-    "requires_viewer": "Requer visualizador do Second Life"
+    "requires_viewer": "Requer visualizador."
   }
 }
