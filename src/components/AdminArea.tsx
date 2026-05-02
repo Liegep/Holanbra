@@ -499,6 +499,13 @@ export default function AdminArea() {
       return;
     }
 
+    // UUID Validation regex
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(renterFormData.avatarUuid)) {
+      showToast("The Avatar UUID provided is not a valid UUID. Expected format: 00000000-0000-0000-0000-000000000000", "error");
+      return;
+    }
+
     try {
       const dataToSave = {
         avatar_name: renterFormData.avatarName,
@@ -506,13 +513,18 @@ export default function AdminArea() {
         avatar_uuid: renterFormData.avatarUuid, // Keep both for safety
         password: renterFormData.password
       };
+      
+      console.log('Dados enviados (Renter):', dataToSave);
 
       // Use upsert to avoid 409 errors (conflicts)
       const { error: renterError } = await supabase
         .from('renters')
         .upsert(dataToSave, { onConflict: 'avatar_uuid' });
 
-      if (renterError) throw renterError;
+      if (renterError) {
+        console.error("400 Error context (Renter):", renterError);
+        throw renterError;
+      }
 
       // 1. First, clear all properties that were assigned to this resident if we are doing a full sync
       // If selectedPropertyIds is provided, we should ensure only those are linked.
@@ -536,13 +548,15 @@ export default function AdminArea() {
       const toUnlink = currentLinkedIds.filter(id => !selectedPropertyIds.includes(id));
       
       if (toUnlink.length > 0) {
+        const unlinkPayload = {
+          tenant_id: null,
+          tenant_name: null,
+          status: 'available'
+        };
+        console.log('Dados enviados (Unlink Property):', unlinkPayload, 'IDs:', toUnlink);
         await supabase
           .from('properties')
-          .update({
-            tenant_id: null,
-            tenant_name: null,
-            status: 'available'
-          })
+          .update(unlinkPayload)
           .in('id', toUnlink);
       }
 
@@ -550,13 +564,15 @@ export default function AdminArea() {
       const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
 
       if (toLink.length > 0) {
+        const linkPayload = {
+          tenant_id: renterUuid,
+          tenant_name: renterFormData.avatarName,
+          status: 'rented'
+        };
+        console.log('Dados enviados (Link Property):', linkPayload, 'IDs:', toLink);
         await supabase
           .from('properties')
-          .update({
-            tenant_id: renterUuid,
-            tenant_name: renterFormData.avatarName,
-            status: 'rented'
-          })
+          .update(linkPayload)
           .in('id', toLink);
       }
 
@@ -1141,23 +1157,31 @@ export default function AdminArea() {
   const handleSendResponse = async (id: string) => {
     if (!adminResponse.trim()) return;
     setIsSubmittingResponse(true);
+    
+    const payload = { 
+      admin_reply: adminResponse,
+      status: 'resolved'
+    };
+    
+    console.log('Sending response to ticket:', id, 'Payload:', payload);
+
     try {
       const { error } = await supabase
         .from('support_tickets')
-        .update({ 
-          response: adminResponse,
-          status: 'resolved'
-        })
+        .update(payload)
         .eq('id', id);
 
-      if (error) throw error;
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, response: adminResponse, status: 'resolved' } : t));
+      if (error) {
+        console.error("400 Error context (Tickets):", error);
+        throw error;
+      }
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, admin_reply: adminResponse, status: 'resolved' } : t));
       setReplyingTicketId(null);
       setAdminResponse('');
       showToast("Response sent and ticket resolved");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      showToast("Error sending response", "error");
+      showToast(`Error sending response: ${err.message || 'Unknown Error'}`, "error");
     } finally {
       setIsSubmittingResponse(false);
     }
@@ -1370,13 +1394,13 @@ export default function AdminArea() {
                             </div>
                           </div>
 
-                          {ticket.response && (
+                          {ticket.admin_reply && (
                             <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
                               <div className="flex items-center gap-2">
                                 <ShieldCheck className="text-amber-500" size={14} />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Official Response</span>
                               </div>
-                              <p className="text-sm text-white/60 leading-relaxed">{ticket.response}</p>
+                              <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
                             </div>
                           )}
 

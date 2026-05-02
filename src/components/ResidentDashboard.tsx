@@ -543,13 +543,13 @@ const ResidentDashboard: React.FC = () => {
                           <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
                         </div>
 
-                        {ticket.response && (
+                        {ticket.admin_reply && (
                           <div className="space-y-3 pl-4 border-l-2 border-amber-500/30">
                             <div className="flex items-center gap-2">
                               <ShieldCheck className="text-amber-500" size={14} />
                               <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Staff Response</span>
                             </div>
-                            <p className="text-sm text-white/60 leading-relaxed">{ticket.response}</p>
+                            <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
                           </div>
                         )}
                       </div>
