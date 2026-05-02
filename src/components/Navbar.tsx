@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export default function Navbar() {
+  const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setShowLanguageMenu(false);
+  };
+
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'pt', label: 'Português' },
+    { code: 'es', label: 'Español' },
+    { code: 'nl', label: 'Nederlands' }
+  ];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -19,14 +34,12 @@ export default function Navbar() {
     const checkAdmin = async (sbUser: any) => {
       setUser(sbUser);
       if (sbUser) {
-        // Check whitelist first
         const whitelist = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
         const isWhitelisted = sbUser.email && whitelist.includes(sbUser.email.toLowerCase());
         
         if (isWhitelisted) {
           setIsAdmin(true);
         } else {
-          // Check Supabase users table
           try {
             const { data, error } = await supabase
               .from('users')
@@ -44,7 +57,6 @@ export default function Navbar() {
       }
     };
 
-    // Initial check
     supabase.auth.getSession().then(({ data: { session } }) => {
       checkAdmin(session?.user ?? null);
     });
@@ -96,7 +108,7 @@ export default function Navbar() {
                 rel="noopener noreferrer"
                 className="text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 text-white/60"
               >
-                {link.name}
+                {t(link.name.toLowerCase())}
               </a>
             ) : (
               <Link 
@@ -108,17 +120,52 @@ export default function Navbar() {
                   link.highlight && "text-amber-500"
                 )}
               >
-                {link.name}
+                {t(link.name.toLowerCase())}
               </Link>
             )
           ))}
+
+          {/* Language Selector */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+              className="p-2 text-white/60 hover:text-white transition-all flex items-center gap-2 text-[10px] uppercase font-black tracking-widest"
+            >
+              <Globe size={14} />
+              {i18n.language.split('-')[0]}
+            </button>
+            <AnimatePresence>
+              {showLanguageMenu && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute top-full right-0 mt-2 bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-2xl min-w-[120px]"
+                >
+                  {languages.map((lang) => (
+                    <button 
+                      key={lang.code}
+                      onClick={() => changeLanguage(lang.code)}
+                      className={cn(
+                        "w-full text-left px-4 py-3 text-[10px] uppercase font-black tracking-widest transition-all hover:bg-white/5",
+                        i18n.language.startsWith(lang.code) ? "text-amber-500" : "text-white/60"
+                      )}
+                    >
+                      {lang.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {isAdmin && (
             <Link 
               to="/admin" 
               className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
             >
               <LayoutDashboard size={14} className="text-amber-500" />
-              Admin
+              {t('admin')}
             </Link>
           )}
           <Link 
@@ -126,7 +173,7 @@ export default function Navbar() {
             className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
           >
             <ShieldCheck size={14} />
-            Resident Area
+            {t('resident_area')}
           </Link>
         </div>
 
@@ -160,7 +207,7 @@ export default function Navbar() {
                     className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
                   >
                     <link.icon size={20} />
-                    {link.name}
+                    {t(link.name.toLowerCase())}
                   </a>
                 ) : (
                   <Link 
@@ -170,11 +217,26 @@ export default function Navbar() {
                     className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
                   >
                     <link.icon size={20} />
-                    {link.name}
+                    {t(link.name.toLowerCase())}
                   </Link>
                 )
               ))}
-              <div className="h-[1px] bg-white/10 my-2" />
+
+              <div className="flex gap-4 py-4 border-y border-white/5">
+                {languages.map((lang) => (
+                  <button 
+                    key={lang.code}
+                    onClick={() => changeLanguage(lang.code)}
+                    className={cn(
+                      "text-[10px] uppercase font-black p-2 rounded-lg border",
+                      i18n.language.startsWith(lang.code) ? "bg-amber-500 border-amber-500 text-black" : "border-white/10 text-white/40"
+                    )}
+                  >
+                    {lang.code}
+                  </button>
+                ))}
+              </div>
+
               {isAdmin && (
                 <Link 
                   to="/admin" 
@@ -182,7 +244,7 @@ export default function Navbar() {
                   className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold flex items-center justify-center gap-3 border border-white/10"
                 >
                   <LayoutDashboard size={20} className="text-amber-500" />
-                  Admin Panel
+                  {t('admin_panel')}
                 </Link>
               )}
               <Link 
@@ -191,7 +253,7 @@ export default function Navbar() {
                 className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
               >
                 <ShieldCheck size={20} />
-                Resident Area
+                {t('resident_area')}
               </Link>
             </div>
           </motion.div>

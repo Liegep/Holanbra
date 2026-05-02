@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
-import { FileText, Globe, ArrowLeft, Loader2 } from 'lucide-react';
+import { FileText, Globe, ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Covenant: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [lang, setLang] = useState<'en' | 'pt' | 'es' | 'nl'>('en');
   const [content, setContent] = useState({ en: '', pt: '', es: '', nl: '' });
   const [loading, setLoading] = useState(true);
+
+  // Sync with global i18n language
+  useEffect(() => {
+    const currentLng = i18n.language.split('-')[0] as any;
+    if (['en', 'pt', 'es', 'nl'].includes(currentLng)) {
+      setLang(currentLng);
+    }
+  }, [i18n.language]);
 
   useEffect(() => {
     const fetchCovenant = async () => {
@@ -43,50 +53,33 @@ const Covenant: React.FC = () => {
     );
   }
 
-  const getLanguageName = (l: string) => {
-    switch(l) {
-      case 'en': return 'English';
-      case 'pt': return 'Português';
-      case 'es': return 'Español';
-      case 'nl': return 'Nederlands';
-      default: return l;
-    }
-  };
-
-  const getNoTextMsg = (l: string) => {
-    switch(l) {
-      case 'en': return "Covenant text not yet available.";
-      case 'pt': return "Texto do covenant ainda não disponível.";
-      case 'es': return "El texto del convenio aún no está disponible.";
-      case 'nl': return "Convenanttekst nog niet beschikbaar.";
-      default: return "";
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
       <div className="max-w-4xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-[0.3em] text-[10px] font-black mb-12">
-          <ArrowLeft size={14} /> Back to Home
+          <ArrowLeft size={14} /> {t('back_to_home')}
         </Link>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-amber-500">
               <FileText size={24} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Terms</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('resident_terms')}</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter">COVENANT</h1>
+            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase">{t('covenant')}</h1>
           </div>
 
           <div className="flex flex-wrap gap-2 bg-white/5 p-2 rounded-3xl border border-white/10 backdrop-blur-md justify-center">
             {(['en', 'pt', 'es', 'nl'] as const).map((l) => (
               <button 
                 key={l}
-                onClick={() => setLang(l)}
+                onClick={() => {
+                  setLang(l);
+                  i18n.changeLanguage(l);
+                }}
                 className={`px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${lang === l ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' : 'text-white/40 hover:text-white'}`}
               >
-                {getLanguageName(l)}
+                {l === 'en' ? 'English' : l === 'pt' ? 'Português' : l === 'es' ? 'Español' : 'Nederlands'}
               </button>
             ))}
           </div>
@@ -104,7 +97,7 @@ const Covenant: React.FC = () => {
             <div className="prose prose-invert max-w-none">
               <div 
                 className="covenant-rich-content text-amber-100/70 leading-relaxed font-light text-lg md:text-xl"
-                dangerouslySetInnerHTML={{ __html: content[lang] || getNoTextMsg(lang) }}
+                dangerouslySetInnerHTML={{ __html: content[lang] || t('covenant_unavailable') }}
               />
             </div>
           </div>
@@ -112,16 +105,20 @@ const Covenant: React.FC = () => {
           <div className="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
              <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                  <Globe className="text-emerald-500" size={20} />
+                   <Globe className="text-emerald-500" size={20} />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Legal Department</p>
-                  <p className="text-xs text-white/40">Holanbra Real Estate v1.0</p>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{t('legal_dept')}</p>
+                   <p className="text-xs text-white/40">Holanbra Real Estate v1.0</p>
                 </div>
              </div>
              
-             <button className="px-8 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-colors shadow-xl shadow-white/5">
-                Print Document
+             <button 
+               onClick={() => window.print()}
+               className="px-8 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-colors shadow-xl shadow-white/5 flex items-center gap-2"
+             >
+                <Printer size={14} />
+                {t('print_document')}
              </button>
           </div>
         </motion.div>

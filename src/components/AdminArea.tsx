@@ -229,9 +229,10 @@ export default function AdminArea() {
 
     // Subscribe to changes for real-time
     const settingsSubscription = supabase
-      .channel('settings_changes')
+      .channel('admin_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
       .subscribe();
 
     return () => {

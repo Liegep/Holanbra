@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { 
   Home, 
@@ -25,6 +26,7 @@ import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 
 const ResidentDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -130,29 +132,36 @@ const ResidentDashboard: React.FC = () => {
     
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("Usuário não está logado.");
+      if (userError || !user) throw new Error("Usuário não está logado. Por favor, faça login novamente.");
+
+      const payload = {
+        user_id: user.id, // Supabase user.id is a UUID string compatible with UUID columns
+        avatar_name: user.user_metadata?.avatar_name || user.user_metadata?.name || 'Resident',
+        subject: ticketForm.subject,
+        category: ticketForm.category,
+        message: ticketForm.message,
+        status: 'open'
+      };
 
       const { data, error } = await supabase
         .from('support_tickets')
-        .insert({
-          user_id: user.id,
-          avatar_name: user?.user_metadata?.avatar_name || 'Resident',
-          subject: ticketForm.subject,
-          category: ticketForm.category,
-          message: ticketForm.message,
-          status: 'open'
-        })
+        .insert(payload)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Detailed logging as requested by user
+        console.error("Erro Detalhado:", error.message, error.details, error.hint);
+        throw error;
+      }
 
       setTickets([data, ...tickets]);
       setTicketForm({ subject: '', category: 'Financeiro', message: '' });
-      showToast("Ticket enviado com sucesso!");
+      showToast("Ticket enviado com sucesso! Nossa equipe entrará em contato em breve.");
     } catch (err: any) {
-      console.error("Erro Detalhado:", err);
-      showToast(`Erro ao enviar ticket: ${err.message || 'Erro desconhecido'}`, "error");
+      console.error("Erro na submissão do ticket:", err);
+      const errorMsg = err.message || "Erro desconhecido";
+      showToast(`Erro ao enviar ticket: ${errorMsg}`, "error");
     } finally {
       setIsSubmittingTicket(false);
     }
