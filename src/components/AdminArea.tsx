@@ -384,9 +384,15 @@ export default function AdminArea() {
     teleport_url: '',
     status: 'available',
     description: '',
+    description_pt: '',
+    description_en: '',
+    description_es: '',
+    description_nl: '',
     imageUrl: '',
     expiry_date: ''
   });
+
+  const [formLang, setFormLang] = useState<'pt' | 'en' | 'es' | 'nl'>('pt');
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'expiring'>('all');
 
@@ -1072,7 +1078,11 @@ export default function AdminArea() {
     try {
       const dataToSave: any = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description_pt || formData.description, // Fallback to main description
+        description_pt: formData.description_pt,
+        description_en: formData.description_en,
+        description_es: formData.description_es,
+        description_nl: formData.description_nl,
         price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
@@ -1096,16 +1106,20 @@ export default function AdminArea() {
         showToast("Property saved successfully!");
       }
 
-      setFormData({
-        name: '',
-        casperletId: '',
-        price: '',
-        teleport_url: '',
-        status: 'available',
-        description: '',
-        imageUrl: '',
-        expiry_date: ''
-      });
+        setFormData({
+          name: '',
+          casperletId: '',
+          price: '',
+          teleport_url: '',
+          status: 'available',
+          description: '',
+          description_pt: '',
+          description_en: '',
+          description_es: '',
+          description_nl: '',
+          imageUrl: '',
+          expiry_date: ''
+        });
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
@@ -1122,6 +1136,10 @@ export default function AdminArea() {
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
+      description_pt: prop.description_pt || prop.description || '',
+      description_en: prop.description_en || '',
+      description_es: prop.description_es || '',
+      description_nl: prop.description_nl || '',
       imageUrl: prop.image_url || '',
       expiry_date: prop.expiry_date || ''
     });
@@ -2602,6 +2620,10 @@ export default function AdminArea() {
                         teleport_url: '',
                         status: 'available',
                         description: '',
+                        description_pt: '',
+                        description_en: '',
+                        description_es: '',
+                        description_nl: '',
                         imageUrl: '',
                         expiry_date: ''
                       });
@@ -2681,15 +2703,37 @@ export default function AdminArea() {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Description</label>
+                <div className="space-y-4 text-left">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">{t('description')}</label>
+                    <div className="flex gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
+                      {(['pt', 'en', 'es', 'nl'] as const).map(lang => (
+                        <button
+                          key={lang}
+                          onClick={() => setFormLang(lang)}
+                          className={cn(
+                            "px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest transition-all",
+                            formLang === lang ? "bg-amber-500 text-black shadow-lg" : "text-white/40 hover:text-white"
+                          )}
+                        >
+                          {lang}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <textarea 
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={4}
-                    className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                    placeholder="Describe the island amenities..."
+                    name={`description_${formLang}`}
+                    value={(formData as any)[`description_${formLang}`]}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        [`description_${formLang}`]: val 
+                      }));
+                    }}
+                    rows={6}
+                    className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all" 
+                    placeholder={`${t('description')} (${formLang.toUpperCase()})...`}
                   />
                 </div>
 

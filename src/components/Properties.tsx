@@ -19,6 +19,10 @@ interface Property {
   date: string;
   casperletId?: string;
   description?: string;
+  description_pt?: string;
+  description_en?: string;
+  description_es?: string;
+  description_nl?: string;
   bedrooms?: number;
   bathrooms?: number;
 }
