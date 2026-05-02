@@ -444,34 +444,9 @@ export default function AdminArea() {
             'victoriaholanbra@gmail.com'
           ];
           const isWhitelisted = userEmail && adminEmails.includes(userEmail);
-
-          // Get or Create profile in Supabase
-          const { data: profile, error: profileError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', userEmail)
-            .single();
-          
-          if (!profile && sbUser.email) {
-            console.log("Synchronizing new user to table:", userEmail);
-            await supabase.from('users').insert([{
-              email: sbUser.email,
-              uid: sbUser.id,
-              is_admin: isWhitelisted
-            }]);
-            setIsAdmin(isWhitelisted);
-          } else if (profile) {
-            // Update admin status if whitelisted but not set in DB
-            if (isWhitelisted && !profile.is_admin) {
-              await supabase.from('users').update({ is_admin: true }).eq('id', profile.id);
-              setIsAdmin(true);
-            } else {
-              setIsAdmin(!!profile.is_admin);
-            }
-          }
+          setIsAdmin(isWhitelisted || !!sbUser.app_metadata?.is_admin);
         } catch (error) {
-          console.error("Error synchronizing profile:", error);
-          // Fallback to whitelist if DB fails
+          console.error("Error checking profile:", error);
           const userEmail = sbUser.email?.toLowerCase();
           const adminEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
           setIsAdmin(!!(userEmail && adminEmails.includes(userEmail)));

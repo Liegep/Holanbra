@@ -40,17 +40,8 @@ export default function Navbar() {
         if (isWhitelisted) {
           setIsAdmin(true);
         } else {
-          try {
-            const { data, error } = await supabase
-              .from('users')
-              .select('is_admin')
-              .eq('email', sbUser.email)
-              .single();
-            
-            setIsAdmin(!!(data && data.is_admin));
-          } catch (e) {
-            setIsAdmin(false);
-          }
+          // Identify admin purely by metadata or whitelist
+          setIsAdmin(!!sbUser.app_metadata?.is_admin);
         }
       } else {
         setIsAdmin(false);
