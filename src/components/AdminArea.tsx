@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import Editor from 'react-simple-wysiwyg';
 import { 
   BarChart3, 
   Settings, 
@@ -8,156 +6,60 @@ import {
   Image as ImageIcon, 
   Video, 
   Link as LinkIcon, 
-  ChevronRight,
-  Trash2,
-  Save,
-  CheckCircle,
-  AlertCircle,
   ShieldCheck,
-  Tag,
-  LogIn,
   LogOut,
-  Loader2,
-  MapPin,
-  RefreshCw,
-  X,
-  FileText,
-  Clock,
-  Calendar,
-  CreditCard,
-  Play,
   User as UserIcon,
-  ArrowUpRight,
   Mail,
   MessageSquare,
-  Bold,
-  Italic,
-  Underline,
-  List as ListIcon,
-  Type,
-  Code
+  FileText,
+  AlertCircle
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import { supabase, signOut } from '../lib/supabase';
 import { cn } from '../lib/utils';
-import { supabase, signInWithGoogle, signOut } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
 import { useTranslation } from 'react-i18next';
 
-function AdminAuthForm() {
-  const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      await signInWithGoogle();
-    } catch (err: any) {
-      console.error("Login failed:", err);
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-white/5 border border-white/10 p-12 rounded-3xl text-center space-y-8 flex flex-col items-center">
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="w-20 h-20 bg-amber-500 rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(247,203,69,0.1)] mb-4"
-        >
-          <span className="text-black font-black text-3xl">H</span>
-        </motion.div>
-        
-        <div className="space-y-2">
-          <h3 className="text-white font-bold uppercase tracking-[0.3em] text-sm">{t('security')}</h3>
-          <p className="text-white/30 text-[10px] uppercase tracking-widest leading-relaxed max-w-[200px] mx-auto">
-            {t('admin_portal_auth_desc')}
-          </p>
-        </div>
-
-        {error && (
-          <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl w-full">
-            <p className="text-red-500 text-[10px] uppercase font-bold tracking-widest leading-relaxed">{error}</p>
-          </div>
-        )}
-
-        <button 
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full py-4 rounded-xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-zinc-200 transition-all uppercase tracking-widest text-[10px] disabled:opacity-50"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" size={16} />
-          ) : (
-            <>
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z"
-                />
-                <path
-                  fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                />
-              </svg>
-              {t('login_google')}
-            </>
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
+// Sub-components
+import { AdminAuthForm } from './admin/AdminAuthForm';
+import { AdminSupportTickets } from './admin/AdminSupportTickets';
+import { AdminResidents } from './admin/AdminResidents';
+import { AdminHeroSection } from './admin/AdminHeroSection';
+import { AdminGalleryManager } from './admin/AdminGalleryManager';
+import { AdminVideoManager } from './admin/AdminVideoManager';
+import { AdminInbox } from './admin/AdminInbox';
+import { AdminTeamManager } from './admin/AdminTeamManager';
+import { AdminLandCovenant } from './admin/AdminLandCovenant';
+import { AdminPropertyForm } from './admin/AdminPropertyForm';
+import { AdminPropertyListings } from './admin/AdminPropertyListings';
 
 export default function AdminArea() {
   const { t } = useTranslation();
+  
+  // UI State
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
     visible: false
   });
-
-  const showToast = (message: string, type: ToastType = 'success') => {
-    setToast({ message, type, visible: true });
-  };
+  const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets'>('listings');
-  const [inboxMessages, setInboxMessages] = useState<any[]>([]);
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
-  const [adminResponse, setAdminResponse] = useState('');
-  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
-  const [videos, setVideos] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [isUploadingSlot, setIsUploadingSlot] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingRenterId, setEditingRenterId] = useState<string | null>(null);
-  const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
-  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+
+  // Data State
+  const [properties, setProperties] = useState<any[]>([]);
   const [renters, setRenters] = useState<any[]>([]);
-  const [renterFormData, setRenterFormData] = useState({
-    avatarName: '',
-    avatarUuid: '',
-    password: ''
-  });
-  const [covenants, setCovenants] = useState({ en: '', pt: '', es: '', nl: '' });
-  const [isDirty, setIsDirty] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [inboxMessages, setInboxMessages] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [videos, setVideos] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [heroContent, setHeroContent] = useState<any>({
     backgroundImage: '',
     badgeText: 'New Islands Available',
@@ -167,216 +69,20 @@ export default function AdminArea() {
     gridImages: ['', '', '', ''],
     aboutImage: ''
   });
-  const [galleryImages, setGalleryImages] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
-  const [galleryFormData, setGalleryFormData] = useState({ caption: '', imageUrl: '' });
-  const [teamFormData, setTeamFormData] = useState({
-    name: '',
-    role: '',
-    bio: '',
-    image: '',
-    icon: 'Users',
-    slProfile: '#',
-    order: '0'
-  });
+  const [covenants, setCovenants] = useState({ en: '', pt: '', es: '', nl: '' });
+  const [isDirty, setIsDirty] = useState(false);
 
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-    
-    const fetchTickets = async () => {
-      const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
-      setTickets(data || []);
-    };
-
-    const fetchData = async () => {
-      // Fetch Covenants from land_covenants
-      const { data: covenantData } = await supabase.from('land_covenants').select('*').limit(1).maybeSingle();
-      if (covenantData) {
-        setCovenants({
-          en: covenantData.content_en || '',
-          pt: covenantData.content_pt || '',
-          es: covenantData.content_es || '',
-          nl: covenantData.content_nl || ''
-        });
-      }
-
-      // Fetch Hero Content - Supports flat columns or JSONB content branch
-      const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').maybeSingle();
-      if (heroData) {
-        // Map flat columns back to state
-        setHeroContent({
-          badgeText: heroData.badge_text || '',
-          title1: heroData.title_main || '',
-          title2: heroData.title_italic || '',
-          virtualTourUrl: heroData.virtual_tour_url || '',
-          backgroundImage: heroData.background_url || '',
-          aboutImage: heroData.about_image_url || '',
-          gridImages: [
-            heroData.grid_photo_1 || '',
-            heroData.grid_photo_2 || '',
-            heroData.grid_photo_3 || '',
-            heroData.grid_photo_4 || ''
-          ]
-        });
-      }
-
-      // Fetch Videos
-      const { data: videosData } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
-      if (videosData) setVideos(videosData);
-
-      // Fetch Tickets
-      await fetchTickets();
-    };
-
-    fetchData();
-
-    // Subscribe to changes for real-time
-    const settingsSubscription = supabase
-      .channel('admin_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(settingsSubscription);
-    };
-  }, [user, isAdmin]);
-
-  const handleHeroInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setHeroContent((prev: any) => ({ ...prev, [name]: value }));
-  };
-
-  const handleHeroGridChange = (idx: number, value: string) => {
-    setHeroContent((prev: any) => {
-      const newGrid = [...prev.gridImages];
-      newGrid[idx] = value;
-      return { ...prev, gridImages: newGrid };
-    });
-  };
-
-  const handleSaveHero = async () => {
-    try {
-      console.log("Saving Hero to site_settings (hero_section)...", heroContent);
-      
-      const { error } = await supabase.from('site_settings').upsert({
-        id: 'hero_section',
-        badge_text: heroContent.badgeText,
-        title_main: heroContent.title1,
-        title_italic: heroContent.title2,
-        virtual_tour_url: heroContent.virtualTourUrl,
-        background_url: heroContent.backgroundImage,
-        about_image_url: heroContent.aboutImage,
-        grid_photo_1: heroContent.gridImages[0] || '',
-        grid_photo_2: heroContent.gridImages[1] || '',
-        grid_photo_3: heroContent.gridImages[2] || '',
-        grid_photo_4: heroContent.gridImages[3] || '',
-        updated_at: new Date().toISOString()
-      });
-      
-      if (error) {
-        console.error("SUPABASE SAVE ERROR:", error);
-        throw error;
-      }
-      showToast(t('admin.settings_saved'));
-    } catch (error: any) {
-      console.error("Full Error Object:", error);
-      showToast(`${t('admin.save_fail')}: ${error.message || t('admin.unknown_error')}`, "error");
-    }
-  };
-
-  const handleSaveCovenant = async () => {
-    try {
-      // Get existing one first to know the ID for upsert, or use a fixed ID like 1 if we assume it's a singleton
-      const { data: existing } = await supabase.from('land_covenants').select('id').limit(1).maybeSingle();
-      
-      const payload: any = {
-        content_en: covenants.en,
-        content_pt: covenants.pt,
-        content_es: covenants.es,
-        content_nl: covenants.nl,
-      };
-
-      if (existing?.id) {
-        payload.id = existing.id;
-      }
-
-      const { error } = await supabase.from('land_covenants').upsert(payload);
-      
-      if (error) throw error;
-      setIsDirty(false);
-      showToast(t('covenant.update_success'));
-    } catch (error) {
-      console.error(error);
-      showToast(t('covenant.update_error'), "error");
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
-
-  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-
-  const handleSelection = () => {
-    setTimeout(() => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        setSelectionRect(rect);
-      } else {
-        setSelectionRect(null);
-      }
-    }, 10);
-  };
-
-  const applyCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
-    setIsDirty(true);
-  };
-
-  const FloatingToolbar = () => {
-    if (!selectionRect) return null;
-
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="floating-toolbar"
-        style={{ 
-          top: selectionRect.top - 60, 
-          left: Math.max(10, Math.min(window.innerWidth - 320, selectionRect.left + (selectionRect.width / 2) - 160)) 
-        }}
-      >
-        <button onClick={() => applyCommand('bold')} title="Bold"><Bold size={14} /></button>
-        <button onClick={() => applyCommand('italic')} title="Italic"><Italic size={14} /></button>
-        <button onClick={() => applyCommand('underline')} title="Underline"><Underline size={14} /></button>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <button onClick={() => applyCommand('insertUnorderedList')} title="List"><ListIcon size={14} /></button>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <select 
-          onChange={(e) => applyCommand('formatBlock', e.target.value)}
-          defaultValue="P"
-        >
-          <option value="P">Text</option>
-          <option value="H1">H1</option>
-          <option value="H2">H2</option>
-          <option value="H3">H3</option>
-        </select>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <button onClick={() => {
-          const url = prompt('Enter URL:');
-          if (url) applyCommand('createLink', url);
-        }} title="Link"><LinkIcon size={14} /></button>
-      </motion.div>
-    );
-  };
-
-  const [properties, setProperties] = useState<any[]>([]);
+  // Form States
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingRenterId, setEditingRenterId] = useState<string | null>(null);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
+  const [formLang, setFormLang] = useState<'pt' | 'en' | 'es' | 'nl'>('pt');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'expiring'>('all');
+  const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
+  const [adminResponse, setAdminResponse] = useState('');
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
+  
   const [formData, setFormData] = useState({
     name: '',
     casperletId: '',
@@ -392,24 +98,550 @@ export default function AdminArea() {
     expiry_date: ''
   });
 
-  const [formLang, setFormLang] = useState<'pt' | 'en' | 'es' | 'nl'>('pt');
-
-  const [activeFilter, setActiveFilter] = useState<'all' | 'expiring'>('all');
-
-  const filteredProperties = properties.filter(prop => {
-    if (activeFilter === 'all') return true;
-    if (!prop.expiry_date) return false;
-    const expiry = new Date(prop.expiry_date);
-    const now = new Date();
-    const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-    return diff > 0 && diff <= 7;
-  }).sort((a, b) => {
-    // Sort expiring ones first if filtered
-    if (activeFilter === 'expiring') {
-      return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
-    }
-    return 0;
+  const [renterFormData, setRenterFormData] = useState({
+    avatarName: '',
+    avatarUuid: '',
+    password: ''
   });
+
+  const [galleryFormData, setGalleryFormData] = useState({ caption: '', imageUrl: '' });
+  
+  const [teamFormData, setTeamFormData] = useState({
+    name: '',
+    role: '',
+    bio: '',
+    image: '',
+    icon: 'Users',
+    slProfile: '#',
+    order: '0'
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, visible: true });
+  };
+
+  // Auth Handling
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      handleUser(session?.user ?? null);
+    };
+
+    const handleUser = async (sbUser: User | null) => {
+      setUser(sbUser);
+      if (sbUser) {
+        try {
+          const userEmail = sbUser.email?.toLowerCase();
+          const adminEmails = [
+            'hello@liegepaschoalini.design', 
+            'slmariew@gmail.com', 
+            'victoriaholanbra@gmail.com'
+          ];
+          const isWhitelisted = userEmail && adminEmails.includes(userEmail);
+          setIsAdmin(isWhitelisted || !!sbUser.app_metadata?.is_admin);
+        } catch (error) {
+          console.error("Error checking profile:", error);
+          setIsAdmin(false);
+        } finally {
+          setAuthLoading(false);
+        }
+      } else {
+        setIsAdmin(false);
+        setAuthLoading(false);
+      }
+    };
+
+    checkUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      handleUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Data Fetching
+  const fetchTickets = async () => {
+    const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+    setTickets(data || []);
+  };
+
+  const fetchRenters = async () => {
+    const { data } = await supabase.from('renters').select('*');
+    setRenters(data || []);
+  };
+
+  const fetchProperties = async () => {
+    const { data } = await supabase.from('properties').select('*');
+    setProperties(data || []);
+  };
+
+  const fetchGallery = async () => {
+    const { data } = await supabase.from('gallery').select('*').order('id', { ascending: false });
+    setGalleryImages(data || []);
+  };
+
+  const fetchInboxMessages = async () => {
+    const { data } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
+    setInboxMessages(data || []);
+  };
+
+  const fetchVideos = async () => {
+    const { data } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+    setVideos(data || []);
+  };
+
+  const fetchTeam = async () => {
+    const { data } = await supabase.from('team').select('*').order('display_order', { ascending: true });
+    setTeamMembers(data || []);
+  };
+
+  const fetchData = async () => {
+    if (!user || !isAdmin) return;
+
+    // Fetch Covenants
+    const { data: covenantData } = await supabase.from('land_covenants').select('*').limit(1).maybeSingle();
+    if (covenantData) {
+      setCovenants({
+        en: covenantData.content_en || '',
+        pt: covenantData.content_pt || '',
+        es: covenantData.content_es || '',
+        nl: covenantData.content_nl || ''
+      });
+    }
+
+    // Fetch Hero
+    const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').maybeSingle();
+    if (heroData) {
+      setHeroContent({
+        badgeText: heroData.badge_text || '',
+        title1: heroData.title_main || '',
+        title2: heroData.title_italic || '',
+        virtualTourUrl: heroData.virtual_tour_url || '',
+        backgroundImage: heroData.background_url || '',
+        aboutImage: heroData.about_image_url || '',
+        gridImages: [
+          heroData.grid_photo_1 || '',
+          heroData.grid_photo_2 || '',
+          heroData.grid_photo_3 || '',
+          heroData.grid_photo_4 || ''
+        ]
+      });
+    }
+
+    fetchProperties();
+    fetchRenters();
+    fetchGallery();
+    fetchInboxMessages();
+    fetchVideos();
+    fetchTeam();
+    fetchTickets();
+  };
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchData();
+      
+      const channel = supabase.channel('admin_realtime_main')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user, isAdmin]);
+
+  // Handlers
+  const handleSaveHero = async () => {
+    try {
+      const { error } = await supabase.from('site_settings').upsert({
+        id: 'hero_section',
+        badge_text: heroContent.badgeText,
+        title_main: heroContent.title1,
+        title_italic: heroContent.title2,
+        virtual_tour_url: heroContent.virtualTourUrl,
+        background_url: heroContent.backgroundImage,
+        about_image_url: heroContent.aboutImage,
+        grid_photo_1: heroContent.gridImages[0] || '',
+        grid_photo_2: heroContent.gridImages[1] || '',
+        grid_photo_3: heroContent.gridImages[2] || '',
+        grid_photo_4: heroContent.gridImages[3] || '',
+        updated_at: new Date().toISOString()
+      });
+      if (error) throw error;
+      showToast(t('admin.settings_saved'));
+    } catch (error: any) {
+      showToast(`${t('admin.save_fail')}: ${error.message}`, "error");
+    }
+  };
+
+  const handleSaveCovenant = async () => {
+    try {
+      const { data: existing } = await supabase.from('land_covenants').select('id').limit(1).maybeSingle();
+      const payload: any = {
+        content_en: covenants.en,
+        content_pt: covenants.pt,
+        content_es: covenants.es,
+        content_nl: covenants.nl,
+      };
+      if (existing?.id) payload.id = existing.id;
+      const { error } = await supabase.from('land_covenants').upsert(payload);
+      if (error) throw error;
+      setIsDirty(false);
+      showToast(t('covenant.update_success'));
+    } catch (error) {
+      showToast(t('covenant.update_error'), "error");
+    }
+  };
+
+  const handleToggleRead = async (id: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase.from('contact_messages').update({ is_read: !currentStatus }).eq('id', id);
+      if (error) throw error;
+      fetchInboxMessages();
+    } catch (error) {
+      showToast(t('admin.status_update_error'), "error");
+    }
+  };
+
+  const handleDeleteMessage = async (id: string) => {
+    if (!confirm(t('admin.delete_message_confirm'))) return;
+    try {
+      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('admin.message_deleted_success'));
+      fetchInboxMessages();
+    } catch (error) {
+      showToast(t('admin.delete_msg_error'), "error");
+    }
+  };
+
+  const handleSaveTeam = async () => {
+    if (!teamFormData.name || !teamFormData.role || !teamFormData.image) {
+      showToast(t('team.fill_required_fields'), "info");
+      return;
+    }
+    try {
+      const dataToSave: any = {
+        name: teamFormData.name,
+        role: teamFormData.role,
+        bio: teamFormData.bio,
+        photo_url: teamFormData.image,
+        icon: teamFormData.icon,
+        sl_url: teamFormData.slProfile,
+        display_order: parseInt(teamFormData.order) || 0
+      };
+      if (editingTeamId) dataToSave.id = editingTeamId;
+      const { error } = await supabase.from('team').upsert(dataToSave);
+      if (error) throw error;
+      showToast(t('team.member_update_success'));
+      setTeamFormData({ name: '', role: '', bio: '', image: '', icon: 'Users', slProfile: '#', order: (teamMembers.length + 1).toString() });
+      setEditingTeamId(null);
+    } catch (error) {
+      showToast("Error saving team member", "error");
+    }
+  };
+
+  const handleDeleteTeam = async (id: string) => {
+    if (!confirm(t('common.confirm_delete'))) return;
+    try {
+      const { error } = await supabase.from('team').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('common.deleted_success'));
+    } catch (error) {
+      showToast(t('common.delete_error'), "error");
+    }
+  };
+
+  const handleEditTeam = (item: any) => {
+    setTeamFormData({
+      name: item.name || '',
+      role: item.role || '',
+      bio: item.bio || '',
+      image: item.photo_url || '',
+      icon: item.icon || 'Users',
+      slProfile: item.sl_url || '#',
+      order: item.display_order?.toString() || '0'
+    });
+    setEditingTeamId(item.id);
+  };
+
+  const handleGallerySave = async () => {
+    if (!galleryFormData.imageUrl) {
+      showToast(t('gallery.choose_photo'), "info");
+      return;
+    }
+    try {
+      const { error } = await supabase.from('gallery').insert({ url: galleryFormData.imageUrl, caption: galleryFormData.caption });
+      if (error) throw error;
+      setGalleryFormData({ caption: '', imageUrl: '' });
+      showToast(t('common.saved_success'));
+      fetchGallery();
+    } catch (err: any) {
+      showToast(t('common.save_error'), "error");
+    }
+  };
+
+  const handleDeleteGallery = async (id: number) => {
+    if (!confirm(t('common.confirm_delete'))) return;
+    try {
+      const { error } = await supabase.from('gallery').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('common.deleted_success'));
+      fetchGallery();
+    } catch (err: any) {
+      showToast(t('common.delete_error'), "error");
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setIsUploadingSlot('videos');
+    try {
+      const filePath = `videos/hero-video.mp4`;
+      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
+      await supabase.from('videos').upsert({ id: 1, name: 'Hero Virtual Tour', url: publicUrl });
+      await supabase.from('site_settings').upsert({ id: 'hero_section', virtual_tour_url: publicUrl, updated_at: new Date().toISOString() });
+      showToast(t('common.saved_success'));
+      setHeroContent(prev => ({ ...prev, virtualTourUrl: publicUrl }));
+      fetchVideos();
+    } catch (err: any) {
+      showToast(t('common.save_error'), "error");
+    } finally {
+      setIsUploading(false);
+      setIsUploadingSlot(null);
+    }
+  };
+
+  const handleDeleteVideo = async (id: number) => {
+    if (!confirm(t('common.confirm_delete'))) return;
+    try {
+      const { error } = await supabase.from('videos').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('common.deleted_success'));
+      fetchVideos();
+    } catch (err: any) {
+      showToast(t('common.delete_error'), "error");
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: string, gridIdx?: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const uploadId = gridIdx !== undefined ? `grid-${gridIdx}` : targetField;
+    setIsUploadingSlot(uploadId);
+    setIsUploading(true);
+    setUploadProgress(0);
+    try {
+      let fileToUpload: File | Blob = file;
+      const isImage = file.type.startsWith('image/');
+      if (isImage) {
+        const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true, fileType: 'image/webp', initialQuality: 0.8 };
+        fileToUpload = await imageCompression(file, options);
+      }
+      const fileExt = isImage ? 'webp' : file.name.split('.').pop();
+      const fileName = `${targetField}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `media/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, fileToUpload, { cacheControl: '3600', upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
+
+      if (targetField === 'imageUrl') setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      else if (targetField === 'image') setTeamFormData(prev => ({ ...prev, image: publicUrl }));
+      else if (targetField === 'gallery') setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
+        const updatedHero = { ...heroContent, [targetField]: publicUrl };
+        setHeroContent(updatedHero);
+        await supabase.from('site_settings').upsert({ 
+          id: 'hero_section',
+          badge_text: updatedHero.badgeText,
+          title_main: updatedHero.title1,
+          title_italic: updatedHero.title2,
+          background_url: updatedHero.backgroundImage,
+          about_image_url: updatedHero.aboutImage,
+          grid_photo_1: updatedHero.gridImages[0] || '',
+          grid_photo_2: updatedHero.gridImages[1] || '',
+          grid_photo_3: updatedHero.gridImages[2] || '',
+          grid_photo_4: updatedHero.gridImages[3] || '',
+          updated_at: new Date().toISOString()
+        });
+      } else if (targetField === 'gridImage' && gridIdx !== undefined) {
+        const newGrid = [...heroContent.gridImages];
+        newGrid[gridIdx] = publicUrl;
+        const updatedHero = { ...heroContent, gridImages: newGrid };
+        setHeroContent(updatedHero);
+        await supabase.from('site_settings').upsert({ 
+          id: 'hero_section',
+          badge_text: updatedHero.badgeText,
+          title_main: updatedHero.title1,
+          title_italic: updatedHero.title2,
+          background_url: updatedHero.backgroundImage,
+          about_image_url: updatedHero.aboutImage,
+          grid_photo_1: updatedHero.gridImages[0] || '',
+          grid_photo_2: updatedHero.gridImages[1] || '',
+          grid_photo_3: updatedHero.gridImages[2] || '',
+          grid_photo_4: updatedHero.gridImages[3] || '',
+          updated_at: new Date().toISOString()
+        });
+      }
+      showToast(t('common.processing_success'));
+    } catch (error: any) {
+      showToast(error.message || "Upload failed", "error");
+    } finally {
+      setIsUploadingSlot(null);
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveProperty = async () => {
+    if (!formData.name || !formData.price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
+      showToast(t('common.fill_required_fields'), "info");
+      return;
+    }
+    try {
+      const dataToSave: any = {
+        name: formData.name,
+        description: formData.description_pt || formData.description,
+        description_pt: formData.description_pt,
+        description_en: formData.description_en,
+        description_es: formData.description_es,
+        description_nl: formData.description_nl,
+        price: parseFloat(formData.price) || 0,
+        casperlet_id: formData.casperletId,
+        image_url: formData.imageUrl,
+        teleport_url: formData.teleport_url,
+        status: editingId ? formData.status : 'available',
+        expiry_date: formData.expiry_date || null
+      };
+      if (editingId) {
+        const { error } = await supabase.from('properties').update(dataToSave).eq('id', editingId);
+        if (error) throw error;
+        showToast(t('common.saved_success'));
+      } else {
+        const { error } = await supabase.from('properties').insert([dataToSave]);
+        if (error) throw error;
+        showToast(t('common.saved_success'));
+      }
+      setFormData({ name: '', casperletId: '', price: '', teleport_url: '', status: 'available', description: '', description_pt: '', description_en: '', description_es: '', description_nl: '', imageUrl: '', expiry_date: '' });
+      setEditingId(null);
+      setActiveTab('listings');
+    } catch (error) {
+      showToast(t('common.save_error'), "error");
+    }
+  };
+
+  const handleEditProperty = (prop: any) => {
+    setFormData({
+      name: prop.name || '',
+      casperletId: prop.casperlet_id || '',
+      price: prop.price?.toString() || '',
+      teleport_url: prop.teleport_url || '',
+      status: prop.status || 'available',
+      description: prop.description || '',
+      description_pt: prop.description_pt || prop.description || '',
+      description_en: prop.description_en || '',
+      description_es: prop.description_es || '',
+      description_nl: prop.description_nl || '',
+      imageUrl: prop.image_url || '',
+      expiry_date: prop.expiry_date || ''
+    });
+    setEditingId(prop.id);
+    setActiveTab('add');
+  };
+
+  const handleDeleteProperty = async (id: string) => {
+    if (!confirm(t('common.confirm_delete'))) return;
+    try {
+      const { error } = await supabase.from('properties').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('common.deleted_success'));
+    } catch (error) {
+      showToast(t('common.delete_error'), "error");
+    }
+  };
+
+  const handleSaveRenter = async () => {
+    if (!renterFormData.avatarName || !renterFormData.avatarUuid || !renterFormData.password) {
+      showToast(t('admin.fill_all_fields'), "info");
+      return;
+    }
+    try {
+      const dataToSave = {
+        avatar_name: renterFormData.avatarName,
+        tenant_id: renterFormData.avatarUuid,
+        avatar_uuid: renterFormData.avatarUuid,
+        password: renterFormData.password
+      };
+      const { error } = await supabase.from('renters').upsert(dataToSave, { onConflict: 'avatar_uuid' });
+      if (error) throw error;
+      
+      const renterUuid = renterFormData.avatarUuid;
+      const { data: currentLinked } = await supabase.from('properties').select('id').eq('tenant_id', renterUuid);
+      const currentLinkedIds = currentLinked?.map(p => p.id) || [];
+      const toUnlink = currentLinkedIds.filter(id => !selectedPropertyIds.includes(id));
+      if (toUnlink.length > 0) {
+        await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).in('id', toUnlink);
+      }
+      const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
+      if (toLink.length > 0) {
+        await supabase.from('properties').update({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName, status: 'rented' }).in('id', toLink);
+      }
+      showToast(t('admin.resident_update_success'));
+      setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
+      setSelectedPropertyIds([]);
+      setEditingRenterId(null);
+    } catch (error: any) {
+      showToast(t('common.save_error'), "error");
+    }
+  };
+
+  const handleDeleteRenter = async (id: string, avatarUuid: string) => {
+    if (!confirm(t('admin.delete_renter_confirm'))) return;
+    try {
+      await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('tenant_id', avatarUuid);
+      const { error } = await supabase.from('renters').delete().eq('id', id);
+      if (error) throw error;
+      showToast(t('admin.renter_removed_success'));
+    } catch (error) {
+      showToast(t('admin.delete_renter_error'), "error");
+    }
+  };
+
+  const handleResolveTicket = async (id: string) => {
+    try {
+      const { error } = await supabase.from('support_tickets').update({ status: 'resolved' }).eq('id', id);
+      if (error) throw error;
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
+      showToast(t('tickets.resolved'));
+    } catch (err) {
+      showToast(t('tickets.resolve_error'), "error");
+    }
+  };
+
+  const handleSendResponse = async (id: string) => {
+    if (!adminResponse.trim()) return;
+    setIsSubmittingResponse(true);
+    try {
+      const { error } = await supabase.from('support_tickets').update({ admin_reply: adminResponse, status: 'resolved' }).eq('id', id);
+      if (error) throw error;
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, admin_reply: adminResponse, status: 'resolved' } : t));
+      setReplyingTicketId(null);
+      setAdminResponse('');
+      showToast(t('tickets.response_sent'));
+    } catch (err: any) {
+      showToast(t('tickets.send_error'), "error");
+    } finally {
+      setIsSubmittingResponse(false);
+    }
+  };
 
   const stats = {
     total: properties.length,
@@ -433,785 +665,25 @@ export default function AdminArea() {
     totalTickets: tickets.length
   };
 
-  useEffect(() => {
-    // Check initial session
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      handleUser(session?.user ?? null);
-    };
-
-    const handleUser = async (sbUser: User | null) => {
-      setUser(sbUser);
-      if (sbUser) {
-        try {
-          const userEmail = sbUser.email?.toLowerCase();
-          
-          // Hardcoded whitelist (unconditional admins)
-          const adminEmails = [
-            'hello@liegepaschoalini.design', 
-            'slmariew@gmail.com', 
-            'victoriaholanbra@gmail.com'
-          ];
-          const isWhitelisted = userEmail && adminEmails.includes(userEmail);
-          setIsAdmin(isWhitelisted || !!sbUser.app_metadata?.is_admin);
-        } catch (error) {
-          console.error("Error checking profile:", error);
-          const userEmail = sbUser.email?.toLowerCase();
-          const adminEmails = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com'];
-          setIsAdmin(!!(userEmail && adminEmails.includes(userEmail)));
-        } finally {
-          setAuthLoading(false);
-        }
-      } else {
-        setIsAdmin(false);
-        setAuthLoading(false);
-      }
-    };
-
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    const fetchRenters = async () => {
-      const { data, error } = await supabase.from('renters').select('*');
-      if (error) console.error(error);
-      else setRenters(data || []);
-    };
-
-    fetchRenters();
-    const rentersSubscription = supabase
-      .channel('renters_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(rentersSubscription);
-    };
-  }, [user, isAdmin]);
-
-  const handleRenterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setRenterFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSaveRenter = async () => {
-    if (!renterFormData.avatarName || !renterFormData.avatarUuid || !renterFormData.password) {
-      showToast(t('admin.fill_all_fields'), "info");
-      return;
+  const filteredProperties = properties.filter(prop => {
+    if (activeFilter === 'all') return true;
+    if (!prop.expiry_date) return false;
+    const expiry = new Date(prop.expiry_date);
+    const now = new Date();
+    const diff = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    return diff > 0 && diff <= 7;
+  }).sort((a, b) => {
+    if (activeFilter === 'expiring') {
+      return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
     }
+    return 0;
+  });
 
-    // UUID Validation regex
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(renterFormData.avatarUuid)) {
-      showToast(t('admin.invalid_uuid_error'), "error");
-      return;
-    }
-
-    try {
-      const dataToSave = {
-        avatar_name: renterFormData.avatarName,
-        tenant_id: renterFormData.avatarUuid,
-        avatar_uuid: renterFormData.avatarUuid, // Keep both for safety
-        password: renterFormData.password
-      };
-      
-      console.log('Dados enviados (Renter):', dataToSave);
-
-      // Use upsert to avoid 409 errors (conflicts)
-      const { error: renterError } = await supabase
-        .from('renters')
-        .upsert(dataToSave, { onConflict: 'avatar_uuid' });
-
-      if (renterError) {
-        console.error("400 Error context (Renter):", renterError);
-        throw renterError;
-      }
-
-      // 1. First, clear all properties that were assigned to this resident if we are doing a full sync
-      // If selectedPropertyIds is provided, we should ensure only those are linked.
-      // But based on user feedback "O vínculo só deve ser removido se eu clicar explicitamente",
-      // we might want to only ADD links here, and let unlinking happen elsewhere.
-      // HOWEVER, for a multi-select UI, usually it is expected to sync.
-      // I will keep the clear logic but wrap it to be sure it only happens if we are intending to manage links.
-      
-      const renterUuid = renterFormData.avatarUuid;
-
-      // Update links: Sync properties with the selection
-      // First, get currently linked properties for this user
-      const { data: currentLinked } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('tenant_id', renterUuid);
-      
-      const currentLinkedIds = currentLinked?.map(p => p.id) || [];
-
-      // Find properties to UNLINK (those currently linked but NOT in the new selection)
-      const toUnlink = currentLinkedIds.filter(id => !selectedPropertyIds.includes(id));
-      
-      if (toUnlink.length > 0) {
-        const unlinkPayload = {
-          tenant_id: null,
-          tenant_name: null,
-          status: 'available'
-        };
-        console.log('Dados enviados (Unlink Property):', unlinkPayload, 'IDs:', toUnlink);
-        await supabase
-          .from('properties')
-          .update(unlinkPayload)
-          .in('id', toUnlink);
-      }
-
-      // Find properties to LINK (those in new selection but NOT currently linked)
-      const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
-
-      if (toLink.length > 0) {
-        const linkPayload = {
-          tenant_id: renterUuid,
-          tenant_name: renterFormData.avatarName,
-          status: 'rented'
-        };
-        console.log('Dados enviados (Link Property):', linkPayload, 'IDs:', toLink);
-        await supabase
-          .from('properties')
-          .update(linkPayload)
-          .in('id', toLink);
-      }
-
-      showToast(t('admin.resident_update_success'));
-      setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
-      setSelectedPropertyIds([]);
-      setEditingRenterId(null);
-    } catch (error: any) {
-      console.error(error);
-      showToast(`${t('admin.save_error')}: ${error.message}`, "error");
-    }
-  };
-
-  const handleDeleteRenter = async (id: string, avatarUuid: string) => {
-    if (!confirm(t('admin.delete_renter_confirm'))) return;
-    try {
-      // 1. Clear properties linked to this resident before deleting them
-      const { error: clearError } = await supabase
-        .from('properties')
-        .update({
-          tenant_id: null,
-          tenant_name: null,
-          status: 'available'
-        })
-        .eq('tenant_id', avatarUuid);
-
-      if (clearError) throw clearError;
-
-      // 2. Delete the renter
-      const { error } = await supabase.from('renters').delete().eq('id', id);
-      if (error) throw error;
-
-      showToast(t('admin.renter_removed_success'));
-    } catch (error) {
-      console.error(error);
-      showToast(t('admin.delete_renter_error'), "error");
-    }
-  };
-
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    const fetchProperties = async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*');
-      
-      if (error) {
-        console.error(error);
-      } else {
-        setProperties(data || []);
-      }
-    };
-
-    fetchProperties();
-
-    const propertiesSubscription = supabase
-      .channel('properties_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(propertiesSubscription);
-    };
-  }, [user, isAdmin]);
-
-  const fetchGallery = async () => {
-    const { data, error } = await supabase
-      .from('gallery')
-      .select('*')
-      .order('id', { ascending: false }); // Show newest first
-    
-    if (error) {
-      console.error("Error fetching gallery:", error);
-    } else {
-      setGalleryImages(data || []);
-    }
-  };
-
-  const fetchInboxMessages = async () => {
-    const { data, error } = await supabase
-      .from('contact_messages')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error("Error fetching messages:", error);
-    } else {
-      setInboxMessages(data || []);
-    }
-  };
-
-  const handleToggleRead = async (id: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .update({ is_read: !currentStatus })
-        .eq('id', id);
-      
-      if (error) throw error;
-      fetchInboxMessages();
-    } catch (error) {
-      console.error(error);
-      showToast(t('admin.status_update_error'), "error");
-    }
-  };
-
-  const handleDeleteMessage = async (id: string) => {
-    if (!confirm(t('admin.delete_message_confirm'))) return;
-    try {
-      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
-      if (error) throw error;
-      showToast(t('admin.message_deleted_success'));
-      fetchInboxMessages();
-    } catch (error) {
-      console.error(error);
-      showToast(t('admin.delete_msg_error'), "error");
-    }
-  };
-
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    fetchGallery();
-    fetchInboxMessages();
-
-    const gallerySubscription = supabase
-      .channel('gallery_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
-      .subscribe();
-
-    const inboxSubscription = supabase
-      .channel('inbox_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(gallerySubscription);
-      supabase.removeChannel(inboxSubscription);
-    };
-  }, [user, isAdmin]);
-
-  useEffect(() => {
-    if (!user || !isAdmin) return;
-
-    const fetchTeam = async () => {
-      const { data, error } = await supabase
-        .from('team')
-        .select('*')
-        .order('display_order', { ascending: true });
-      
-      if (error) {
-        console.error(error);
-      } else {
-        setTeamMembers(data || []);
-      }
-    };
-
-    fetchTeam();
-
-    const teamSubscription = supabase
-      .channel('team_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'team' }, fetchTeam)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(teamSubscription);
-    };
-  }, [user, isAdmin]);
-
-  const handleTeamInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setTeamFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSaveTeam = async () => {
-    if (!teamFormData.name || !teamFormData.role || !teamFormData.image) {
-      showToast(t('team.fill_required_fields'), "info");
-      return;
-    }
-
-    try {
-      const dataToSave: any = {
-        name: teamFormData.name,
-        role: teamFormData.role,
-        bio: teamFormData.bio,
-        photo_url: teamFormData.image,
-        icon: teamFormData.icon,
-        sl_url: teamFormData.slProfile,
-        display_order: parseInt(teamFormData.order) || 0
-      };
-
-      if (editingTeamId) {
-        dataToSave.id = editingTeamId;
-      }
-
-      console.log("Saving team member to Supabase...", dataToSave);
-      const { error } = await supabase
-        .from('team')
-        .upsert(dataToSave);
-      
-      if (error) {
-        console.error("SUPABASE TEAM SAVE ERROR:", error);
-        window.alert(t('admin.db_error') + ": " + JSON.stringify(error, null, 2));
-        throw error;
-      }
-      
-      showToast(t('team.member_update_success'));
-
-      setTeamFormData({
-        name: '',
-        role: '',
-        bio: '',
-        image: '',
-        icon: 'Users',
-        slProfile: '#',
-        order: (teamMembers.length + 1).toString()
-      });
-      setEditingTeamId(null);
-    } catch (error) {
-      console.error(error);
-      showToast("Error saving team member", "error");
-    }
-  };
-
-  const handleDeleteTeam = async (id: string) => {
-    if (!confirm("Are you sure?")) return;
-    try {
-      const { error } = await supabase.from('team').delete().eq('id', id);
-      if (error) throw error;
-      showToast("Team member removed!");
-    } catch (error) {
-      console.error(error);
-      showToast("Error deleting member", "error");
-    }
-  };
-
-  const handleEditTeam = (item: any) => {
-    setTeamFormData({
-      name: item.name || '',
-      role: item.role || '',
-      bio: item.bio || '',
-      image: item.photo_url || '',
-      icon: item.icon || 'Users',
-      slProfile: item.sl_url || '#',
-      order: item.display_order?.toString() || '0'
-    });
-    setEditingTeamId(item.id);
-  };
-
-  const handleGallerySave = async () => {
-    if (!galleryFormData.imageUrl) {
-      showToast("Por favor, carregue uma imagem primeiro.", "info");
-      return;
-    }
-
-    try {
-      console.log("Iniciando salvamento na tabela 'gallery'...", { url: galleryFormData.imageUrl, caption: galleryFormData.caption });
-      
-      const { error } = await supabase.from('gallery').insert({
-        url: galleryFormData.imageUrl,
-        caption: galleryFormData.caption
-      });
-      
-      if (error) {
-        console.error("SUPABASE GALLERY INSERT ERROR:", error);
-        throw error;
-      }
-      
-      setGalleryFormData({ caption: '', imageUrl: '' });
-      showToast("Foto adicionada à galeria com sucesso!");
-      
-      // Força a atualização da lista
-      await fetchGallery();
-    } catch (err: any) {
-      console.error("Erro completo ao salvar galeria:", err);
-      showToast(`Erro ao salvar na galeria: ${err.message || 'Erro desconhecido'}`, "error");
-    }
-  };
-
-  const handleDeleteGallery = async (id: number) => {
-    if (!window.confirm("Deseja realmente remover esta foto da galeria?")) return;
-    
-    try {
-      const { error } = await supabase
-        .from('gallery')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      
-      showToast("Foto removida!");
-      // Explicitly refresh the list
-      await fetchGallery();
-    } catch (err: any) {
-      console.error("Erro ao deletar foto:", err);
-      showToast("Falha ao remover foto", "error");
-    }
-  };
-
-  const fetchVideos = async () => {
-    const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
-    if (!error) setVideos(data || []);
-  };
-
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    setUploadProgress(0);
-    setIsUploadingSlot('videos');
-
-    try {
-      // Fixed path for Hero Video as requested
-      const filePath = `videos/hero-video.mp4`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file, { 
-          upsert: true,
-          // Support for large files usually involves some client-side settings if using certain libs
-          // but we'll stick to standard upload and hope the network holds.
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-      // Save to videos table (as a record)
-      const { error: dbError } = await supabase.from('videos').upsert({
-        id: 1, // Fixed ID for the hero video record if we want to treat it as a singleton
-        name: 'Hero Virtual Tour',
-        url: publicUrl
-      });
-
-      if (dbError) throw dbError;
-
-      // Update Hero Section Settings directly
-      const { error: heroUpdateError } = await supabase.from('site_settings').upsert({
-        id: 'hero_section',
-        virtual_tour_url: publicUrl,
-        updated_at: new Date().toISOString()
-      });
-
-      if (heroUpdateError) console.error("Error updating hero settings with new video:", heroUpdateError);
-
-      showToast("Vídeo do Hero atualizado com sucesso!");
-      setHeroContent(prev => ({ ...prev, virtualTourUrl: publicUrl }));
-      fetchVideos();
-    } catch (err: any) {
-      console.error(err);
-      showToast("Erro ao enviar vídeo: " + err.message, "error");
-    } finally {
-      setIsUploading(false);
-      setIsUploadingSlot(null);
-      setUploadProgress(0);
-    }
-  };
-
-  const handleDeleteVideo = async (id: number) => {
-    if (!confirm("Excluir este vídeo?")) return;
-    try {
-      const { error } = await supabase.from('videos').delete().eq('id', id);
-      if (error) throw error;
-      showToast("Vídeo excluído!");
-      fetchVideos();
-    } catch (err: any) {
-      showToast("Erro ao excluir vídeo", "error");
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: 'imageUrl' | 'image' | 'backgroundImage' | 'aboutImage' | 'gridImage' | 'gallery', gridIdx?: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const uploadId = gridIdx !== undefined ? `grid-${gridIdx}` : targetField;
-    setIsUploadingSlot(uploadId);
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      let fileToUpload: File | Blob = file;
-      const isImage = file.type.startsWith('image/');
-      
-      if (isImage) {
-        let maxWidth = 1920;
-        if (targetField === 'gridImage' || targetField === 'image' || targetField === 'gallery') maxWidth = 1200;
-
-        const options = {
-          maxSizeMB: 0.8,
-          maxWidthOrHeight: maxWidth,
-          useWebWorker: true,
-          fileType: 'image/webp',
-          initialQuality: 0.8
-        };
-        fileToUpload = await imageCompression(file, options);
-      }
-
-      const fileExt = isImage ? 'webp' : file.name.split('.').pop();
-      const cleanName = targetField === 'backgroundImage' ? 'hero_bg' : 
-                        targetField === 'gridImage' ? `hero_grid_${gridIdx}` : 
-                        targetField === 'aboutImage' ? 'hero_about' : 
-                        targetField === 'gallery' ? 'gallery_item' : targetField;
-      
-      const fileName = `${cleanName}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `media/${fileName}`;
-
-      const bucketName = 'media';
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, fileToUpload, {
-          cacheControl: '3600',
-          upsert: true
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(filePath);
-
-      if (targetField === 'imageUrl') {
-        setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
-      } else if (targetField === 'image') {
-        setTeamFormData(prev => ({ ...prev, image: publicUrl }));
-      } else if (targetField === 'gallery') {
-        setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
-      } else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
-        const updatedHero = { ...heroContent, [targetField]: publicUrl };
-        setHeroContent(updatedHero);
-        
-        // Persist all fields to avoid overwriting with nulls
-        await supabase.from('site_settings').upsert({ 
-          id: 'hero_section',
-          badge_text: updatedHero.badgeText,
-          title_main: updatedHero.title1,
-          title_italic: updatedHero.title2,
-          background_url: updatedHero.backgroundImage,
-          about_image_url: updatedHero.aboutImage,
-          grid_photo_1: updatedHero.gridImages[0] || '',
-          grid_photo_2: updatedHero.gridImages[1] || '',
-          grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || '',
-          updated_at: new Date().toISOString()
-        });
-      } else if (targetField === 'gridImage' && gridIdx !== undefined) {
-        const newGrid = [...heroContent.gridImages];
-        newGrid[gridIdx] = publicUrl;
-        const updatedHero = { ...heroContent, gridImages: newGrid };
-        setHeroContent(updatedHero);
-        
-        // Persist all fields to avoid overwriting with nulls
-        await supabase.from('site_settings').upsert({ 
-          id: 'hero_section',
-          badge_text: updatedHero.badgeText,
-          title_main: updatedHero.title1,
-          title_italic: updatedHero.title2,
-          background_url: updatedHero.backgroundImage,
-          about_image_url: updatedHero.aboutImage,
-          grid_photo_1: updatedHero.gridImages[0] || '',
-          grid_photo_2: updatedHero.gridImages[1] || '',
-          grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || '',
-          updated_at: new Date().toISOString()
-        });
-      }
-
-      showToast("Media processada e salva!");
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      showToast(error.message || "Upload failed", "error");
-    } finally {
-      setIsUploadingSlot(null);
-      setIsUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    console.log('Tentando salvar (Supabase):', formData);
-    
-    if (!formData.name || !formData.price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
-      showToast("Please fill in all required fields and upload an image.", "info");
-      return;
-    }
-
-    try {
-      const dataToSave: any = {
-        name: formData.name,
-        description: formData.description_pt || formData.description, // Fallback to main description
-        description_pt: formData.description_pt,
-        description_en: formData.description_en,
-        description_es: formData.description_es,
-        description_nl: formData.description_nl,
-        price: parseFloat(formData.price) || 0,
-        casperlet_id: formData.casperletId,
-        image_url: formData.imageUrl,
-        teleport_url: formData.teleport_url,
-        status: editingId ? formData.status : 'available',
-        expiry_date: formData.expiry_date || null
-      };
-
-      if (editingId) {
-        const { error } = await supabase
-          .from('properties')
-          .update(dataToSave)
-          .eq('id', editingId);
-        if (error) throw error;
-        showToast("Property updated successfully!");
-      } else {
-        const { error } = await supabase
-          .from('properties')
-          .insert([dataToSave]);
-        if (error) throw error;
-        showToast("Property saved successfully!");
-      }
-
-        setFormData({
-          name: '',
-          casperletId: '',
-          price: '',
-          teleport_url: '',
-          status: 'available',
-          description: '',
-          description_pt: '',
-          description_en: '',
-          description_es: '',
-          description_nl: '',
-          imageUrl: '',
-          expiry_date: ''
-        });
-      setEditingId(null);
-      setActiveTab('listings');
-    } catch (error) {
-      console.error("CRITICAL SUPABASE ERROR:", error);
-      showToast("Failed to save property. Check console for details.", "error");
-    }
-  };
-
-  const handleEdit = (prop: any) => {
-    setFormData({
-      name: prop.name || '',
-      casperletId: prop.casperlet_id || '',
-      price: prop.price?.toString() || '',
-      teleport_url: prop.teleport_url || '',
-      status: prop.status || 'available',
-      description: prop.description || '',
-      description_pt: prop.description_pt || prop.description || '',
-      description_en: prop.description_en || '',
-      description_es: prop.description_es || '',
-      description_nl: prop.description_nl || '',
-      imageUrl: prop.image_url || '',
-      expiry_date: prop.expiry_date || ''
-    });
-    setEditingId(prop.id);
-    setActiveTab('add');
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this property?")) return;
-    try {
-      const { error } = await supabase.from('properties').delete().eq('id', id);
-      if (error) throw error;
-      showToast("Property deleted successfully!");
-    } catch (error) {
-      console.error(error);
-      showToast("Error deleting property", "error");
-    }
-  };
-
-  const handleResolveTicket = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('support_tickets')
-        .update({ status: 'resolved' })
-        .eq('id', id);
-
-      if (error) throw error;
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
-      showToast("Ticket resolved");
-    } catch (err) {
-      console.error(err);
-      showToast("Error resolving ticket", "error");
-    }
-  };
-
-  const handleSendResponse = async (id: string) => {
-    if (!adminResponse.trim()) return;
-    setIsSubmittingResponse(true);
-    
-    const payload = { 
-      admin_reply: adminResponse,
-      status: 'resolved'
-    };
-    
-    console.log('Sending response to ticket:', id, 'Payload:', payload);
-
-    try {
-      const { error } = await supabase
-        .from('support_tickets')
-        .update(payload)
-        .eq('id', id);
-
-      if (error) {
-        console.error("400 Error context (Tickets):", error);
-        throw error;
-      }
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, admin_reply: adminResponse, status: 'resolved' } : t));
-      setReplyingTicketId(null);
-      setAdminResponse('');
-      showToast("Response sent and ticket resolved");
-    } catch (err: any) {
-      console.error(err);
-      showToast(`Error sending response: ${err.message || 'Unknown Error'}`, "error");
-    } finally {
-      setIsSubmittingResponse(false);
-    }
-  };
-
+  if (authLoading) {
     return (
       <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center space-y-8">
         <div className="relative">
-          <div className="w-24 h-24 border-2 border-white/5 rounded-full absolute inset-0 animate-ping"></div>
+          <div className="w-24 h-24 border-2 border-white/5 rounded-full absolute inset-0 animate-ping" />
           <motion.div 
             animate={{ rotate: 360 }}
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
@@ -1235,37 +707,27 @@ export default function AdminArea() {
     );
   }
 
-  // Only show auth form or access denied if loading is finished AND we have a final answer on isAdmin
-  if (!user || (isAdmin === false && !authLoading)) {
+  if (!user || (isAdmin === false)) {
     return (
       <div className="pt-32 pb-24 px-6 bg-black min-h-screen flex items-center justify-center">
-        <div className="aspect-square w-full max-w-md flex items-center justify-center">
-          <div className="w-full">
-            {!user ? (
-              <AdminAuthForm />
-            ) : (
-              <div className="glass-card p-12 text-center space-y-8">
-                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                  <AlertCircle className="text-red-500 w-10 h-10" />
-                </div>
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold text-white">{t('auth.access_denied')}</h2>
-                  <p className="text-white/40 uppercase tracking-widest text-[10px]">{t('auth.access_denied_desc')}</p>
-                </div>
-                <div className="space-y-4">
-                  <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                    {user.email}
-                  </p>
-                  <button 
-                    onClick={() => signOut()}
-                    className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]"
-                  >
-                    {t('auth.logout_switch')}
-                  </button>
-                </div>
+        <div className="w-full max-w-md">
+          {!user ? <AdminAuthForm /> : (
+            <div className="glass-card p-12 text-center space-y-8">
+              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
+                <AlertCircle className="text-red-500 w-10 h-10" />
               </div>
-            )}
-          </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-display font-bold text-white">{t('auth.access_denied')}</h2>
+                <p className="text-white/40 uppercase tracking-widest text-[10px]">{t('auth.access_denied_desc')}</p>
+              </div>
+              <div className="space-y-4 text-white">
+                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
+                <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
+                  {t('auth.logout_switch')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1274,12 +736,11 @@ export default function AdminArea() {
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-zinc-950 min-h-screen">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12">
-        {/* Sidebar */}
         <aside className="w-full md:w-64 space-y-2">
           <div className="flex items-center gap-4 px-4 mb-8 text-left">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 shrink-0 bg-amber-500/10 flex items-center justify-center">
               {user.user_metadata?.avatar_url ? (
-                <img src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name || 'User'} className="w-full h-full object-cover" />
+                <img src={user.user_metadata.avatar_url} className="w-full h-full object-cover" />
               ) : (
                 <UserIcon className="text-amber-500" size={20} />
               )}
@@ -1309,9 +770,7 @@ export default function AdminArea() {
               onClick={() => setActiveTab(item.id as any)}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium",
-                activeTab === item.id 
-                  ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" 
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
+                activeTab === item.id ? "bg-amber-500 text-black shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"
               )}
             >
               <item.icon size={18} />
@@ -1320,1518 +779,132 @@ export default function AdminArea() {
           ))}
         </aside>
 
-        {/* Content */}
-        <main className="flex-1 space-y-8">
+        <main className="flex-1">
           {activeTab === 'tickets' && (
-            <div className="max-w-6xl space-y-8">
-              <div className="flex justify-between items-end">
-                <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white">{t('recent_tickets')}</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_tickets_desc')}</p>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                    <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} {t('open')}</span>
-                  </div>
-                  <button 
-                    onClick={async () => {
-                      const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
-                      setTickets(data || []);
-                    }}
-                    className="p-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
-                  >
-                    <RefreshCw size={18} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                {tickets.length === 0 ? (
-                  <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[40px]">
-                    <MessageSquare size={48} className="mx-auto text-white/5 mb-4" />
-                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_tickets_found')}</p>
-                  </div>
-                ) : (
-                  tickets.map((ticket) => (
-                    <motion.div 
-                      key={ticket.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={cn(
-                        "glass-card p-0 overflow-hidden border-white/5 transition-all group",
-                        ticket.status === 'open' ? "ring-1 ring-amber-500/20 shadow-[0_0_50px_rgba(245,158,11,0.05)]" : "opacity-60"
-                      )}
-                    >
-                      <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5">
-                        {/* Meta Data */}
-                        <div className="lg:w-64 p-8 space-y-6 shrink-0 bg-white/[0.02]">
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <span className={cn(
-                                "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
-                                ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
-                              )}>
-                                {ticket.status === 'open' ? t('open') : t('resolved')}
-                              </span>
-                              <span className="text-[8px] text-white/20 font-mono tracking-tighter">
-                                {new Date(ticket.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-amber-500">
-                                <UserIcon size={18} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold text-white truncate">{ticket.avatar_name}</p>
-                                <p className="text-[8px] text-white/20 uppercase font-black tracking-tighter truncate">{ticket.user_id}</p>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 pt-2">
-                              <Tag size={12} className="text-amber-500/40" />
-                              <span className="text-[10px] font-black uppercase text-white/40 tracking-widest">{ticket.category}</span>
-                            </div>
-                          </div>
-
-                          {ticket.status === 'open' && (
-                            <button 
-                              onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
-                              className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
-                            >
-                              {replyingTicketId === ticket.id ? t('cancel_reply') : t('reply_resolve')}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 p-8 space-y-6">
-                          <div className="space-y-2 text-left">
-                            <h4 className="text-xl font-bold text-white tracking-tight">{ticket.subject}</h4>
-                            <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
-                              <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
-                            </div>
-                          </div>
-
-                          {ticket.admin_reply && (
-                            <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
-                              <div className="flex items-center gap-2">
-                                <ShieldCheck className="text-amber-500" size={14} />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('official_response')}</span>
-                              </div>
-                              <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
-                            </div>
-                          )}
-
-                          <AnimatePresence>
-                            {replyingTicketId === ticket.id && (
-                              <motion.div 
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="pt-4 space-y-4">
-                                  <textarea 
-                                    value={adminResponse}
-                                    onChange={(e) => setAdminResponse(e.target.value)}
-                                    placeholder={t('type_response_placeholder')}
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
-                                    rows={4}
-                                  />
-                                  <div className="flex justify-end gap-3">
-                                    <button 
-                                      onClick={() => handleResolveTicket(ticket.id)}
-                                      className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
-                                    >
-                                      {t('mark_resolved_no_reply')}
-                                    </button>
-                                    <button 
-                                      onClick={() => handleSendResponse(ticket.id)}
-                                      disabled={isSubmittingResponse || !adminResponse.trim()}
-                                      className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
-                                    >
-                                      {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
-                                      {t('send_resolve')}
-                                    </button>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-              </div>
-            </div>
+            <AdminSupportTickets 
+              tickets={tickets} 
+              onRefresh={fetchTickets}
+              replyingTicketId={replyingTicketId}
+              setReplyingTicketId={setReplyingTicketId}
+              adminResponse={adminResponse}
+              setAdminResponse={setAdminResponse}
+              isSubmittingResponse={isSubmittingResponse}
+              handleResolveTicket={handleResolveTicket}
+              handleSendResponse={handleSendResponse}
+              stats={stats}
+            />
           )}
 
           {activeTab === 'renters' && (
-            <div className="max-w-4xl space-y-8">
-              <div className="flex justify-between items-end">
-                <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white">{t('resident_management')}</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_residents_desc')}</p>
-                </div>
-              </div>
-
-              <div className="glass-card p-8 border-white/10 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_name_sl')}</label>
-                    <input 
-                      type="text" 
-                      name="avatarName"
-                      value={renterFormData.avatarName}
-                      onChange={handleRenterInputChange}
-                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
-                      placeholder="John Resident"
-                    />
-                  </div>
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_uuid')}</label>
-                    <input 
-                      type="text" 
-                      name="avatarUuid"
-                      value={renterFormData.avatarUuid}
-                      onChange={handleRenterInputChange}
-                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
-                      placeholder="00000000-0000-0000-0000-000000000000"
-                    />
-                  </div>
-                  <div className="space-y-2 text-left">
-                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('login_password')}</label>
-                    <input 
-                      type="text" 
-                      name="password"
-                      value={renterFormData.password}
-                      onChange={handleRenterInputChange}
-                      className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm outline-none focus:border-amber-500 text-white"
-                      placeholder="Secret Key"
-                    />
-                  </div>
-                </div>
-
-                {/* Property Assignment in Renter Tab */}
-                <div className="space-y-4 text-left border-t border-white/5 pt-6">
-                  <div className="flex justify-between items-center">
-                    <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('assign_properties')}</label>
-                    <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} {t('selected_count')}</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {properties
-                      .map(prop => (
-                        <button
-                          key={prop.id}
-                          onClick={() => {
-                            setSelectedPropertyIds(prev => 
-                              prev.includes(prop.id) 
-                                ? prev.filter(id => id !== prop.id) 
-                                : [...prev, prop.id]
-                            );
-                          }}
-                          className={cn(
-                            "flex items-center gap-3 p-3 rounded-xl border transition-all text-left",
-                            selectedPropertyIds.includes(prop.id)
-                              ? "bg-amber-500/10 border-amber-500 text-white"
-                              : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
-                          )}
-                        >
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 shrink-0 relative">
-                            <img src={prop.image_url} className="w-full h-full object-cover" />
-                            {prop.status !== 'available' && !selectedPropertyIds.includes(prop.id) && (
-                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">{t('occupied')}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1">
-                              <p className="text-[10px] font-bold truncate">{prop.name}</p>
-                              {prop.tenant_id && !selectedPropertyIds.includes(prop.id) && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" title={`Occupied by ${prop.tenant_name}`} />
-                              )}
-                            </div>
-                            <p className="text-[8px] font-mono text-amber-500/60 truncate">L$ {prop.price}</p>
-                          </div>
-                        </button>
-                      ))}
-                    {properties.length === 0 && (
-                      <p className="text-[10px] text-white/20 uppercase py-4">No properties registered</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  {renterFormData.avatarUuid && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#f59e0b] bg-zinc-900">
-                        <img 
-                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(renterFormData.avatarName || 'SL')}&background=111111&color=f59e0b&size=200&bold=true&format=svg`} 
-                          alt="Preview" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold uppercase text-amber-500/60">{t('sl_profile_preview')}</span>
-                    </div>
-                  )}
-                  <div className="flex gap-4">
-                    {editingRenterId && (
-                      <button 
-                        onClick={() => { 
-                          setEditingRenterId(null); 
-                          setRenterFormData({ avatarName: '', avatarUuid: '', password: '' }); 
-                          setSelectedPropertyIds([]);
-                        }}
-                        className="px-6 py-3 rounded-xl border border-white/10 text-white text-[10px] font-bold uppercase"
-                      >
-                        {t('cancel')}
-                      </button>
-                    )}
-                    <button 
-                      onClick={handleSaveRenter}
-                      className="px-8 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
-                    >
-                      {editingRenterId ? t('update_resident') : t('register_resident')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {renters.map((renter) => (
-                  <div key={renter.id} className="glass-card p-6 border-white/5 hover:border-amber-500/30 transition-all group relative overflow-hidden">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#f59e0b] bg-zinc-900">
-                        <img 
-                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(renter.avatar_name)}&background=111111&color=f59e0b&size=200&bold=true&format=svg`} 
-                          alt={renter.avatar_name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="text-left min-w-0">
-                        <h4 className="font-bold text-white truncate">{renter.avatar_name}</h4>
-                        <p className="text-[9px] text-white/30 font-mono truncate">{renter.avatar_uuid}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex justify-between items-center bg-black/20 p-2 rounded-lg">
-                      <div className="text-left">
-                        <span className="text-[8px] uppercase text-gray-500 font-bold block">{t('admin.password')}</span>
-                        <span className="text-[10px] text-amber-500/80 font-mono">{renter.password}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={() => {
-                            setEditingRenterId(renter.id);
-                            setRenterFormData({
-                              avatarName: renter.avatar_name,
-                              avatarUuid: renter.avatar_uuid,
-                              password: renter.password
-                            });
-                            // Fetch currently assigned properties for this renter
-                            const id = renter.tenant_id || renter.avatar_uuid;
-                            const assignedIds = properties
-                              .filter(p => p.tenant_id === id)
-                              .map(p => p.id);
-                            setSelectedPropertyIds(assignedIds);
-                          }}
-                          className="p-2 text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Settings size={14} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteRenter(renter.id, renter.avatar_uuid)}
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <AdminResidents 
+              renters={renters}
+              properties={properties}
+              renterFormData={renterFormData}
+              setRenterFormData={setRenterFormData}
+              selectedPropertyIds={selectedPropertyIds}
+              setSelectedPropertyIds={setSelectedPropertyIds}
+              editingRenterId={editingRenterId}
+              setEditingRenterId={setEditingRenterId}
+              handleSaveRenter={handleSaveRenter}
+              handleDeleteRenter={handleDeleteRenter}
+            />
           )}
 
           {activeTab === 'hero' && (
-            <div className="max-w-4xl space-y-12">
-              <div className="text-left">
-                <h3 className="text-2xl font-bold font-display text-white">{t('hero_management')}</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('hero_management_desc')}</p>
-              </div>
-
-              <div className="space-y-12">
-                {/* Visual Mirror Layout */}
-                <div className="space-y-8">
-                  <div className="space-y-4 text-left">
-                    <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                       < ImageIcon size={14} /> {t('background_photo')}
-                    </label>
-                    <div className="relative group aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
-                      {heroContent.backgroundImage ? (
-                        <img src={heroContent.backgroundImage} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-white/10">
-                          <ImageIcon size={48} />
-                        </div>
-                      )}
-                      
-                      {/* Upload Overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                        <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
-                           <input 
-                             type="file" 
-                             className="hidden" 
-                             accept="image/*"
-                             onChange={(e) => handleFileUpload(e, 'backgroundImage')}
-                             disabled={isUploadingSlot === 'backgroundImage'}
-                           />
-                           {isUploadingSlot === 'backgroundImage' ? t('recording') : t('change_background')}
-                        </label>
-                      </div>
-
-                      {isUploadingSlot === 'backgroundImage' && (
-                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                           <Loader2 className="text-amber-500 animate-spin" size={32} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 text-left">
-                    <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                       < ImageIcon size={14} /> {t('front_cards_grid')}
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {[0, 1, 2, 3].map((idx) => (
-                        <div key={idx} className={cn(
-                          "relative group aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 bg-zinc-900 transition-all",
-                          idx % 2 !== 0 && "md:translate-y-6"
-                        )}>
-                          {heroContent.gridImages[idx] ? (
-                            <img src={heroContent.gridImages[idx]} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-white/5">
-                              <ImageIcon size={24} />
-                            </div>
-                          )}
-
-                          {/* Upload Overlay */}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                            <label className="w-10 h-10 bg-white/10 backdrop-blur-md text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-500 hover:text-black transition-all">
-                               <input 
-                                 type="file" 
-                                 className="hidden" 
-                                 accept="image/*"
-                                 onChange={(e) => handleFileUpload(e, 'gridImage', idx)}
-                                 disabled={isUploadingSlot === `grid-${idx}`}
-                               />
-                               <Plus size={18} />
-                            </label>
-                          </div>
-
-                          {isUploadingSlot === `grid-${idx}` && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                               <Loader2 className="text-amber-500 animate-spin" size={24} />
-                            </div>
-                          )}
-                          
-                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">{t('common.slot')} {idx + 1}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Text Settings */}
-                <div className="glass-card p-10 border-white/5 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                      <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('badge_highlight')}</label>
-                        <input 
-                          type="text"
-                          name="badgeText"
-                          value={heroContent.badgeText}
-                          onChange={handleHeroInputChange}
-                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
-                        />
-                      </div>
-                      <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('title_part_1')}</label>
-                        <input 
-                          type="text"
-                          name="title1"
-                          value={heroContent.title1}
-                          onChange={handleHeroInputChange}
-                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
-                        />
-                      </div>
-                      <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('title_part_2')}</label>
-                        <input 
-                          type="text"
-                          name="title2"
-                          value={heroContent.title2}
-                          onChange={handleHeroInputChange}
-                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
-                        />
-                      </div>
-
-                      <div className="space-y-2 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('virtual_tour_video')}</label>
-                        <select 
-                          name="virtualTourUrl"
-                          value={heroContent.virtualTourUrl}
-                          onChange={(e) => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: e.target.value }))}
-                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all appearance-none cursor-pointer"
-                        >
-                          <option value="" className="bg-zinc-900 text-white/40">{t('select_video')}</option>
-                          {videos.map(v => (
-                            <option key={v.id} value={v.url} className="bg-zinc-900 text-white">{v.name}</option>
-                          ))}
-                        </select>
-                        <p className="text-[8px] text-white/20 uppercase tracking-widest mt-1">
-                          {t('choose_video_desc')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4 text-left border-l border-white/5 pl-8">
-                       <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('about_section_image')}</label>
-                       <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
-                          {heroContent.aboutImage ? (
-                            <img src={heroContent.aboutImage} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-white/5">
-                              <ImageIcon size={32} />
-                            </div>
-                          )}
-                          
-                          <label className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                             <input 
-                               type="file" 
-                               className="hidden" 
-                               accept="image/*"
-                               onChange={(e) => handleFileUpload(e, 'aboutImage')}
-                               disabled={isUploadingSlot === 'aboutImage'}
-                             />
-                             <div className="p-3 bg-white text-black rounded-xl">
-                                <Plus size={18} />
-                             </div>
-                          </label>
-
-                          {isUploadingSlot === 'aboutImage' && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                               <Loader2 className="text-amber-500 animate-spin" size={24} />
-                            </div>
-                          )}
-                       </div>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={handleSaveHero}
-                    className="w-full py-5 rounded-2xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-amber-500 transition-all uppercase tracking-widest text-[10px] shadow-2xl"
-                  >
-                    <Save size={18} /> {t('save_all')}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <AdminHeroSection 
+              heroContent={heroContent}
+              setHeroContent={setHeroContent}
+              videos={videos}
+              isUploadingSlot={isUploadingSlot}
+              handleFileUpload={handleFileUpload}
+              handleSaveHero={handleSaveHero}
+            />
           )}
 
           {activeTab === 'videos' && (
-            <div className="max-w-5xl space-y-12">
-              <div className="flex justify-between items-end">
-                <div className="text-left">
-                  <h2 className="text-3xl font-bold font-display text-white">{t('video_management')}</h2>
-                  <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('video_management_desc')}</p>
-                </div>
-                
-                <label className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 transition-all cursor-pointer flex items-center gap-2">
-                  <Plus size={16} />
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    accept="video/*" 
-                    onChange={handleVideoUpload}
-                    disabled={isUploading}
-                  />
-                  {isUploading ? t('uploading_video') : t('upload_video')}
-                </label>
-              </div>
-
-              {isUploading && isUploadingSlot === 'videos' && (
-                <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: 15, ease: "linear" }}
-                    className="h-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                  />
-                  <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">{t('uploading_high_quality_desc')}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {videos.map((vid) => (
-                  <div key={vid.id} className="glass-card group p-4 border-white/5 flex flex-col gap-4 overflow-hidden">
-                    <div className="aspect-video bg-black rounded-2xl overflow-hidden relative group">
-                      <video src={vid.url} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => window.open(vid.url, '_blank')}
-                          className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 transition-transform"
-                        >
-                          <Play size={16} fill="black" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-2 px-2 pb-2">
-                      <div className="text-left min-w-0">
-                        <p className="text-[10px] font-bold text-white truncate uppercase tracking-wider">{vid.name}</p>
-                        <p className="text-[8px] text-white/30 font-mono mt-1">{new Date(vid.created_at).toLocaleDateString()}</p>
-                      </div>
-                      <button 
-                        onClick={() => handleDeleteVideo(vid.id)}
-                        className="p-2 text-white/20 hover:text-red-500 transition-colors shrink-0"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {videos.length === 0 && (
-                  <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                    <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_videos_uploaded')}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AdminVideoManager 
+              videos={videos}
+              isUploading={isUploading}
+              isUploadingSlot={isUploadingSlot}
+              handleVideoUpload={handleVideoUpload}
+              handleDeleteVideo={handleDeleteVideo}
+            />
           )}
+
           {activeTab === 'inbox' && (
-            <div className="max-w-5xl space-y-8">
-              <div className="flex justify-between items-end">
-                <div className="text-left">
-                  <h3 className="text-2xl font-bold font-display text-white italic">{t('inbox_messages')}</h3>
-                  <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('inbox_messages_desc')}</p>
-                </div>
-                <button 
-                  onClick={fetchInboxMessages}
-                  className="p-3 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl transition-all"
-                >
-                  <RefreshCw size={18} />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {inboxMessages.length > 0 ? (
-                  inboxMessages.map((msg) => (
-                    <motion.div 
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={cn(
-                        "glass-card p-8 border-white/5 group hover:border-amber-500/20 transition-all flex flex-col md:flex-row gap-6 items-start",
-                        msg.is_read && "opacity-40 grayscale-[0.5]"
-                      )}
-                    >
-                      <div className="shrink-0 flex flex-col items-center gap-1">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center text-black font-black",
-                          msg.is_read ? "bg-white/20 text-white/40" : "bg-amber-500"
-                        )}>
-                          {msg.visitor_name?.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-[8px] text-white/20 font-mono tracking-tighter">
-                          {new Date(msg.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-
-                      <div className="flex-1 space-y-4 text-left">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-3">
-                              <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
-                              {!msg.is_read && (
-                                <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">{t('new')}</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">{t('to')}:</span>
-                              <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{msg.recipient_name}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button 
-                              onClick={() => handleToggleRead(msg.id, msg.is_read)}
-                              title={msg.is_read ? "Mark as unread" : "Mark as read"}
-                              className="p-2 text-white/10 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all"
-                            >
-                              {msg.is_read ? <Mail size={16} /> : <CheckCircle size={16} />}
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteMessage(msg.id)}
-                              className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-sm text-white/60 leading-relaxed italic border-l-2 border-white/5 pl-4 py-1">
-                          "{msg.message}"
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
-                    <Mail size={40} className="mx-auto text-white/5 mb-4" />
-                    <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">{t('empty_inbox')}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <AdminInbox 
+              inboxMessages={inboxMessages}
+              onRefresh={fetchInboxMessages}
+              handleToggleRead={handleToggleRead}
+              handleDeleteMessage={handleDeleteMessage}
+            />
           )}
 
           {activeTab === 'team' && (
-            <div className="max-w-4xl space-y-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold font-display text-left text-white">{t('team_management')}</h3>
-                <button 
-                  onClick={() => {
-                    setEditingTeamId(null);
-                    setTeamFormData({
-                      name: '',
-                      role: '',
-                      bio: '',
-                      image: '',
-                      icon: 'Users',
-                      slProfile: '#',
-                      order: (teamMembers.length + 1).toString()
-                    });
-                  }}
-                  className="text-[10px] font-black uppercase text-amber-500 tracking-widest hover:underline"
-                >
-                  {t('reset_form')}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                {/* Form */}
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-amber-500/70 uppercase">{t('member_name')}</label>
-                      <input 
-                        type="text"
-                        name="name"
-                        value={teamFormData.name}
-                        onChange={handleTeamInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Ymir Coronet"
-                      />
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_role')}</label>
-                      <input 
-                        type="text"
-                        name="role"
-                        value={teamFormData.role}
-                        onChange={handleTeamInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="Founder & Architect"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2 text-left">
-                        <label className="text-xs font-bold text-gray-500 uppercase">{t('member_icon')}</label>
-                        <select 
-                          name="icon"
-                          value={teamFormData.icon}
-                          onChange={handleTeamInputChange}
-                          className="w-full glass-card bg-zinc-900 border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white appearance-none"
-                        >
-                          <option value="Briefcase">Briefcase</option>
-                          <option value="Paintbrush">Paintbrush</option>
-                          <option value="ShieldCheck">Shield</option>
-                          <option value="Scale">Legal</option>
-                          <option value="Users">Community</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2 text-left">
-                        <label className="text-xs font-bold text-gray-500 uppercase">{t('member_order')}</label>
-                        <input 
-                          type="number"
-                          name="order"
-                          value={teamFormData.order}
-                          onChange={handleTeamInputChange}
-                          className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_sl_profile')}</label>
-                      <input 
-                        type="text"
-                        name="slProfile"
-                        value={teamFormData.slProfile}
-                        onChange={handleTeamInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                        placeholder="#"
-                      />
-                    </div>
-                    <div className="space-y-2 text-left">
-                      <label className="text-xs font-bold text-gray-500 uppercase">{t('member_bio')}</label>
-                      <textarea 
-                        name="bio"
-                        value={teamFormData.bio}
-                        onChange={handleTeamInputChange}
-                        rows={4}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white"
-                        placeholder="Short biography..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">{t('portrait_photo')}</label>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <input 
-                          type="text"
-                          name="image"
-                          value={teamFormData.image}
-                          onChange={handleTeamInputChange}
-                          className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                          placeholder={t('paste_url_or_upload')}
-                        />
-                        <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
-                          <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => handleFileUpload(e, 'image')}
-                            disabled={isUploading}
-                          />
-                          <ImageIcon className="text-gray-500 group-hover:text-white" size={20} />
-                        </label>
-                      </div>
-                      {teamFormData.image && (
-                        <div className="aspect-[4/5] w-32 rounded-xl overflow-hidden border border-white/10 mx-auto">
-                           <img src={teamFormData.image} alt="Team Preview" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={handleSaveTeam}
-                    className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
-                  >
-                    <Save size={18} /> {editingTeamId ? t('update_member') : t('add_to_team')}
-                  </button>
-                </div>
-
-                {/* List */}
-                <div className="space-y-4">
-                  <label className="text-xs font-bold text-gray-500 uppercase block text-left">{t('current_team')}</label>
-                  <div className="grid gap-4">
-                    {teamMembers.map((member) => (
-                      <div key={member.id} className="glass-card p-4 flex items-center gap-4 group">
-                        <div className="w-12 h-16 rounded-lg bg-white/10 overflow-hidden shrink-0">
-                          <img src={member.photo_url || member.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-opacity" referrerPolicy="no-referrer" />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <h4 className="font-bold text-sm truncate text-white">{member.name}</h4>
-                          <div className="flex items-center gap-2">
-                             <p className="text-[10px] text-amber-500/60 uppercase tracking-widest truncate">{member.role}</p>
-                             <span className="text-[8px] text-white/20 font-black">#{member.display_order}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button 
-                            onClick={() => handleEditTeam(member)}
-                            className="p-2 text-gray-500 hover:text-white"
-                          >
-                            <ChevronRight size={16} />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteTeam(member.id)}
-                            className="p-2 text-red-500/30 hover:text-red-500"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AdminTeamManager 
+              teamMembers={teamMembers}
+              teamFormData={teamFormData}
+              setTeamFormData={setTeamFormData}
+              editingTeamId={editingTeamId}
+              setEditingTeamId={setEditingTeamId}
+              isUploading={isUploading}
+              handleFileUpload={handleFileUpload}
+              handleSaveTeam={handleSaveTeam}
+              handleDeleteTeam={handleDeleteTeam}
+              handleEditTeam={handleEditTeam}
+            />
           )}
 
           {activeTab === 'gallery' && (
-            <div className="max-w-5xl space-y-12">
-              <div className="text-left">
-                <h3 className="text-2xl font-bold font-display text-white">{t('gallery_management')}</h3>
-                <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('gallery_subtitle')}</p>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                {/* Upload Section */}
-                <div className="lg:col-span-1 space-y-6">
-                   <div className="glass-card p-8 border-white/5 space-y-6">
-                      <div className="space-y-4 text-left">
-                        <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('gallery.new_photo')}</label>
-                        <div className="relative group aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-white/10 bg-white/5 hover:border-amber-500/50 transition-all">
-                           {galleryFormData.imageUrl ? (
-                             <img src={galleryFormData.imageUrl} className="w-full h-full object-cover" />
-                           ) : (
-                             <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20 gap-3">
-                                <ImageIcon size={32} />
-                                <span className="text-[9px] font-black uppercase tracking-tighter">{t('gallery.choose_photo')}</span>
-                             </div>
-                           )}
-                           
-                           <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <input 
-                                type="file" 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={(e) => handleFileUpload(e, 'gallery')}
-                                disabled={isUploadingSlot === 'gallery'}
-                              />
-                              <div className="bg-white text-black p-3 rounded-full">
-                                <Plus size={20} />
-                              </div>
-                           </label>
-
-                           {isUploadingSlot === 'gallery' && (
-                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                                <Loader2 className="text-amber-500 animate-spin" size={24} />
-                             </div>
-                           )}
-                        </div>
-                      </div>
-
-                      <div className="space-y-4 text-left">
-                        <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('gallery_caption_label')}</label>
-                        <input 
-                          type="text"
-                          value={galleryFormData.caption}
-                          onChange={(e) => setGalleryFormData({ ...galleryFormData, caption: e.target.value })}
-                          className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
-                          placeholder={t('gallery_placeholder')}
-                        />
-                      </div>
-
-                      <button 
-                        onClick={handleGallerySave}
-                        disabled={!galleryFormData.imageUrl || isUploading}
-                        className="w-full py-4 rounded-xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
-                      >
-                        <Save size={16} /> {t('add_to_gallery')}
-                      </button>
-                   </div>
-                </div>
-
-                {/* Grid Section */}
-                <div className="lg:col-span-2 space-y-6">
-                  <div className="flex justify-between items-center px-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('gallery.current_photos')} ({galleryImages.length})</label>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {galleryImages.map((img) => (
-                      <div key={img.id} className="group relative aspect-square rounded-2xl bg-zinc-900 overflow-hidden border border-white/5 hover:border-amber-500/50 transition-all">
-                        <img src={img.url} className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
-                        
-                        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/90 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
-                           <p className="text-[9px] text-white font-bold truncate leading-tight">{img.caption || t('no_caption')}</p>
-                        </div>
-
-                        <div className="absolute top-2 right-2 flex gap-2 translate-y-[-120%] group-hover:translate-y-0 transition-transform">
-                          <button 
-                            onClick={() => handleDeleteGallery(img.id)}
-                            className="w-8 h-8 flex items-center justify-center bg-red-500/90 text-white rounded-full hover:bg-red-600 shadow-xl"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                    {galleryImages.length === 0 && (
-                      <div className="col-span-full py-24 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                         <p className="text-white/10 text-[10px] uppercase font-black tracking-widest">{t('no_photos_gallery')}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AdminGalleryManager 
+              galleryImages={galleryImages}
+              galleryFormData={galleryFormData}
+              setGalleryFormData={setGalleryFormData}
+              isUploadingSlot={isUploadingSlot}
+              handleFileUpload={handleFileUpload}
+              handleGallerySave={handleGallerySave}
+              handleDeleteGallery={handleDeleteGallery}
+            />
           )}
 
           {activeTab === 'covenant' && (
-            <div className="space-y-12 max-w-4xl mx-auto pb-32">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <h2 className="text-4xl font-bold font-display text-amber-500 tracking-tighter">{t('covenant_management')}</h2>
-                  <p className="text-white/40 uppercase tracking-[0.3em] text-[10px]">{t('edit_legal_desc')}</p>
-                </div>
-              </div>
-
-              <FloatingToolbar />
-
-              <div className="grid grid-cols-1 gap-12">
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('english_version')}</label>
-                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-                    <Editor 
-                      value={covenants.en}
-                      onChange={(e: any) => {
-                        setCovenants(prev => ({ ...prev, en: e.target.value }));
-                        setIsDirty(true);
-                      }}
-                      placeholder="Enter English covenant text..."
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('portuguese_version')}</label>
-                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-                    <Editor 
-                      value={covenants.pt}
-                      onChange={(e: any) => {
-                        setCovenants(prev => ({ ...prev, pt: e.target.value }));
-                        setIsDirty(true);
-                      }}
-                      placeholder="Insira o texto do covenant em português..."
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('spanish_version')}</label>
-                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-                    <Editor 
-                      value={covenants.es}
-                      onChange={(e: any) => {
-                        setCovenants(prev => ({ ...prev, es: e.target.value }));
-                        setIsDirty(true);
-                      }}
-                      placeholder="Ingrese el texto del convenio en español..."
-                    />
-                  </div>
-                </div>
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('dutch_version')}</label>
-                  <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-                    <Editor 
-                      value={covenants.nl}
-                      onChange={(e: any) => {
-                        setCovenants(prev => ({ ...prev, nl: e.target.value }));
-                        setIsDirty(true);
-                      }}
-                      placeholder="Voer de Nederlandse tekst van het convenant in..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                onClick={handleSaveCovenant}
-                className="w-full py-6 bg-white/5 border border-white/10 rounded-3xl text-sm font-bold uppercase tracking-[0.4em] hover:bg-white/10 transition-all flex items-center justify-center gap-3"
-              >
-                <Save size={18} /> {t('update_covenants')}
-              </button>
-
-              <AnimatePresence>
-                {isDirty && (
-                  <motion.button
-                    initial={{ y: 50, opacity: 0, scale: 0.8 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: 50, opacity: 0, scale: 0.8 }}
-                    onClick={handleSaveCovenant}
-                    className="fixed bottom-12 right-12 z-[150] px-10 py-5 rounded-full bg-amber-500 text-black font-black flex items-center gap-3 shadow-[0_15px_60px_rgba(245,158,11,0.5)] hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all uppercase tracking-[0.3em] text-[10px]"
-                  >
-                    <Save size={16} /> {t('save_changes')}
-                  </motion.button>
-                )}
-              </AnimatePresence>
-            </div>
+            <AdminLandCovenant 
+              covenants={covenants}
+              setCovenants={setCovenants}
+              isDirty={isDirty}
+              setIsDirty={setIsDirty}
+              handleSaveCovenant={handleSaveCovenant}
+            />
           )}
 
           {activeTab === 'listings' && (
-            <div className="space-y-12">
-              <div className="space-y-6">
-                <div className="flex justify-between items-end border-b border-white/5 pb-6">
-                  <div className="space-y-1">
-                    <h3 className="text-4xl font-bold font-display tracking-tight">{t('executive_dashboard')}</h3>
-                    <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em]">{t('operational_overview_desc')}</p>
-                  </div>
-                  <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">
-                    <RefreshCw size={12} className="text-amber-500" />
-                    {t('sync_casperlet')}
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                  {/* Total Portfolio Card */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="glass-card p-8 border-white/10 bg-white/5 relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                      <FileText size={48} className="text-white" />
-                    </div>
-                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('admin.total_portfolio')}</p>
-                    <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('admin.units_all_sims')}</p>
-                  </motion.div>
-
-                  {/* Support Tickets Card */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    onClick={() => setActiveTab('tickets')}
-                    className={cn(
-                      "glass-card p-8 relative overflow-hidden transition-all duration-500 cursor-pointer group hover:scale-[1.02]",
-                      stats.openTickets > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
-                    )}
-                  >
-                    <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
-                      <MessageSquare size={48} />
-                    </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.open_tickets')}</p>
-                    <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('admin.total_tickets')}</p>
-                  </motion.div>
-
-                  {/* Occupancy Rate Card */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="glass-card p-8 border-amber-500/10 bg-amber-500/5 relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                      <CheckCircle size={48} className="text-amber-500" />
-                    </div>
-                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('admin.occupancy_rate')}</p>
-                    <div className="flex items-baseline gap-2">
-                       <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
-                       <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
-                    </div>
-                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('admin.available_for_rent')}</p>
-                  </motion.div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className={cn(
-                      "glass-card p-8 relative overflow-hidden transition-all duration-500",
-                      stats.critical > 0 ? "border-red-500/30 bg-red-500/10 shadow-[0_0_40px_rgba(239,68,68,0.1)]" : "border-white/10 bg-white/5"
-                    )}
-                  >
-                    <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
-                      <AlertCircle size={48} />
-                    </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('admin.critical_issues')}</p>
-                    <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('admin.expiring_3_days')}</p>
-                  </motion.div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className={cn(
-                      "glass-card p-8 relative overflow-hidden transition-all duration-500",
-                      stats.attention > 0 ? "border-amber-500/30 bg-amber-500/10 shadow-[0_0_40px_rgba(245,158,11,0.1)]" : "border-white/10 bg-white/5"
-                    )}
-                  >
-                    <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
-                      <Clock size={48} />
-                    </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.attention')}</p>
-                    <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('admin.expiring_7_days')}</p>
-                  </motion.div>
-                </div>
-              </div>
-              
-              <div className="space-y-6">
-                <div className="flex justify-between items-center bg-white/5 p-2 rounded-2xl border border-white/5">
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setActiveFilter('all')}
-                      className={cn(
-                        "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                        activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
-                      )}
-                    >
-                      {t('admin.all_properties')} ({properties.length})
-                    </button>
-                    <button 
-                      onClick={() => setActiveFilter('expiring')}
-                      className={cn(
-                        "px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-                        activeFilter === 'expiring' ? "bg-red-500 text-white shadow-lg shadow-red-500/20" : "text-white/40 hover:text-red-400"
-                      )}
-                    >
-                      <Clock size={12} />
-                      {t('admin.expiring_soon')} ({stats.critical + stats.attention})
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="grid gap-4">
-                  {filteredProperties.map((prop) => {
-                    const daysRemaining = prop.expiry_date ? Math.ceil((new Date(prop.expiry_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
-                    const isCritical = daysRemaining !== null && daysRemaining <= 3;
-                    const isAttention = daysRemaining !== null && daysRemaining > 3 && daysRemaining <= 7;
-
-                    return (
-                      <div 
-                        key={prop.id} 
-                        className={cn(
-                          "glass-card p-4 flex items-center gap-4 group transition-all duration-300",
-                          isCritical ? "border-red-500/30 bg-red-500/5 shadow-[0_0_20px_rgba(239,68,68,0.05)] scale-[1.01]" : 
-                          isAttention ? "border-amber-500/30 bg-amber-500/5 shadow-[0_0_20px_rgba(245,158,11,0.05)]" : 
-                          "border-white/5"
-                        )}
-                      >
-                        <div className="w-20 h-14 rounded-lg bg-white/10 overflow-hidden shrink-0">
-                           <img src={prop.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h4 className="font-bold text-sm truncate">{prop.name}</h4>
-                            
-                            {daysRemaining !== null && (
-                              <div className={cn(
-                                "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
-                                isCritical ? "bg-red-500 text-white" : isAttention ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
-                              )}>
-                                <Clock size={8} />
-                                {daysRemaining <= 0 ? 'Expired' : `${daysRemaining} days left`}
-                              </div>
-                            )}
-
-                            {prop.casperlet_id && (
-                              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-[8px] text-amber-500 font-black uppercase tracking-tighter shadow-sm">
-                                <RefreshCw size={8} className="animate-spin-slow" />
-                                Synced
-                              </div>
-                            )}
-                            {prop.tenant_name && (
-                              <div className="flex items-center gap-1">
-                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-[8px] text-blue-400 font-black uppercase tracking-tighter">
-                                  <UserIcon size={8} />
-                                  {prop.tenant_name}
-                                </div>
-                                <button 
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    if(!confirm(`Desvincular ${prop.tenant_name} deste imóvel?`)) return;
-                                    await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('id', prop.id);
-                                    showToast("Imóvel desvinculado!");
-                                  }}
-                                  className="p-1 hover:text-red-500 text-white/20 transition-colors"
-                                  title="Unlink Resident"
-                                >
-                                  <X size={10} />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.price}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                           <div className="flex flex-col items-end gap-1">
-                             <div className={cn(
-                                "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                                prop.status === 'available' ? "bg-amber-500/20 text-amber-400" : "bg-white/5 text-white/40"
-                              )}>
-                                {prop.status}
-                             </div>
-                           </div>
-                          <div className="flex items-center gap-1">
-                            <button 
-                              onClick={() => handleEdit(prop)}
-                              className="p-2 text-gray-500 hover:text-white transition-colors"
-                              title="Edit Property"
-                            >
-                              <ChevronRight size={14} />
-                            </button>
-                            <button 
-                              onClick={() => window.open(prop.teleport_url, '_blank')}
-                              className="p-2 text-gray-500 hover:text-amber-500 transition-colors"
-                              title="Teleport to location"
-                            >
-                              <MapPin size={14} />
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(prop.id)}
-                              className="p-2 text-red-500/30 hover:text-red-500 transition-colors"
-                              title="Delete Property"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                
-                {properties.length === 0 && (
-                  <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                    <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">No properties registered</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+            <AdminPropertyListings 
+              properties={properties}
+              stats={stats}
+              activeFilter={activeFilter}
+              setActiveFilter={setActiveFilter}
+              filteredProperties={filteredProperties}
+              setActiveTab={setActiveTab}
+              handleEdit={handleEditProperty}
+              handleDelete={handleDeleteProperty}
+              showToast={showToast}
+            />
+          )}
 
           {activeTab === 'add' && (
-            <div className="max-w-2xl space-y-8">
-              <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold font-display text-left">
-                  {editingId ? t('admin.property_edit_title') : t('admin.property_add_title')}
-                </h3>
-                {editingId && (
-                  <button 
-                    onClick={() => {
-                      setEditingId(null);
-                      setFormData({
-                        name: '',
-                        casperletId: '',
-                        price: '',
-                        teleport_url: '',
-                        status: 'available',
-                        description: '',
-                        description_pt: '',
-                        description_en: '',
-                        description_es: '',
-                        description_nl: '',
-                        imageUrl: '',
-                        expiry_date: ''
-                      });
-                    }}
-                    className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                )}
-              </div>
-              
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">{t('common.property_name')}</label>
-                    <input 
-                      type="text" 
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder="Ex: Dutch Mansion" 
-                    />
-                  </div>
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.casperlet_id_label')}</label>
-                    <input 
-                      type="text" 
-                      name="casperletId"
-                      value={formData.casperletId}
-                      onChange={handleInputChange}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder={t('admin.paste_device_key')}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Price (L$ / Week)</label>
-                    <input 
-                      type="number" 
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder="1500" 
-                    />
-                  </div>
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Expiry Date (Manual)</label>
-                    <div className="relative">
-                      <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                      <input 
-                        type="date" 
-                        name="expiry_date"
-                        value={formData.expiry_date}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-left">
-                  <label className="text-xs font-bold text-amber-500/70 uppercase">Teleport Link (SLURL)</label>
-                  <div className="relative">
-                    <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-                    <input 
-                      type="text" 
-                      name="teleport_url"
-                      value={formData.teleport_url}
-                      onChange={handleInputChange}
-                      className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder="http://maps.secondlife.com/secondlife/..." 
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-left">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">{t('description')}</label>
-                    <div className="flex gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
-                      {(['pt', 'en', 'es', 'nl'] as const).map(lang => (
-                        <button
-                          key={lang}
-                          onClick={() => setFormLang(lang)}
-                          className={cn(
-                            "px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest transition-all",
-                            formLang === lang ? "bg-amber-500 text-black shadow-lg" : "text-white/40 hover:text-white"
-                          )}
-                        >
-                          {lang}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <textarea 
-                    name={`description_${formLang}`}
-                    value={(formData as any)[`description_${formLang}`]}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        [`description_${formLang}`]: val 
-                      }));
-                    }}
-                    rows={6}
-                    className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all" 
-                    placeholder={`${t('description')} (${formLang.toUpperCase()})...`}
-                  />
-                </div>
-
-                {editingId && (
-                  <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Availability Status</label>
-                    <div className="relative">
-                      <select 
-                        name="status"
-                        value={formData.status}
-                        onChange={handleInputChange}
-                        className="w-full glass-card bg-background-dark border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white appearance-none cursor-pointer"
-                      >
-                        <option value="available" className="bg-background-dark">Available</option>
-                        <option value="rented" className="bg-background-dark">Rented</option>
-                      </select>
-                      <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-gray-500 pointer-events-none" />
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4 text-left">
-                  <label className="text-xs font-bold text-gray-500 uppercase">Property Photo</label>
-                  <div className="space-y-4">
-                    <div className="flex gap-4">
-                      <input 
-                        type="text"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                        readOnly
-                        className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm opacity-50 cursor-not-allowed outline-none text-white shadow-inner"
-                        placeholder="Upload an image using the button..."
-                      />
-                      <label className="shrink-0 flex items-center justify-center px-6 bg-amber-500 border border-amber-400 rounded-xl cursor-pointer hover:bg-amber-400 transition-all group">
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={(e) => handleFileUpload(e, 'imageUrl')}
-                          disabled={isUploading}
-                        />
-                        {isUploading ? (
-                          <Loader2 className="animate-spin text-black" size={20} />
-                        ) : (
-                          <div className="flex items-center gap-2 text-black font-bold text-[10px] uppercase tracking-widest">
-                            <ImageIcon size={16} />
-                            Upload Photo
-                          </div>
-                        )}
-                      </label>
-                    </div>
-
-                    {isUploading && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-amber-500">
-                           <span>Processing...</span>
-                           <span>{uploadProgress}%</span>
-                        </div>
-                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                           <motion.div 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${uploadProgress}%` }}
-                            className="h-full bg-amber-500"
-                           />
-                        </div>
-                      </div>
-                    )}
-                    
-                    {formData.imageUrl && (
-                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                        <img 
-                          src={formData.imageUrl} 
-                          alt="Preview" 
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                        <button 
-                          onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
-                          className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-6">
-                  <button 
-                    onClick={handleSave}
-                    disabled={isUploading}
-                    className="w-full py-5 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(245,158,11,0.2)] hover:bg-amber-400 transition-all uppercase tracking-[0.2em] text-xs disabled:opacity-50"
-                  >
-                    {editingId ? <RefreshCw size={18} /> : <Plus size={18} />}
-                    {editingId ? t('admin.update_property') : t('admin.publish_property')}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <AdminPropertyForm 
+              editingId={editingId}
+              setEditingId={setEditingId}
+              formData={formData}
+              setFormData={setFormData}
+              formLang={formLang}
+              setFormLang={setFormLang}
+              isUploading={isUploading}
+              uploadProgress={uploadProgress}
+              handleInputChange={(e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))}
+              handleFileUpload={handleFileUpload}
+              handleSave={handleSaveProperty}
+            />
           )}
         </main>
       </div>
