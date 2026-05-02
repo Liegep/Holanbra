@@ -4,7 +4,6 @@ import {
   Settings, 
   Trash2 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 interface AdminResidentsProps {
@@ -32,7 +31,7 @@ export function AdminResidents({
   handleSaveRenter,
   handleDeleteRenter
 }: AdminResidentsProps) {
-  const { t } = useTranslation();
+  const t = (s: string) => s;
 
   const handleRenterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

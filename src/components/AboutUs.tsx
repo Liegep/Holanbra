@@ -36,27 +36,27 @@ export default function AboutUs() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">História</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">History</span>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tighter text-left">
-                SOBRE <span className="italic font-light text-amber-400">NÓS</span>
+                ABOUT <span className="italic font-light text-amber-400">US</span>
               </h2>
             </div>
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                Em 2010, <span className="text-white font-medium">Ymir Coronet</span>, da Holanda, e <span className="text-white font-medium">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.
+                In 2010, <span className="text-white font-medium">Ymir Coronet</span>, from the Netherlands, and <span className="text-white font-medium">Marie Whitfield</span>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.
               </p>
               
               <p>
-                À medida que os anos passaram e a tecnologia evoluiu, expandimos nossa visão, trazendo elegância e sofisticação para cada projeto.
+                As years passed and technology evolved, we expanded our vision, bringing elegance and sophistication to every project.
               </p>
               
               <p className="border-l-2 border-amber-500/30 pl-8 py-2 italic font-normal">
-                Hoje, somos referência em imóveis de luxo no Second Life, criando experiências únicas para nossos residentes.
+                Today, we are a benchmark in luxury real estate within Second Life, creating unique experiences for our residents.
               </p>
               
               <p>
-                Nossa dedicação é inabalável em proporcionar os melhores espaços, sempre com foco no conforto e na beleza.
+                We are unwavering in our dedication to providing the best spaces, always focusing on comfort and beauty.
               </p>
             </div>
           </motion.div>

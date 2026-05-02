@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users, X, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -23,14 +22,14 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Team() {
-  const { t, i18n } = useTranslation();
+  const t = (s: string) => s;
 
   const DEFAULT_TEAM: TeamMember[] = [
     {
       id: 'default-1',
       name: 'Marie Whitfield',
       role: 'Creative Director',
-      bio: t('team.bios.marie'),
+      bio: 'Diretora criativa com foco em design de luxo e experiências imersivas.',
       image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80',
       icon: 'Paintbrush',
       slProfile: 'secondlife:///app/agent/uuid-marie/about'
@@ -39,7 +38,7 @@ export default function Team() {
       id: 'default-2',
       name: 'Ymir Coronet',
       role: 'Founder_Architect',
-      bio: t('team.bios.ymir'),
+      bio: 'Arquiteto fundador especialista em planejamento urbano e design modular.',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80',
       icon: 'Briefcase',
       slProfile: 'secondlife:///app/agent/uuid-ymir/about'
@@ -48,7 +47,7 @@ export default function Team() {
       id: 'default-3',
       name: 'Victoria Holanbra',
       role: 'Community Manager',
-      bio: t('team.bios.victoria'),
+      bio: 'Gerente de comunidade dedicada a conectar residentes e gerenciar eventos.',
       image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80',
       icon: 'Users',
       slProfile: 'secondlife:///app/agent/uuid-victoria/about'
@@ -114,7 +113,7 @@ export default function Team() {
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
-      window.alert(t('error_msg') + ": " + (err.message || ""));
+      window.alert("Erro ao enviar mensagem: " + (err.message || ""));
     } finally {
       setIsSending(false);
     }
@@ -128,9 +127,7 @@ export default function Team() {
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
 
   const translateRole = (role: string) => {
-    const slug = role.toLowerCase().replace(/ /g, '_').replace(/&/g, '');
-    const key = `team.${slug}`;
-    return i18n.exists(key) ? t(key) : role;
+    return role;
   };
 
   return (
@@ -155,7 +152,7 @@ export default function Team() {
                className="flex items-center gap-3 text-amber-600"
             >
               <div className="w-12 h-[1px] bg-amber-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('team_subtitle')}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{'NOSSA EQUIPE'}</span>
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}

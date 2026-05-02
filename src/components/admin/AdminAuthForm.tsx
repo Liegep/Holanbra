@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { signInWithGoogle } from '../../lib/supabase';
 
 export function AdminAuthForm() {
-  const { t } = useTranslation();
+  const t = (s: string) => s;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
