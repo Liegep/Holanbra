@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export default function Hero() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
@@ -25,6 +25,7 @@ export default function Hero() {
 
   useEffect(() => {
     const fetchHero = async () => {
+      const currentLang = i18n.language.split('-')[0];
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
@@ -34,9 +35,9 @@ export default function Hero() {
       if (data) {
         setContent({
           backgroundImage: data.background_url || content.backgroundImage,
-          badgeText: data.badge_text || content.badgeText,
-          title1: data.title_main || content.title1,
-          title2: data.title_italic || content.title2,
+          badgeText: data[`badge_text_${currentLang}`] || data.badge_text || content.badgeText,
+          title1: data[`title_main_${currentLang}`] || data.title_main || content.title1,
+          title2: data[`title_italic_${currentLang}`] || data.title_italic || content.title2,
           virtualTourUrl: data.virtual_tour_url || content.virtualTourUrl,
           gridImages: [
             data.grid_photo_1 || content.gridImages[0],
@@ -60,7 +61,7 @@ export default function Hero() {
     return () => {
       supabase.removeChannel(heroSubscription);
     };
-  }, []);
+  }, [i18n.language]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">

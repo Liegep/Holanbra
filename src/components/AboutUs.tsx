@@ -38,29 +38,29 @@ export default function AboutUs() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('history')}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('common.history')}</span>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tighter text-left">
-                {t('about_us_title').split(' ')[0]} <span className="italic font-light text-amber-400">{t('about_us_title').split(' ')[1]}</span>
+                {t('sections.about_us_title').split(' ')[0]} <span className="italic font-light text-amber-400">{t('sections.about_us_title').split(' ')[1]}</span>
               </h2>
             </div>
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                <Trans i18nKey="about_us_p1">
+                <Trans i18nKey="sections.about_us_p1">
                   Em 2010, <span className="text-white font-medium">Ymir Coronet</span>, da Holanda, e <span className="text-white font-medium">Marie Whitfield</span>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembram cidades reais era uma raridade, conferindo um charme distinto às suas criações.
                 </Trans>
               </p>
               
               <p>
-                {t('about_us_p2')}
+                {t('sections.about_us_p2')}
               </p>
               
               <p className="border-l-2 border-amber-500/30 pl-8 py-2 italic font-normal">
-                {t('about_us_p3')}
+                {t('sections.about_us_p3')}
               </p>
               
               <p>
-                {t('about_us_p4')}
+                {t('sections.about_us_p4')}
               </p>
             </div>
           </motion.div>

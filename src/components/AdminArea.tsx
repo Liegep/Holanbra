@@ -279,10 +279,10 @@ export default function AdminArea() {
         console.error("SUPABASE SAVE ERROR:", error);
         throw error;
       }
-      showToast("Configurações do topo salvas com sucesso!");
+      showToast(t('admin.settings_saved'));
     } catch (error: any) {
       console.error("Full Error Object:", error);
-      showToast(`Falha ao salvar: ${error.message || 'Erro desconhecido'}`, "error");
+      showToast(`${t('admin.save_fail')}: ${error.message || t('admin.unknown_error')}`, "error");
     }
   };
 
@@ -306,10 +306,10 @@ export default function AdminArea() {
       
       if (error) throw error;
       setIsDirty(false);
-      showToast("Covenants updated successfully!");
+      showToast(t('covenant.update_success'));
     } catch (error) {
       console.error(error);
-      showToast("Failed to update covenants", "error");
+      showToast(t('covenant.update_error'), "error");
     }
   };
 
@@ -504,14 +504,14 @@ export default function AdminArea() {
 
   const handleSaveRenter = async () => {
     if (!renterFormData.avatarName || !renterFormData.avatarUuid || !renterFormData.password) {
-      showToast("Please fill in all renter fields.", "info");
+      showToast(t('admin.fill_all_fields'), "info");
       return;
     }
 
     // UUID Validation regex
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(renterFormData.avatarUuid)) {
-      showToast("The Avatar UUID provided is not a valid UUID. Expected format: 00000000-0000-0000-0000-000000000000", "error");
+      showToast(t('admin.invalid_uuid_error'), "error");
       return;
     }
 
@@ -585,18 +585,18 @@ export default function AdminArea() {
           .in('id', toLink);
       }
 
-      showToast("Residente e vínculos de imóveis atualizados!");
+      showToast(t('admin.resident_update_success'));
       setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
       setSelectedPropertyIds([]);
       setEditingRenterId(null);
     } catch (error: any) {
       console.error(error);
-      showToast(`Erro no salvamento: ${error.message}`, "error");
+      showToast(`${t('admin.save_error')}: ${error.message}`, "error");
     }
   };
 
   const handleDeleteRenter = async (id: string, avatarUuid: string) => {
-    if (!confirm("Are you sure? This will not remove their history but will set their properties to Available and prevent their login.")) return;
+    if (!confirm(t('admin.delete_renter_confirm'))) return;
     try {
       // 1. Clear properties linked to this resident before deleting them
       const { error: clearError } = await supabase
@@ -614,10 +614,10 @@ export default function AdminArea() {
       const { error } = await supabase.from('renters').delete().eq('id', id);
       if (error) throw error;
 
-      showToast("Renter removed and properties reset to Available!");
+      showToast(t('admin.renter_removed_success'));
     } catch (error) {
       console.error(error);
-      showToast("Error deleting renter", "error");
+      showToast(t('admin.delete_renter_error'), "error");
     }
   };
 
@@ -685,20 +685,20 @@ export default function AdminArea() {
       fetchInboxMessages();
     } catch (error) {
       console.error(error);
-      showToast("Erro ao atualizar status", "error");
+      showToast(t('admin.status_update_error'), "error");
     }
   };
 
   const handleDeleteMessage = async (id: string) => {
-    if (!confirm("Excluir esta mensagem?")) return;
+    if (!confirm(t('admin.delete_message_confirm'))) return;
     try {
       const { error } = await supabase.from('contact_messages').delete().eq('id', id);
       if (error) throw error;
-      showToast("Mensagem excluída!");
+      showToast(t('admin.message_deleted_success'));
       fetchInboxMessages();
     } catch (error) {
       console.error(error);
-      showToast("Erro ao excluir mensagem", "error");
+      showToast(t('admin.delete_msg_error'), "error");
     }
   };
 
@@ -759,7 +759,7 @@ export default function AdminArea() {
 
   const handleSaveTeam = async () => {
     if (!teamFormData.name || !teamFormData.role || !teamFormData.image) {
-      showToast("Please fill in name, role and upload a photo.", "info");
+      showToast(t('team.fill_required_fields'), "info");
       return;
     }
 
@@ -785,11 +785,11 @@ export default function AdminArea() {
       
       if (error) {
         console.error("SUPABASE TEAM SAVE ERROR:", error);
-        window.alert("Erro no Banco de Dados: " + JSON.stringify(error, null, 2));
+        window.alert(t('admin.db_error') + ": " + JSON.stringify(error, null, 2));
         throw error;
       }
       
-      showToast("Membro da equipe atualizado com sucesso! ✨");
+      showToast(t('team.member_update_success'));
 
       setTeamFormData({
         name: '',
@@ -1208,7 +1208,6 @@ export default function AdminArea() {
     }
   };
 
-  if (authLoading) {
     return (
       <div className="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center space-y-8">
         <div className="relative">
@@ -1222,7 +1221,7 @@ export default function AdminArea() {
           </motion.div>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-xs animate-pulse">Loading</h2>
+          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-xs animate-pulse">{t('common.loading')}</h2>
           <div className="w-48 h-[1px] bg-white/10 relative overflow-hidden">
             <motion.div 
               initial={{ left: "-100%" }}
@@ -1250,8 +1249,8 @@ export default function AdminArea() {
                   <AlertCircle className="text-red-500 w-10 h-10" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-3xl font-display font-bold text-white">Access Denied</h2>
-                  <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account is not authorized to access this panel.</p>
+                  <h2 className="text-3xl font-display font-bold text-white">{t('auth.access_denied')}</h2>
+                  <p className="text-white/40 uppercase tracking-widest text-[10px]">{t('auth.access_denied_desc')}</p>
                 </div>
                 <div className="space-y-4">
                   <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
@@ -1261,7 +1260,7 @@ export default function AdminArea() {
                     onClick={() => signOut()}
                     className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]"
                   >
-                    Logout & Switch User
+                    {t('auth.logout_switch')}
                   </button>
                 </div>
               </div>
@@ -1287,23 +1286,23 @@ export default function AdminArea() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
-              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Logout</button>
+              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">{t('auth.logout')}</button>
             </div>
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin_dashboard')}</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.admin_dashboard')}</h2>
           {[
-            { id: 'listings', name: t('properties'), icon: BarChart3 },
-            { id: 'renters', name: t('residents'), icon: UserIcon },
-            { id: 'gallery', name: t('gallery'), icon: ImageIcon },
+            { id: 'listings', name: t('common.properties'), icon: BarChart3 },
+            { id: 'renters', name: t('admin.residents'), icon: UserIcon },
+            { id: 'gallery', name: t('common.gallery'), icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
-            { id: 'team', name: t('team'), icon: UserIcon },
-            { id: 'inbox', name: t('inbox'), icon: Mail },
-            { id: 'videos', name: t('videos'), icon: Video },
-            { id: 'tickets', name: t('recent_tickets'), icon: MessageSquare },
-            { id: 'add', name: editingId ? t('edit') : t('add_new'), icon: Plus },
-            { id: 'covenant', name: t('covenant'), icon: FileText },
-            { id: 'settings', name: t('settings'), icon: Settings },
+            { id: 'team', name: t('common.team'), icon: UserIcon },
+            { id: 'inbox', name: t('admin.inbox'), icon: Mail },
+            { id: 'videos', name: t('admin.videos'), icon: Video },
+            { id: 'tickets', name: t('tickets.recent_tickets'), icon: MessageSquare },
+            { id: 'add', name: editingId ? t('common.edit') : t('admin.add_new'), icon: Plus },
+            { id: 'covenant', name: t('common.covenant'), icon: FileText },
+            { id: 'settings', name: t('admin.settings'), icon: Settings },
           ].map((item) => (
             <button
               key={item.id}
@@ -1620,7 +1619,7 @@ export default function AdminArea() {
                     </div>
                     <div className="mt-4 flex justify-between items-center bg-black/20 p-2 rounded-lg">
                       <div className="text-left">
-                        <span className="text-[8px] uppercase text-gray-500 font-bold block">Password</span>
+                        <span className="text-[8px] uppercase text-gray-500 font-bold block">{t('admin.password')}</span>
                         <span className="text-[10px] text-amber-500/80 font-mono">{renter.password}</span>
                       </div>
                       <div className="flex gap-2">
@@ -1740,7 +1739,7 @@ export default function AdminArea() {
                             </div>
                           )}
                           
-                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">{t('slot')} {idx + 1}</div>
+                          <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">{t('common.slot')} {idx + 1}</div>
                         </div>
                       ))}
                     </div>
@@ -2188,14 +2187,14 @@ export default function AdminArea() {
                 <div className="lg:col-span-1 space-y-6">
                    <div className="glass-card p-8 border-white/5 space-y-6">
                       <div className="space-y-4 text-left">
-                        <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Nova Foto</label>
+                        <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('gallery.new_photo')}</label>
                         <div className="relative group aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-white/10 bg-white/5 hover:border-amber-500/50 transition-all">
                            {galleryFormData.imageUrl ? (
                              <img src={galleryFormData.imageUrl} className="w-full h-full object-cover" />
                            ) : (
                              <div className="absolute inset-0 flex flex-col items-center justify-center text-white/20 gap-3">
                                 <ImageIcon size={32} />
-                                <span className="text-[9px] font-black uppercase tracking-tighter">Escolher Arquivo</span>
+                                <span className="text-[9px] font-black uppercase tracking-tighter">{t('gallery.choose_photo')}</span>
                              </div>
                            )}
                            
@@ -2244,7 +2243,7 @@ export default function AdminArea() {
                 {/* Grid Section */}
                 <div className="lg:col-span-2 space-y-6">
                   <div className="flex justify-between items-center px-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('current_photos')} ({galleryImages.length})</label>
+                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('gallery.current_photos')} ({galleryImages.length})</label>
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -2391,9 +2390,9 @@ export default function AdminArea() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <FileText size={48} className="text-white" />
                     </div>
-                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('total_portfolio')}</p>
+                    <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('admin.total_portfolio')}</p>
                     <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('units_all_sims')}</p>
+                    <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('admin.units_all_sims')}</p>
                   </motion.div>
 
                   {/* Support Tickets Card */}
@@ -2410,9 +2409,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
                       <MessageSquare size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('open_tickets')}</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.open_tickets')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('total_tickets')}</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('admin.total_tickets')}</p>
                   </motion.div>
 
                   {/* Occupancy Rate Card */}
@@ -2425,12 +2424,12 @@ export default function AdminArea() {
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <CheckCircle size={48} className="text-amber-500" />
                     </div>
-                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('occupancy_rate')}</p>
+                    <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('admin.occupancy_rate')}</p>
                     <div className="flex items-baseline gap-2">
                        <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
                        <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
                     </div>
-                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('available_for_rent')}</p>
+                    <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('admin.available_for_rent')}</p>
                   </motion.div>
 
                   <motion.div 
@@ -2445,9 +2444,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
                       <AlertCircle size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('critical_issues')}</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('admin.critical_issues')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('expiring_3_days')}</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('admin.expiring_3_days')}</p>
                   </motion.div>
 
                   <motion.div 
@@ -2462,9 +2461,9 @@ export default function AdminArea() {
                     <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
                       <Clock size={48} />
                     </div>
-                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('attention')}</p>
+                    <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.attention')}</p>
                     <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('expiring_7_days')}</p>
+                    <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('admin.expiring_7_days')}</p>
                   </motion.div>
                 </div>
               </div>
@@ -2479,7 +2478,7 @@ export default function AdminArea() {
                         activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
                       )}
                     >
-                      {t('all_properties')} ({properties.length})
+                      {t('admin.all_properties')} ({properties.length})
                     </button>
                     <button 
                       onClick={() => setActiveFilter('expiring')}
@@ -2489,7 +2488,7 @@ export default function AdminArea() {
                       )}
                     >
                       <Clock size={12} />
-                      {t('expiring_soon')} ({stats.critical + stats.attention})
+                      {t('admin.expiring_soon')} ({stats.critical + stats.attention})
                     </button>
                   </div>
                 </div>
@@ -2607,7 +2606,7 @@ export default function AdminArea() {
             <div className="max-w-2xl space-y-8">
               <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-bold font-display text-left">
-                  {editingId ? 'Edit Property Details' : 'Register New Property'}
+                  {editingId ? t('admin.property_edit_title') : t('admin.property_add_title')}
                 </h3>
                 {editingId && (
                   <button 
@@ -2630,7 +2629,7 @@ export default function AdminArea() {
                     }}
                     className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
                   >
-                    Cancel Edit
+                    {t('common.cancel')}
                   </button>
                 )}
               </div>
@@ -2638,7 +2637,7 @@ export default function AdminArea() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-amber-500/70 uppercase">Property Name</label>
+                    <label className="text-xs font-bold text-amber-500/70 uppercase">{t('common.property_name')}</label>
                     <input 
                       type="text" 
                       name="name"
@@ -2649,14 +2648,14 @@ export default function AdminArea() {
                     />
                   </div>
                   <div className="space-y-2 text-left">
-                    <label className="text-xs font-bold text-gray-500 uppercase">Device Key (CasperLet ID)</label>
+                    <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.casperlet_id_label')}</label>
                     <input 
                       type="text" 
                       name="casperletId"
                       value={formData.casperletId}
                       onChange={handleInputChange}
                       className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                      placeholder="Paste Device Key" 
+                      placeholder={t('admin.paste_device_key')}
                     />
                   </div>
                 </div>
@@ -2828,7 +2827,7 @@ export default function AdminArea() {
                     className="w-full py-5 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(245,158,11,0.2)] hover:bg-amber-400 transition-all uppercase tracking-[0.2em] text-xs disabled:opacity-50"
                   >
                     {editingId ? <RefreshCw size={18} /> : <Plus size={18} />}
-                    {editingId ? 'Update Property' : 'Publish Property'}
+                    {editingId ? t('admin.update_property') : t('admin.publish_property')}
                   </button>
                 </div>
               </div>

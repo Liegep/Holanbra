@@ -99,7 +99,7 @@ export default function Navbar() {
                 rel="noopener noreferrer"
                 className="text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 text-white/60"
               >
-                {t(link.name.toLowerCase())}
+                {t(`common.${link.name.toLowerCase()}`)}
               </a>
             ) : (
               <Link 
@@ -111,7 +111,7 @@ export default function Navbar() {
                   link.highlight && "text-amber-500"
                 )}
               >
-                {t(link.name.toLowerCase())}
+                {t(`common.${link.name.toLowerCase()}`)}
               </Link>
             )
           ))}
@@ -156,7 +156,7 @@ export default function Navbar() {
               className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
             >
               <LayoutDashboard size={14} className="text-amber-500" />
-              {t('admin')}
+              {t('admin.admin')}
             </Link>
           )}
           <Link 
@@ -164,7 +164,7 @@ export default function Navbar() {
             className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
           >
             <ShieldCheck size={14} />
-            {t('resident_area')}
+            {t('auth.resident_portal')}
           </Link>
         </div>
 
@@ -198,7 +198,7 @@ export default function Navbar() {
                     className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
                   >
                     <link.icon size={20} />
-                    {t(link.name.toLowerCase())}
+                    {t(`common.${link.name.toLowerCase()}`)}
                   </a>
                 ) : (
                   <Link 
@@ -208,7 +208,7 @@ export default function Navbar() {
                     className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
                   >
                     <link.icon size={20} />
-                    {t(link.name.toLowerCase())}
+                    {t(`common.${link.name.toLowerCase()}`)}
                   </Link>
                 )
               ))}
@@ -235,7 +235,7 @@ export default function Navbar() {
                   className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold flex items-center justify-center gap-3 border border-white/10"
                 >
                   <LayoutDashboard size={20} className="text-amber-500" />
-                  {t('admin_panel')}
+                  {t('admin.admin_panel')}
                 </Link>
               )}
               <Link 
@@ -244,7 +244,7 @@ export default function Navbar() {
                 className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
               >
                 <ShieldCheck size={20} />
-                {t('resident_area')}
+                {t('auth.resident_portal')}
               </Link>
             </div>
           </motion.div>

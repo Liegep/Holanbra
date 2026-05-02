@@ -22,38 +22,39 @@ const ICON_MAP: Record<string, any> = {
   Users
 };
 
-const DEFAULT_TEAM: TeamMember[] = [
-  {
-    id: 'default-1',
-    name: 'Marie Whitfield',
-    role: 'Creative Director',
-    bio: 'Specialist in interior design and landscaping. Turning pixels into cozy homes since 2010.',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80',
-    icon: 'Paintbrush',
-    slProfile: 'secondlife:///app/agent/uuid-marie/about'
-  },
-  {
-    id: 'default-2',
-    name: 'Ymir Coronet',
-    role: 'Founder & Architect',
-    bio: 'Visionary architect behind Holanbra. Dedicated to crafting uniquely designed virtual worlds.',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80',
-    icon: 'Briefcase',
-    slProfile: 'secondlife:///app/agent/uuid-ymir/about'
-  },
-  {
-    id: 'default-3',
-    name: 'Victoria Holanbra',
-    role: 'Community Manager',
-    bio: 'Ensuring every resident feels at home and every issue is resolved with a smile.',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80',
-    icon: 'Users',
-    slProfile: 'secondlife:///app/agent/uuid-victoria/about'
-  }
-];
-
 export default function Team() {
   const { t, i18n } = useTranslation();
+
+  const DEFAULT_TEAM: TeamMember[] = [
+    {
+      id: 'default-1',
+      name: 'Marie Whitfield',
+      role: 'Creative Director',
+      bio: t('team.bios.marie'),
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80',
+      icon: 'Paintbrush',
+      slProfile: 'secondlife:///app/agent/uuid-marie/about'
+    },
+    {
+      id: 'default-2',
+      name: 'Ymir Coronet',
+      role: 'Founder_Architect',
+      bio: t('team.bios.ymir'),
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80',
+      icon: 'Briefcase',
+      slProfile: 'secondlife:///app/agent/uuid-ymir/about'
+    },
+    {
+      id: 'default-3',
+      name: 'Victoria Holanbra',
+      role: 'Community Manager',
+      bio: t('team.bios.victoria'),
+      image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80',
+      icon: 'Users',
+      slProfile: 'secondlife:///app/agent/uuid-victoria/about'
+    }
+  ];
+
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -128,7 +129,8 @@ export default function Team() {
 
   const translateRole = (role: string) => {
     const slug = role.toLowerCase().replace(/ /g, '_').replace(/&/g, '');
-    return i18n.exists(slug) ? t(slug) : role;
+    const key = `team.${slug}`;
+    return i18n.exists(key) ? t(key) : role;
   };
 
   return (
