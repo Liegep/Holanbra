@@ -122,7 +122,7 @@ const ResidentDashboard: React.FC = () => {
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketForm.subject || !ticketForm.message) {
-      showToast("Please fill all required fields", "info");
+      showToast("Por favor, preencha todos os campos.", "info");
       return;
     }
 
@@ -130,20 +130,13 @@ const ResidentDashboard: React.FC = () => {
     
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      if (userError || !user) throw new Error("Usuário não está logado.");
 
-      const avatarName = user?.user_metadata?.avatar_name || 'Resident';
-      const userId = user?.id;
-
-      if (!userId) {
-        throw new Error("User ID is missing.");
-      }
-      
       const { data, error } = await supabase
         .from('support_tickets')
         .insert({
-          user_id: userId,
-          avatar_name: avatarName,
+          user_id: user.id,
+          avatar_name: user?.user_metadata?.avatar_name || 'Resident',
           subject: ticketForm.subject,
           category: ticketForm.category,
           message: ticketForm.message,
@@ -158,7 +151,7 @@ const ResidentDashboard: React.FC = () => {
       setTicketForm({ subject: '', category: 'Financeiro', message: '' });
       showToast("Ticket enviado com sucesso!");
     } catch (err: any) {
-      console.error("Erro Detalhado:", err.message, err.details, err.hint);
+      console.error("Erro Detalhado:", err);
       showToast(`Erro ao enviar ticket: ${err.message || 'Erro desconhecido'}`, "error");
     } finally {
       setIsSubmittingTicket(false);
