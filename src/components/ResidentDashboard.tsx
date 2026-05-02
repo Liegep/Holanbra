@@ -63,6 +63,43 @@ const ResidentDashboard: React.FC = () => {
     }
   }, []);
 
+  // Sync with session and fetch tickets
+  useEffect(() => {
+    const syncSession = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        console.log('Session sync - User metadata:', user.user_metadata);
+        
+        // Use ID from session
+        const residentId = user.id;
+
+        // Fetch tickets strictly by user_id
+        const { data: userTickets, error: ticketError } = await supabase
+          .from('support_tickets')
+          .select('*')
+          .eq('user_id', residentId)
+          .order('created_at', { ascending: false });
+
+        if (ticketError) {
+          console.error("Error fetching tickets for session:", ticketError);
+        } else {
+          console.log('Tickets fetched for session:', userTickets);
+          setTickets(userTickets || []);
+        }
+
+        // Set basic data from session as fallback/primary
+        if (!residentData) {
+          setResidentData({
+            avatar_name: user.user_metadata?.avatar_name || user.user_metadata?.name || user.email,
+            avatar_uuid: user.id
+          });
+          setIsLoggedIn(true);
+        }
+      }
+    };
+    syncSession();
+  }, [isLoggedIn]);
+
   const handleLogin = async (e: React.FormEvent | null, nameOverride?: string, passOverride?: string) => {
     if (e) e.preventDefault();
     setError('');
@@ -512,48 +549,51 @@ const ResidentDashboard: React.FC = () => {
                       <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">No tickets found</p>
                     </div>
                   ) : (
-                    tickets.map((ticket) => (
-                      <div key={ticket.id} className="glass-card p-6 border-white/5 space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              {ticket.status === 'open' ? (
-                                <AlertCircle className="text-amber-500" size={14} />
-                              ) : (
-                                <CheckCircle2 className="text-green-500" size={14} />
-                              )}
-                              <span className={cn(
-                                "text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded",
-                                ticket.status === 'open' ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500"
-                              )}>
-                                {ticket.status}
-                              </span>
-                              <span className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-2">
-                                {ticket.category}
-                              </span>
+                    tickets.map((ticket) => {
+                      console.log('Dados do Ticket (Render):', ticket);
+                      return (
+                        <div key={ticket.id} className="glass-card p-6 border-white/5 space-y-4">
+                          <div className="flex items-start justify-between">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                {ticket.status === 'open' ? (
+                                  <AlertCircle className="text-amber-500" size={14} />
+                                ) : (
+                                  <CheckCircle2 className="text-green-500" size={14} />
+                                )}
+                                <span className={cn(
+                                  "text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded",
+                                  ticket.status === 'open' ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500"
+                                )}>
+                                  {ticket.status}
+                                </span>
+                                <span className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-2">
+                                  {ticket.category}
+                                </span>
+                              </div>
+                              <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
+                              <p className="text-white/40 text-[10px] uppercase font-bold">
+                                Opened on {new Date(ticket.created_at).toLocaleDateString()}
+                              </p>
                             </div>
-                            <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
-                            <p className="text-white/40 text-[10px] uppercase font-bold">
-                              Opened on {new Date(ticket.created_at).toLocaleDateString()}
-                            </p>
                           </div>
-                        </div>
-
-                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                          <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
-                        </div>
-
-                        {ticket.admin_reply && (
-                          <div className="space-y-3 pl-4 border-l-2 border-amber-500/30">
-                            <div className="flex items-center gap-2">
-                              <ShieldCheck className="text-amber-500" size={14} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Staff Response</span>
+  
+                          <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                            <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
+                          </div>
+  
+                          {ticket.admin_reply && (
+                            <div className="bg-blue-900/40 p-4 mt-2 rounded-xl border border-blue-500/30 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <ShieldCheck className="text-blue-400" size={14} />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Staff Response</span>
+                              </div>
+                              <p className="text-sm text-white/80 leading-relaxed">{ticket.admin_reply}</p>
                             </div>
-                            <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
-                          </div>
-                        )}
-                      </div>
-                    ))
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
               </div>
