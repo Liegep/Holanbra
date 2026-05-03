@@ -12,7 +12,8 @@ import {
   Mail,
   MessageSquare,
   FileText,
-  AlertCircle
+  AlertCircle,
+  DollarSign
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase, signOut } from '../lib/supabase';
