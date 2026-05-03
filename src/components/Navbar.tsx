@@ -4,6 +4,7 @@ import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileTe
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+import { GridStatus } from './GridStatus';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -48,7 +49,6 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: Home, external: false, label: 'Home' },
     { name: 'About', path: '/#about', icon: Users, external: false, label: 'About' },
     { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, external: false, label: 'Properties' },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, external: false, label: 'Gallery' },
@@ -110,6 +110,9 @@ export default function Navbar() {
               ADMIN
             </Link>
           )}
+
+          <GridStatus />
+
           <Link 
             to="/resident" 
             className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"

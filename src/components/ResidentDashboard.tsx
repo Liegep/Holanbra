@@ -1,6 +1,7 @@
 import React, { useState, useEffect, FC } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { GridStatus } from './GridStatus';
 import { 
   Home, 
   Calendar, 
@@ -307,6 +308,9 @@ const ResidentDashboard:FC = () => {
         
         {/* Header - Profile Section */}
         <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-12 rounded-[40px] border border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 right-12 mt-8">
+            <GridStatus />
+          </div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
           
           <div className="flex flex-col items-center gap-6">
