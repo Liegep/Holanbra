@@ -179,9 +179,20 @@ export default function AdminArea() {
 
   const fetchRenters = async () => {
     try {
+      setRenters([]); // Clear state before update
       const { data, error } = await supabase.from('renters').select('*');
       if (error) throw error;
-      setRenters(data || []);
+
+      console.log('Renters loaded from DB (Table: renters):');
+      console.table(data);
+
+      // Explicit mapping and logging for security
+      const mappedData = data?.map(renter => ({
+        ...renter,
+        id: String(renter.id).trim() // Ensuring strict string UUID mapping
+      })) || [];
+
+      setRenters(mappedData);
     } catch (err) {
       console.error("Fetch renters error:", err);
     }
@@ -654,45 +665,110 @@ export default function AdminArea() {
       showToast("Please fill all fields", "info");
       return;
     }
+    
+    setIsUploading(true); // Reusing uploading state for global busy indicator
     try {
+      // Column names based on existing schema (avatar_name, avatar_uuid, password)
+      // The user mentioned name, email, unit as EXAMPLES, but we stick to SL logic
       const dataToSave = {
-        avatar_name: renterFormData.avatarName,
-        tenant_id: renterFormData.avatarUuid,
-        avatar_uuid: renterFormData.avatarUuid,
-        password: renterFormData.password
+        avatar_name: renterFormData.avatarName.trim(),
+        tenant_id: renterFormData.avatarUuid.trim(),
+        avatar_uuid: renterFormData.avatarUuid.trim(),
+        password: renterFormData.password.trim()
       };
-      const { error } = await supabase.from('renters').upsert(dataToSave, { onConflict: 'avatar_uuid' });
-      if (error) throw error;
       
-      const renterUuid = renterFormData.avatarUuid;
+      console.log("Saving Resident to 'renters':", dataToSave);
+      
+      const { data, error } = await supabase
+        .from('renters')
+        .upsert(dataToSave, { onConflict: 'avatar_uuid' })
+        .select();
+
+      if (error) {
+        alert("Supabase Error (renters): " + error.message);
+        throw error;
+      }
+      
+      console.log("Resident saved successfully:", data);
+      
+      const renterUuid = renterFormData.avatarUuid.trim();
+      
+      // Update property links
       const { data: currentLinked } = await supabase.from('properties').select('id').eq('tenant_id', renterUuid);
       const currentLinkedIds = currentLinked?.map(p => p.id) || [];
+      
       const toUnlink = currentLinkedIds.filter(id => !selectedPropertyIds.includes(id));
       if (toUnlink.length > 0) {
-        await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).in('id', toUnlink);
+        const { error: unlinkError } = await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).in('id', toUnlink);
+        if (unlinkError) console.error("Unlink error:", unlinkError);
       }
+      
       const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
       if (toLink.length > 0) {
-        await supabase.from('properties').update({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName, status: 'rented' }).in('id', toLink);
+        const { error: linkError } = await supabase.from('properties').update({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName.trim(), status: 'rented' }).in('id', toLink);
+        if (linkError) console.error("Link error:", linkError);
       }
+      
       showToast("Resident update successful");
       setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
       setSelectedPropertyIds([]);
       setEditingRenterId(null);
+      fetchRenters();
+      fetchProperties();
     } catch (error: any) {
+      console.error("Save renter error:", error);
+      alert("Error saving resident: " + error.message);
       showToast("Save error", "error");
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleDeleteRenter = async (id: string, avatarUuid: string) => {
-    if (!confirm("Are you sure you want to remove this resident?")) return;
+    const cleanId = String(id).trim();
+    const cleanUuid = String(avatarUuid).trim();
+
+    if (!confirm(`Are you sure you want to remove resident ${avatarUuid}?`)) return;
+    
+    console.log(`Starting deletion for Resident ID: ${cleanId} (Table: renters)`);
+    
     try {
-      await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('tenant_id', avatarUuid);
-      const { error } = await supabase.from('renters').delete().eq('id', id);
-      if (error) throw error;
+      // Step 1: Unlink from properties first
+      const { error: propError } = await supabase
+        .from('properties')
+        .update({ tenant_id: null, tenant_name: null, status: 'available' })
+        .eq('tenant_id', cleanUuid);
+        
+      if (propError) {
+        console.warn("Could not sweep properties for this resident:", propError);
+      }
+
+      // Step 2: Delete from renters
+      const { data, error } = await supabase
+        .from('renters')
+        .delete()
+        .eq('id', cleanId)
+        .select();
+
+      if (error) {
+        console.error('Supabase Delete Error (renters):', error);
+        alert('Erro no Supabase ao deletar da tabela renters: ' + error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.warn("Delete successful in command, but zero rows affected in 'renters'.");
+        alert('Atenção: O residente sumiu da tela, mas não foi encontrado no banco (ID: ' + cleanId + ').');
+      } else {
+        console.log("Deleted from 'renters' successfully:", data);
+      }
+      
+      setRenters(prev => prev.filter(r => String(r.id).trim() !== cleanId));
       showToast("Resident removed successfully");
-    } catch (error) {
-      showToast("Delete resident error", "error");
+    } catch (error: any) {
+      console.error("Delete resident error:", error);
+      alert("Unexpected error during deletion: " + error.message);
+      showToast("Delete error", "error");
     }
   };
 
