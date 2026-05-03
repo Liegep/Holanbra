@@ -966,6 +966,9 @@ export default function AdminArea() {
     );
   }
 
+  const unreadInboxCount = inboxMessages.filter(m => !m.is_read).length;
+  const openTicketsCount = tickets.filter(t => t.status === 'open').length;
+
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-zinc-950 min-h-screen">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12">
@@ -997,9 +1000,9 @@ export default function AdminArea() {
             { id: 'gallery', name: "Gallery", icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: "Organization", icon: UserIcon },
-            { id: 'inbox', name: "Inbox", icon: Mail },
+            { id: 'inbox', name: "Inbox", icon: Mail, hasNotification: unreadInboxCount > 0 },
             { id: 'videos', name: "Video Assets", icon: Video },
-            { id: 'tickets', name: "Support Tickets", icon: MessageSquare },
+            { id: 'tickets', name: "Support Tickets", icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'add', name: editingId ? "Edit Property" : "Add New Property", icon: Plus },
             { id: 'covenant', name: "Covenants", icon: FileText },
             { id: 'settings', name: "Portal Settings", icon: Settings },
@@ -1008,12 +1011,20 @@ export default function AdminArea() {
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
               className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium",
+                "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-sm font-medium relative",
                 activeTab === item.id ? "bg-amber-500 text-black shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"
               )}
             >
-              <item.icon size={18} />
-              {item.name}
+              <div className="flex items-center gap-3">
+                <item.icon size={18} />
+                {item.name}
+              </div>
+              {item.hasNotification && (
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  activeTab === item.id ? "bg-black" : "bg-amber-500"
+                )} />
+              )}
             </button>
           ))}
         </aside>
