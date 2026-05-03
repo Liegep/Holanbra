@@ -384,7 +384,7 @@ const ResidentDashboard:FC = () => {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {properties.map((prop) => {
-                    const expiresAt = prop.expiry_date || prop.expires_at || prop.next_payment;
+                    const expiresAt = prop.expiry_date || prop.expiry || prop.expires_at || prop.next_payment;
                     const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
                     
                     return (

@@ -39,6 +39,17 @@ export function AdminPropertyForm({
   handleFileUpload,
   handleSave
 }: AdminPropertyFormProps) {
+  const propertyTypeOptions = ['Land', 'Furnished', 'Not Furnished', 'Skybox', 'Shop', 'House'];
+
+  const togglePropertyType = (type: string) => {
+    const currentTypes = formData.property_type || [];
+    const newTypes = currentTypes.includes(type)
+      ? currentTypes.filter((t: string) => t !== type)
+      : [...currentTypes, type];
+    
+    setFormData((prev: any) => ({ ...prev, property_type: newTypes }));
+  };
+
   return (
     <div className="max-w-2xl space-y-8">
       <div className="flex justify-between items-center text-white">
@@ -53,6 +64,7 @@ export function AdminPropertyForm({
                 name: '',
                 casperletId: '',
                 price: '',
+                rental_price: '',
                 teleport_url: '',
                 status: 'available',
                 description: '',
@@ -61,7 +73,10 @@ export function AdminPropertyForm({
                 description_es: '',
                 description_nl: '',
                 imageUrl: '',
-                expiry_date: ''
+                expiry_date: '',
+                tenant_name: '',
+                tenant_id: '',
+                property_type: []
               });
             }}
             className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
@@ -72,43 +87,64 @@ export function AdminPropertyForm({
       </div>
       
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">Property Name</label>
-            <input 
-              type="text" 
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-              placeholder="Ex: Dutch Mansion" 
-            />
-          </div>
-          <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-gray-500 uppercase">Casperlet Device ID</label>
-            <input 
-              type="text" 
-              name="casperletId"
-              value={formData.casperletId}
-              onChange={handleInputChange}
-              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-              placeholder="Paste the SL device UUID here"
-            />
+        <div className="space-y-2 text-left">
+          <label className="text-xs font-bold text-amber-500/70 uppercase">Property Display Name</label>
+          <input 
+            type="text" 
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+            className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+            placeholder="Ex: Dutch Mansion Luxury Parcel" 
+          />
+        </div>
+
+        <div className="space-y-4 text-left">
+          <label className="text-xs font-bold text-amber-500/70 uppercase">Property Type (Multi-select)</label>
+          <div className="flex flex-wrap gap-2">
+            {propertyTypeOptions.map(type => (
+              <button
+                key={type}
+                onClick={() => togglePropertyType(type)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all",
+                  formData.property_type?.includes(type)
+                    ? "bg-amber-500/20 border-amber-500 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                    : "bg-white/5 border-white/10 text-white/40 hover:border-white/30"
+                )}
+              >
+                {type}
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">Price (L$ / Week)</label>
+            <label className="text-xs font-bold text-amber-500/70 uppercase">Base Price (L$)</label>
             <input 
               type="number" 
               name="price"
               value={formData.price}
               onChange={handleInputChange}
               className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder="1000" 
+            />
+          </div>
+          <div className="space-y-2 text-left">
+            <label className="text-xs font-bold text-amber-500/70 uppercase">Rental Price (L$ / Week)</label>
+            <input 
+              type="number" 
+              name="rental_price"
+              value={formData.rental_price}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
               placeholder="1500" 
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 text-left">
             <label className="text-xs font-bold text-amber-500/70 uppercase">Expiry Date (Manual)</label>
             <div className="relative">
@@ -121,6 +157,42 @@ export function AdminPropertyForm({
                 className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
               />
             </div>
+          </div>
+          <div className="space-y-2 text-left">
+            <label className="text-xs font-bold text-amber-500/70 uppercase">Tenant Name</label>
+            <input 
+              type="text" 
+              name="tenant_name"
+              value={formData.tenant_name}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder="Resident Name" 
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2 text-left">
+            <label className="text-xs font-bold text-gray-500 uppercase">Tenant UUID</label>
+            <input 
+              type="text" 
+              name="tenant_id"
+              value={formData.tenant_id}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder="00000000-0000-0000-0000-000000000000"
+            />
+          </div>
+          <div className="space-y-2 text-left">
+            <label className="text-xs font-bold text-gray-500 uppercase">Casperlet Device ID</label>
+            <input 
+              type="text" 
+              name="casperletId"
+              value={formData.casperletId}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder="Paste the SL device UUID here"
+            />
           </div>
         </div>
 

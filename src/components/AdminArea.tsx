@@ -84,6 +84,7 @@ export default function AdminArea() {
     name: '',
     casperletId: '',
     price: '',
+    rental_price: '',
     teleport_url: '',
     status: 'available',
     description: '',
@@ -92,7 +93,10 @@ export default function AdminArea() {
     description_es: '',
     description_nl: '',
     imageUrl: '',
-    expiry_date: ''
+    expiry_date: '',
+    tenant_name: '',
+    tenant_id: '',
+    property_type: [] as string[]
   });
 
   const [renterFormData, setRenterFormData] = useState({
@@ -594,7 +598,7 @@ export default function AdminArea() {
   };
 
   const handleSaveProperty = async () => {
-    if (!formData.name || !formData.price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
+    if (!formData.name || !formData.rental_price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
       showToast("Please fill all required fields", "info");
       return;
     }
@@ -607,11 +611,15 @@ export default function AdminArea() {
         description_es: formData.description_es,
         description_nl: formData.description_nl,
         price: parseFloat(formData.price) || 0,
+        rental_price: parseFloat(formData.rental_price) || 0,
         casperlet_id: formData.casperletId,
         image_url: formData.imageUrl,
         teleport_url: formData.teleport_url,
         status: editingId ? formData.status : 'available',
-        expiry_date: formData.expiry_date || null
+        tenant_name: formData.tenant_name || null,
+        tenant_id: formData.tenant_id || null,
+        expiry_date: formData.expiry_date || null,
+        property_type: formData.property_type || []
       };
       if (editingId) {
         const { error } = await supabase.from('properties').update(dataToSave).eq('id', editingId);
@@ -622,7 +630,24 @@ export default function AdminArea() {
         if (error) throw error;
         showToast("Saved successfully");
       }
-      setFormData({ name: '', casperletId: '', price: '', teleport_url: '', status: 'available', description: '', description_pt: '', description_en: '', description_es: '', description_nl: '', imageUrl: '', expiry_date: '' });
+      setFormData({ 
+        name: '', 
+        casperletId: '', 
+        price: '', 
+        rental_price: '', 
+        teleport_url: '', 
+        status: 'available', 
+        description: '', 
+        description_pt: '', 
+        description_en: '', 
+        description_es: '', 
+        description_nl: '', 
+        imageUrl: '', 
+        expiry_date: '',
+        tenant_name: '',
+        tenant_id: '',
+        property_type: []
+      });
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
@@ -635,6 +660,7 @@ export default function AdminArea() {
       name: prop.name || '',
       casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
+      rental_price: prop.rental_price?.toString() || '',
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
@@ -643,7 +669,10 @@ export default function AdminArea() {
       description_es: prop.description_es || '',
       description_nl: prop.description_nl || '',
       imageUrl: prop.image_url || '',
-      expiry_date: prop.expiry_date || ''
+      expiry_date: prop.expiry_date || '',
+      tenant_name: prop.tenant_name || '',
+      tenant_id: prop.tenant_id || '',
+      property_type: prop.property_type || []
     });
     setEditingId(prop.id);
     setActiveTab('add');

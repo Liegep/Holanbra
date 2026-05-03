@@ -187,6 +187,19 @@ export function AdminPropertyListings({
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <h4 className="font-bold text-sm truncate text-white">{prop.name}</h4>
                     
+                    {prop.property_type && prop.property_type.length > 0 && (
+                      <div className="flex gap-1">
+                        {prop.property_type.map((type: string) => (
+                          <span 
+                            key={type}
+                            className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[8px] text-white/40 uppercase font-bold"
+                          >
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                     {daysRemaining !== null && (
                       <div className={cn(
                         "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter",
@@ -209,22 +222,17 @@ export function AdminPropertyListings({
                           <UserIcon size={8} />
                           {prop.tenant_name}
                         </div>
-                        <button 
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if(!confirm(`Desvincular ${prop.tenant_name} deste imóvel?`)) return;
-                            await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('id', prop.id);
-                            showToast("Imóvel desvinculado!");
-                          }}
-                          className="p-1 hover:text-red-500 text-white/20 transition-colors"
-                          title="Unlink Resident"
-                        >
-                          <X size={10} />
-                        </button>
                       </div>
                     )}
                   </div>
-                  <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.price}</p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-[10px] text-gray-500 uppercase tracking-tighter truncate">L$ {prop.rental_price || prop.price}</p>
+                    {prop.expiry_date && (
+                      <span className="text-[9px] text-gray-600 font-mono">
+                        EXP: {new Date(prop.expiry_date).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                    <div className="flex flex-col items-end gap-1">

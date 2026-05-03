@@ -17,6 +17,9 @@ interface Property {
   teleport_url?: string;
   date: string;
   casperletId?: string;
+  rental_price?: number;
+  expiry_date?: string;
+  property_type?: string[];
   description?: string;
   description_pt?: string;
   description_en?: string;
@@ -65,6 +68,7 @@ export default function Properties() {
             ...p,
             casperletId: p.casperlet_id,
             image: p.image_url,
+            price: p.rental_price || p.price || 0,
             gallery: galleryList,
             teleport_url: p.teleport_url || p.slurl // Fallback
           };
@@ -88,7 +92,16 @@ export default function Properties() {
 
   const sortedAndFilteredProperties = [...properties]
     .filter(p => {
-      const typeMatch = filter.type === 'All' || (filter.type === 'Land' && !p.name.toLowerCase().includes('loft')) || (filter.type === 'Furnished' && p.name.toLowerCase().includes('loft'));
+      let typeMatch = filter.type === 'All';
+      if (!typeMatch) {
+        if (p.property_type && Array.isArray(p.property_type)) {
+          typeMatch = p.property_type.includes(filter.type);
+        } else {
+          // Fallback legacy logic
+          typeMatch = (filter.type === 'Land' && !p.name.toLowerCase().includes('loft')) || 
+                      (filter.type === 'Furnished' && p.name.toLowerCase().includes('loft'));
+        }
+      }
       const statusMatch = filter.status === 'all' || p.status === filter.status;
       const priceMatch = p.price <= filter.maxPrice;
       return typeMatch && statusMatch && priceMatch;
