@@ -129,8 +129,12 @@ const ResidentDashboard:FC = () => {
       setTickets(userTickets || []);
       setProperties(userProperties || []);
       setIsLoggedIn(true);
+      
+      // Persist session
       localStorage.setItem('sl_resident_name', name);
       localStorage.setItem('sl_resident_pass', pass);
+      localStorage.setItem('sl_resident_uuid', renter.avatar_uuid || '');
+      
       showToast(`Welcome back, ${name}!`);
     } catch (err: any) {
       console.error("Login error:", err);
