@@ -360,21 +360,17 @@ export default function AdminArea() {
       
       if (error) {
         console.error('Supabase Delete Error (contact_messages):', error);
-        alert("Supabase Error (contact_messages): " + error.message);
-        showToast("Error in DB: " + error.message, "error");
+        alert('Erro no Supabase: ' + error.message);
         return;
       }
 
-      if (data && data.length === 0) {
-        console.warn("Delete successful but no rows affected in 'contact_messages'. Possible sync issue.");
-        // UI Clean up
-        setInboxMessages(prev => prev.filter(m => m.id !== id));
-        showToast("Message synchronization completed", "info");
-      } else {
-        console.log("Deleted from 'contact_messages' successfully:", data);
-        setInboxMessages(prev => prev.filter(m => m.id !== id));
-        showToast("Message deleted successfully");
+      if (!data || data.length === 0) {
+        console.warn("Delete successful but no rows affected in 'contact_messages'.");
+        alert('Atenção: A mensagem sumiu da tela, mas não foi encontrada no banco.');
       }
+      
+      setInboxMessages(prev => prev.filter(m => m.id !== id));
+      showToast("Message deleted successfully");
     } catch (error: any) {
       console.error('Unexpected error deleting message:', error);
       alert("Unexpected Error: " + error.message);
@@ -725,21 +721,17 @@ export default function AdminArea() {
       
       if (error) {
         console.error('Supabase Delete Error (support_tickets):', error);
-        showToast("Error in DB: " + error.message, "error");
-        alert("DB Error: " + error.message);
+        alert('Erro no Supabase: ' + error.message);
         return;
       }
 
-      if (data && data.length === 0) {
-        console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
-        // If it's not in the DB, it shouldn't be on the screen - ghost cleanup
-        setTickets(prev => prev.filter(t => t.id !== id));
-        showToast("Ticket not found (Syncing...)", "info");
-      } else {
-        console.log("Success! Tickets deleted:", data);
-        setTickets(prev => prev.filter(t => t.id !== id));
-        showToast("Ticket deleted successfully");
+      if (!data || data.length === 0) {
+        console.warn("Delete command successful, but ZERO rows affected in 'support_tickets'.");
+        alert('Atenção: O ticket sumiu da tela, mas não foi encontrado no banco.');
       }
+      
+      setTickets(prev => prev.filter(t => t.id !== id));
+      showToast("Ticket deleted successfully");
     } catch (error: any) {
       console.error('Unexpected error deleting ticket:', error);
       showToast("Delete ticket error: " + error.message, "error");
