@@ -598,38 +598,51 @@ export default function AdminArea() {
   };
 
   const handleSaveProperty = async () => {
-    if (!formData.name || !formData.rental_price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
-      showToast("Please fill all required fields", "info");
+    // Required fields: name and price (price is used for calculations)
+    if (!formData.name || !formData.price || !formData.imageUrl) {
+      showToast("Property Name, Price and Image URL are essential", "info");
       return;
     }
+
+    setIsUploading(true);
     try {
       const dataToSave: any = {
-        name: formData.name,
-        description: formData.description_pt || formData.description,
-        description_pt: formData.description_pt,
-        description_en: formData.description_en,
-        description_es: formData.description_es,
-        description_nl: formData.description_nl,
+        name: formData.name.trim(),
+        description: formData.description || formData.description_pt || null,
+        description_pt: formData.description_pt || null,
+        description_en: formData.description_en || null,
+        description_es: formData.description_es || null,
+        description_nl: formData.description_nl || null,
         price: parseFloat(formData.price) || 0,
-        rental_price: parseFloat(formData.rental_price) || 0,
-        casperlet_id: formData.casperletId,
-        image_url: formData.imageUrl,
-        teleport_url: formData.teleport_url,
-        status: editingId ? formData.status : 'available',
-        tenant_name: formData.tenant_name || null,
-        tenant_id: formData.tenant_id || null,
+        rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
+        casperlet_id: formData.casperletId?.trim() || null,
+        image_url: formData.imageUrl?.trim() || null,
+        teleport_url: formData.teleport_url?.trim() || null,
+        status: formData.status || 'available',
+        tenant_name: formData.tenant_name?.trim() || null,
+        tenant_id: formData.tenant_id?.trim() || null,
         expiry_date: formData.expiry_date || null,
         property_type: formData.property_type || []
       };
+
+      console.log("Saving property to database (Table: properties):", dataToSave);
+
+      let fetchResponse;
       if (editingId) {
-        const { error } = await supabase.from('properties').update(dataToSave).eq('id', editingId);
-        if (error) throw error;
-        showToast("Saved successfully");
+        fetchResponse = await supabase.from('properties').update(dataToSave).eq('id', editingId);
       } else {
-        const { error } = await supabase.from('properties').insert([dataToSave]);
-        if (error) throw error;
-        showToast("Saved successfully");
+        fetchResponse = await supabase.from('properties').insert([dataToSave]);
       }
+
+      if (fetchResponse.error) {
+        console.error("Supabase Save Error (properties):", fetchResponse.error);
+        alert(`Erro no banco: ${fetchResponse.error.message}\nCódigo: ${fetchResponse.error.code}`);
+        throw fetchResponse.error;
+      }
+
+      showToast(editingId ? "Property updated" : "Property created", "success");
+      
+      // Reset form
       setFormData({ 
         name: '', 
         casperletId: '', 
@@ -650,8 +663,12 @@ export default function AdminArea() {
       });
       setEditingId(null);
       setActiveTab('listings');
-    } catch (error) {
-      showToast("Save error", "error");
+      fetchProperties();
+    } catch (err: any) {
+      console.error("Save property catch:", err);
+      showToast("Error saving property", "error");
+    } finally {
+      setIsUploading(false);
     }
   };
 
