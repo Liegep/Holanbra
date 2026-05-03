@@ -44,7 +44,8 @@ const ResidentDashboard:FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'rentals' | 'support'>('rentals');
   const [error, setError] = useState('');
-  
+  const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
+
   // Ticket Form State
   const [ticketForm, setTicketForm] = useState({
     subject: '',
@@ -77,6 +78,18 @@ const ResidentDashboard:FC = () => {
 
         if (!ticketError) {
           setTickets(userTickets || []);
+        }
+
+        // Fetch SL profile picture
+        try {
+          const res = await fetch(`https://api.allorigins.win/raw?url=https://world.secondlife.com/resident/${residentId}`);
+          const html = await res.text();
+          const match = html.match(/<img[^>]+src=["'](https:\/\/picture-service\.secondlife\.com\/[^"']+)["']/i);
+          if (match && match[1]) {
+            setSlAvatarUrl(match[1]);
+          }
+        } catch (err) {
+          console.warn('Failed to fetch SL profile picture', err);
         }
       };
       fetchInitialData();
@@ -214,6 +227,7 @@ const ResidentDashboard:FC = () => {
     setTickets([]);
     setAvatarName('');
     setPassword('');
+    setSlAvatarUrl(null);
     localStorage.removeItem('sl_resident_name');
     localStorage.removeItem('sl_resident_pass');
     localStorage.removeItem('sl_resident_uuid');
@@ -307,19 +321,20 @@ const ResidentDashboard:FC = () => {
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* Header - Profile Section */}
-        <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-12 rounded-[40px] border border-white/5 relative overflow-hidden">
-          <div className="absolute top-0 right-12 mt-8">
+        <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-8 md:p-12 rounded-[40px] border border-white/5 relative overflow-hidden mt-8 md:mt-0">
+          <div className="w-full flex justify-end md:absolute md:top-8 md:right-8 z-10 scale-90 md:scale-100 origin-top-right">
             <GridStatus />
           </div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
           
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-6 mt-4 md:mt-0">
             <div className="relative">
               <div className="w-32 h-32 aspect-square rounded-2xl overflow-hidden border border-[#f59e0b] shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
                 <img 
-                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
+                  src={slAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
                   alt="Avatar"
                   className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
                 />
               </div>
               <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">

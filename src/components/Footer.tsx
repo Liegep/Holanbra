@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { MessageSquare, MapPin, Instagram, Facebook } from 'lucide-react';
+import { GridStatus } from './GridStatus';
 
 export default function Footer() {
   
@@ -53,6 +54,7 @@ export default function Footer() {
         <p>&copy; 2026 Holanbra Real Estate SL. All rights reserved.</p>
         <div className="flex items-center gap-8">
           <p>COORD: 128.00 / 45.22 / 2001</p>
+          <GridStatus />
           <Link to="/admin" className="opacity-20 hover:opacity-100 transition-opacity">Admin</Link>
         </div>
       </div>

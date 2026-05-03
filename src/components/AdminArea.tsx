@@ -970,6 +970,10 @@ export default function AdminArea() {
     <div className="pt-32 pb-24 px-6 md:px-12 bg-zinc-950 min-h-screen">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12">
         <aside className="w-full md:w-64 space-y-6">
+          <div className="px-4 mt-8 md:mt-0">
+            <GridStatus />
+          </div>
+
           <div className="flex items-center gap-4 px-4 mb-2 text-left">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 shrink-0 bg-amber-500/10 flex items-center justify-center">
               {user.user_metadata?.avatar_url ? (
@@ -982,10 +986,6 @@ export default function AdminArea() {
               <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
               <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Log out</button>
             </div>
-          </div>
-
-          <div className="px-4">
-            <GridStatus />
           </div>
 
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">Executive Terminal</h2>

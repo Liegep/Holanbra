@@ -4,7 +4,6 @@ import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileTe
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
-import { GridStatus } from './GridStatus';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -110,8 +109,6 @@ export default function Navbar() {
               ADMIN
             </Link>
           )}
-
-          <GridStatus />
 
           <Link 
             to="/resident" 
