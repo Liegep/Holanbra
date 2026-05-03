@@ -304,67 +304,71 @@ export default function Properties() {
             >
               {/* Media Section */}
               <div className="w-full md:w-[60%] h-[40%] md:h-full relative bg-zinc-100">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentImgIdx}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="w-full h-full"
-                  >
-                    {selectedProperty.gallery[currentImgIdx]?.type === 'video' ? (
-                      <video 
-                        src={selectedProperty.gallery[currentImgIdx].url} 
-                        className="w-full h-full object-cover" 
-                        controls 
-                        autoPlay 
-                        loop
-                      />
-                    ) : (
-                      <img 
-                        src={selectedProperty.gallery[currentImgIdx]?.url} 
-                        alt={selectedProperty.name}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                {/* Main Media with smooth transition */}
+                <div className="w-full h-full relative group">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentImgIdx}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-full h-full"
+                    >
+                      {selectedProperty.gallery[currentImgIdx]?.type === 'video' ? (
+                        <video 
+                          src={selectedProperty.gallery[currentImgIdx].url} 
+                          className="w-full h-full object-cover" 
+                          controls 
+                          autoPlay 
+                          loop
+                        />
+                      ) : (
+                        <img 
+                          src={selectedProperty.gallery[currentImgIdx]?.url} 
+                          alt={selectedProperty.name}
+                          className="w-full h-full object-cover shadow-2xl"
+                          referrerPolicy="no-referrer"
+                        />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
 
-                {selectedProperty.gallery.length > 1 && (
-                  <>
-                    <button 
-                      onClick={prevImg}
-                      className="absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-xl transition-all"
-                    >
-                      <ChevronLeft size={24} />
-                    </button>
-                    <button 
-                      onClick={nextImg}
-                      className="absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-black/20 hover:bg-black/40 rounded-full text-white backdrop-blur-xl transition-all"
-                    >
-                      <ChevronRight size={24} />
-                    </button>
-                  </>
-                )}
-                
-                {/* Thumbnails */}
-                {selectedProperty.gallery.length > 1 && (
-                  <div className="absolute bottom-16 inset-x-0 flex justify-center gap-3 z-30 px-6">
-                    {selectedProperty.gallery.map((img: any, i: number) => (
+                  {selectedProperty.gallery.length > 1 && (
+                    <>
                       <button 
-                        key={i}
-                        onClick={() => setCurrentImgIdx(i)}
-                        className={cn(
-                          "w-12 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 shadow-lg",
-                          i === currentImgIdx ? "border-amber-500 scale-110" : "border-white/20 opacity-50 hover:opacity-100"
-                        )}
+                        onClick={prevImg}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
                       >
-                        <img src={img.url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        <ChevronLeft size={20} />
                       </button>
-                    ))}
-                  </div>
-                )}
+                      <button 
+                        onClick={nextImg}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Gallery Thumbnails positioned at the bottom of the image area */}
+                  {selectedProperty.gallery.length > 1 && (
+                    <div className="absolute bottom-6 inset-x-0 flex justify-center gap-2 z-40">
+                      {selectedProperty.gallery.map((img: any, i: number) => (
+                        <button 
+                          key={i}
+                          onClick={() => setCurrentImgIdx(i)}
+                          className={cn(
+                            "w-16 h-12 rounded-lg overflow-hidden border-2 transition-all shadow-xl",
+                            i === currentImgIdx ? "border-amber-500 ring-4 ring-amber-500/20 scale-105" : "border-white/20 opacity-70 hover:opacity-100 hover:scale-105"
+                          )}
+                        >
+                          <img src={img.url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 
                 <div className="absolute bottom-8 inset-x-0 flex justify-center gap-2">
                   {selectedProperty.gallery.map((_: any, i: number) => (
