@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Paintbrush, Sparkles, Layout, ArrowUpRight } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -53,8 +54,17 @@ export default function Decoration() {
                 <p className="text-xl font-bold leading-tight">
                   Our professional designers will bring your vision to life.
                 </p>
-                <button className="px-6 py-3 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform">
-                  Request Project
+                <button 
+                  onClick={() => {
+                    // @ts-ignore
+                    if (window.Tawk_API) {
+                      // @ts-ignore
+                      window.Tawk_API.maximize();
+                    }
+                  }}
+                  className="px-6 py-3 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform"
+                >
+                  Contact
                 </button>
               </div>
               <Sparkles className="absolute -bottom-4 -right-4 w-32 h-32 text-black/5 -rotate-12 group-hover:scale-110 transition-transform" />
@@ -159,9 +169,13 @@ export default function Decoration() {
                   <p className="text-white/40 text-xs uppercase tracking-widest">Free Initial Consultation</p>
                 </div>
               </div>
-              <button className="p-4 bg-white text-black rounded-full hover:bg-amber-400 transition-colors">
-                <ArrowUpRight />
-              </button>
+              <Link 
+                to="/portfolio"
+                className="flex items-center gap-2 px-6 py-4 bg-white text-black rounded-full hover:bg-amber-400 transition-colors text-[10px] font-bold uppercase tracking-widest"
+              >
+                View Portfolio
+                <ArrowUpRight size={16} />
+              </Link>
             </motion.div>
           </div>
 

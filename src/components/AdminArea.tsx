@@ -34,10 +34,11 @@ import { AdminTeamManager } from './admin/AdminTeamManager';
 import { AdminLandCovenant } from './admin/AdminLandCovenant';
 import { AdminPropertyForm } from './admin/AdminPropertyForm';
 import { AdminPropertyListings } from './admin/AdminPropertyListings';
+import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 
 export default function AdminArea() {
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets' | 'portfolio'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -989,6 +990,7 @@ export default function AdminArea() {
           {[
             { id: 'listings', name: "Properties", icon: BarChart3 },
             { id: 'renters', name: "Residents", icon: UserIcon },
+            { id: 'portfolio', name: "Portfolio", icon: ImageIcon },
             { id: 'gallery', name: "Gallery", icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: "Organization", icon: UserIcon },
@@ -1043,6 +1045,10 @@ export default function AdminArea() {
               handleSaveRenter={handleSaveRenter}
               handleDeleteRenter={handleDeleteRenter}
             />
+          )}
+
+          {activeTab === 'portfolio' && (
+            <AdminPortfolioManager showToast={showToast} />
           )}
 
           {activeTab === 'hero' && (

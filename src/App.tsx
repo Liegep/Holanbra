@@ -29,6 +29,7 @@ import Team from './components/Team';
 import AdminArea from './components/AdminArea';
 import Covenant from './components/Covenant';
 import ResidentDashboard from './components/ResidentDashboard';
+import Portfolio from './components/Portfolio';
 import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
@@ -73,6 +74,7 @@ export default function App() {
           } />
           <Route path="/covenant" element={<Covenant />} />
           <Route path="/resident" element={<ResidentDashboard />} />
+          <Route path="/portfolio" element={<Portfolio />} />
         </Routes>
       </main>
 
