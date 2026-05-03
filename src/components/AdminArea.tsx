@@ -307,14 +307,21 @@ export default function AdminArea() {
 
   const handleDeleteMessage = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    if (!id) return;
     if (!confirm("Are you sure you want to delete this message?")) return;
     try {
       const { error } = await supabase.from('contact_messages').delete().eq('id', id);
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Supabase Delete Error (contact_messages):', error);
+        showToast("Error in DB: " + error.message, "error");
+        return;
+      }
       
       setInboxMessages(prev => prev.filter(m => m.id !== id));
       showToast("Message deleted successfully");
     } catch (error: any) {
+      console.error('Unexpected error deleting message:', error);
       showToast("Delete message error: " + error.message, "error");
       fetchInboxMessages();
     }
@@ -645,14 +652,21 @@ export default function AdminArea() {
 
   const handleDeleteTicket = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
+    if (!id) return;
     if (!confirm("Are you sure you want to permanently delete this ticket?")) return;
     try {
       const { error } = await supabase.from('support_tickets').delete().eq('id', id);
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Supabase Delete Error (support_tickets):', error);
+        showToast("Error in DB: " + error.message, "error");
+        return;
+      }
       
       setTickets(prev => prev.filter(t => t.id !== id));
       showToast("Ticket deleted successfully");
     } catch (error: any) {
+      console.error('Unexpected error deleting ticket:', error);
       showToast("Delete ticket error: " + error.message, "error");
       fetchTickets();
     }
