@@ -12,7 +12,7 @@ interface AdminInboxProps {
   inboxMessages: any[];
   onRefresh: () => void;
   handleToggleRead: (id: string, status: boolean) => void;
-  handleDeleteMessage: (id: string) => void;
+  handleDeleteMessage: (e: React.MouseEvent, id: string) => void;
 }
 
 export function AdminInbox({
@@ -83,7 +83,7 @@ export function AdminInbox({
                       {msg.is_read ? <Mail size={16} /> : <CheckCircle size={16} />}
                     </button>
                     <button 
-                      onClick={() => handleDeleteMessage(msg.id)}
+                      onClick={(e) => handleDeleteMessage(e, msg.id)}
                       className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
                     >
                       <Trash2 size={16} />

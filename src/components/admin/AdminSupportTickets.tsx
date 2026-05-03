@@ -23,7 +23,7 @@ interface AdminSupportTicketsProps {
   isSubmittingResponse: boolean;
   handleResolveTicket: (id: string) => void;
   handleSendResponse: (id: string) => void;
-  handleDeleteTicket: (id: string) => void;
+  handleDeleteTicket: (e: React.MouseEvent, id: string) => void;
   stats: any;
 }
 
@@ -90,7 +90,7 @@ export function AdminSupportTickets({
                           {ticket.status === 'open' ? "Open" : "Resolved"}
                         </span>
                         <button 
-                          onClick={() => handleDeleteTicket(ticket.id)}
+                          onClick={(e) => handleDeleteTicket(e, ticket.id)}
                           className="p-1 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                           title="Delete Ticket"
                         >

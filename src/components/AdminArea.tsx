@@ -305,17 +305,15 @@ export default function AdminArea() {
     }
   };
 
-  const handleDeleteMessage = async (id: string) => {
+  const handleDeleteMessage = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     if (!confirm("Are you sure you want to delete this message?")) return;
     try {
-      // Optimistic update
-      setInboxMessages(prev => prev.filter(m => m.id !== id));
-      
       const { error } = await supabase.from('contact_messages').delete().eq('id', id);
       if (error) throw error;
       
+      setInboxMessages(prev => prev.filter(m => m.id !== id));
       showToast("Message deleted successfully");
-      fetchInboxMessages();
     } catch (error: any) {
       showToast("Delete message error: " + error.message, "error");
       fetchInboxMessages();
@@ -645,20 +643,18 @@ export default function AdminArea() {
     }
   };
 
-  const handleDeleteTicket = async (id: string) => {
+  const handleDeleteTicket = async (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
     if (!confirm("Are you sure you want to permanently delete this ticket?")) return;
     try {
-      // Optimistic update: filter immediately for better UX
-      setTickets(prev => prev.filter(t => t.id !== id));
-      
       const { error } = await supabase.from('support_tickets').delete().eq('id', id);
       if (error) throw error;
       
+      setTickets(prev => prev.filter(t => t.id !== id));
       showToast("Ticket deleted successfully");
-      fetchTickets(); // Sync with database
     } catch (error: any) {
       showToast("Delete ticket error: " + error.message, "error");
-      fetchTickets(); // Revert state on error
+      fetchTickets();
     }
   };
 
