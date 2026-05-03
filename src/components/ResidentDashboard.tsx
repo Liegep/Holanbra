@@ -85,29 +85,39 @@ const ResidentDashboard:FC = () => {
   const handleLogin = async (e: React.FormEvent | null, nameOverride?: string, passOverride?: string) => {
     if (e) e.preventDefault();
     setError('');
-    const name = nameOverride || avatarName;
-    const pass = passOverride || password;
+    
+    // Use overrides for auto-login, otherwise use state
+    const cleanName = (nameOverride || avatarName).trim();
+    const cleanPass = (passOverride || password).trim();
 
-    if (!name || !pass) {
+    if (!cleanName || !cleanPass) {
         setError("Please fill all fields");
         return;
     }
 
     setLoading(true);
     try {
-      // Step 1: Login via 'renters' table (Explicit columns to avoid 406)
+      // Step 1: Login via 'renters' table (Exact col selection + maybeSingle)
       const { data: renter, error: renterError } = await supabase
         .from('renters')
         .select('avatar_name,avatar_uuid,password')
-        .eq('avatar_name', name.trim())
-        .eq('password', pass.trim())
-        .single();
+        .eq('avatar_name', cleanName)
+        .eq('password', cleanPass)
+        .maybeSingle();
 
-      if (renterError || !renter) {
-        console.error("Renter query error:", renterError);
-        throw new Error("Invalid credentials");
+      if (renterError) {
+        console.error('Erro na busca:', renterError);
+        throw renterError;
       }
 
+      if (!renter) {
+        alert('Invalid credentials. Please check the Avatar Name and Password.');
+        if (nameOverride) handleLogout(); // Clear stale session
+        return;
+      }
+
+      // Se chegou aqui, logou!
+      console.log('Sucesso!', renter);
       setResidentData(renter);
 
       // Step 2: Fetch properties linked to this resident
@@ -131,15 +141,14 @@ const ResidentDashboard:FC = () => {
       setIsLoggedIn(true);
       
       // Persist session
-      localStorage.setItem('sl_resident_name', name);
-      localStorage.setItem('sl_resident_pass', pass);
+      localStorage.setItem('sl_resident_name', cleanName);
+      localStorage.setItem('sl_resident_pass', cleanPass);
       localStorage.setItem('sl_resident_uuid', renter.avatar_uuid || '');
       
-      showToast(`Welcome back, ${name}!`);
+      showToast(`Welcome back, ${cleanName}!`);
     } catch (err: any) {
-      console.error("Login error:", err);
-      setError(err.message || "An error occurred");
-      if (nameOverride) handleLogout();
+      console.error("Login process error:", err);
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
