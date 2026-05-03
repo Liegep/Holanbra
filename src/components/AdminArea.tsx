@@ -158,11 +158,20 @@ export default function AdminArea() {
   // Data Fetching
   const fetchTickets = async () => {
     try {
+      setTickets([]); // Clear state before update
       const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       
-      console.log('Tickets loaded from DB:', data);
-      setTickets(data || []);
+      console.log('Tickets loaded from DB:');
+      console.table(data);
+      
+      // Explicit mapping of IDs
+      const mappedData = data?.map(ticket => ({
+        ...ticket,
+        id: ticket.id.toString() // Ensuring string format
+      })) || [];
+      
+      setTickets(mappedData);
     } catch (err) {
       console.error("Fetch tickets error:", err);
     }
@@ -200,11 +209,20 @@ export default function AdminArea() {
 
   const fetchInboxMessages = async () => {
     try {
+      setInboxMessages([]); // Clear state before update
       const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       
-      console.log('Messages loaded from DB (contact_messages):', data);
-      setInboxMessages(data || []);
+      console.log('Messages loaded from DB (contact_messages):');
+      console.table(data);
+
+      // Explicit mapping of IDs
+      const mappedData = data?.map(msg => ({
+        ...msg,
+        id: msg.id.toString() // Ensuring string format
+      })) || [];
+      
+      setInboxMessages(mappedData);
     } catch (err) {
       console.error("Fetch inbox error:", err);
     }
