@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -446,12 +445,20 @@ export default function Properties() {
                   </button>
                   
                   {selectedProperty.status === 'available' && (
-                    <Link 
-                      to="/resident"
-                      className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                    <button 
+                      onClick={() => {
+                        // @ts-ignore
+                        if (window.Tawk_API) {
+                          // @ts-ignore
+                          window.Tawk_API.maximize();
+                          // Set pre-filled message if possible or just maximize
+                          console.log("Contacting agent for property:", selectedProperty.name);
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all cursor-pointer"
                     >
-                      Start Rental
-                    </Link>
+                      CONTACT AGENT
+                    </button>
                   )}
                 </div>
               </div>
