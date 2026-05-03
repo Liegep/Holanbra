@@ -358,13 +358,13 @@ export default function Properties() {
                     <>
                       <button 
                         onClick={prevImg}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-black hover:bg-black/80 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-lg"
                       >
                         <ChevronLeft size={20} />
                       </button>
                       <button 
                         onClick={nextImg}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black hover:bg-black/80 rounded-full text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 shadow-lg"
                       >
                         <ChevronRight size={20} />
                       </button>
