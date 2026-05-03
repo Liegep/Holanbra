@@ -111,22 +111,23 @@ const ResidentDashboard:FC = () => {
 
     setLoading(true);
     try {
-      // Step 1: Login via 'renters' table
+      // Step 1: Login via 'renter' table (singular)
       const { data: renter, error: renterError } = await supabase
-        .from('renters')
-        .select('*')
+        .from('renter')
+        .select('id, avatar_name, avatar_uuid, password')
         .ilike('avatar_name', name.trim())
         .eq('password', pass.trim())
         .single();
 
       if (renterError || !renter) {
+        console.error("Renter query error:", renterError);
         throw new Error("Invalid credentials");
       }
 
       setResidentData(renter);
 
       // Step 2: Fetch properties linked to this resident
-      const residentId = renter.tenant_id || renter.avatar_uuid;
+      const residentId = renter.avatar_uuid || renter.id;
       const { data: userProperties, error: propError } = await supabase
         .from('properties')
         .select('*')

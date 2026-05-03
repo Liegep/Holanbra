@@ -180,10 +180,10 @@ export default function AdminArea() {
   const fetchRenters = async () => {
     try {
       setRenters([]); // Clear state before update
-      const { data, error } = await supabase.from('renters').select('*');
+      const { data, error } = await supabase.from('renter').select('id, avatar_name, avatar_uuid, password');
       if (error) throw error;
 
-      console.log('Renters loaded from DB (Table: renters):');
+      console.log('Residents loaded from DB (Table: renter):');
       console.table(data);
 
       // Explicit mapping and logging for security
@@ -194,7 +194,7 @@ export default function AdminArea() {
 
       setRenters(mappedData);
     } catch (err) {
-      console.error("Fetch renters error:", err);
+      console.error("Fetch residents error:", err);
     }
   };
 
@@ -310,7 +310,7 @@ export default function AdminArea() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'renter' }, fetchRenters)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
         .subscribe();
 
@@ -699,25 +699,24 @@ export default function AdminArea() {
       return;
     }
     
-    setIsUploading(true); // Reusing uploading state for global busy indicator
+    setIsUploading(true);
     try {
-      // Column names based on existing schema (avatar_name, avatar_uuid, password)
-      // The user mentioned name, email, unit as EXAMPLES, but we stick to SL logic
+      // Column names based on renter schema (avatar_name, avatar_uuid, password)
       const dataToSave = {
         avatar_name: renterFormData.avatarName.trim(),
         avatar_uuid: renterFormData.avatarUuid.trim(),
         password: renterFormData.password.trim()
       };
       
-      console.log("Saving Resident to 'renters':", dataToSave);
+      console.log("Saving Resident to 'renter':", dataToSave);
       
       const { data, error } = await supabase
-        .from('renters')
+        .from('renter')
         .upsert(dataToSave, { onConflict: 'avatar_uuid' })
         .select();
 
       if (error) {
-        alert("Supabase Error (renters): " + error.message);
+        alert("Supabase Error (renter): " + error.message);
         throw error;
       }
       
@@ -762,7 +761,7 @@ export default function AdminArea() {
 
     if (!confirm(`Are you sure you want to remove resident ${avatarUuid}?`)) return;
     
-    console.log(`Command: DELETE FROM renters WHERE id = '${cleanId}'`);
+    console.log(`Command: DELETE FROM renter WHERE id = '${cleanId}'`);
     
     try {
       // Step 1: Sweep properties first
@@ -771,9 +770,9 @@ export default function AdminArea() {
         .update({ tenant_id: null, tenant_name: null, status: 'available' })
         .eq('tenant_id', cleanUuid);
 
-      // Step 2: Delete with verification
+      // Step 2: Delete from renter table
       const { data, error } = await supabase
-        .from('renters')
+        .from('renter')
         .delete()
         .eq('id', cleanId)
         .select();
@@ -785,10 +784,10 @@ export default function AdminArea() {
       }
 
       if (!data || data.length === 0) {
-        alert('Atenção: O comando foi enviado para a tabela RENTERS mas o banco não encontrou o ID: ' + cleanId);
+        alert('Atenção: O comando foi enviado para a tabela RENTER mas o banco não encontrou o ID: ' + cleanId);
         console.warn('ID mismatch between Frontend and Database. Refresh (F5) is recommended.');
       } else {
-        console.log("Deleted successfully from 'renters':", data);
+        console.log("Deleted successfully from 'renter':", data);
       }
       
       // Clean screen regardless of result to ensure sync
