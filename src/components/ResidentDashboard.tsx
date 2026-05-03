@@ -164,14 +164,22 @@ const ResidentDashboard:FC = () => {
     setIsSubmittingTicket(true);
     
     try {
-      if (!residentData?.avatar_uuid) throw new Error("Identify yourself first");
+      // Prioritize residentData, then localStorage
+      const sessionUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+      const sessionName = residentData?.avatar_name || localStorage.getItem('sl_resident_name') || 'Resident';
+
+      if (!sessionUuid) {
+        throw new Error("Session invalid. Please log in again.");
+      }
+
+      console.log("Submitting ticket for UUID:", sessionUuid);
 
       const payload = {
-        user_id: residentData.avatar_uuid,
-        avatar_name: residentData.avatar_name || 'Resident',
-        subject: ticketForm.subject,
+        user_id: sessionUuid.trim(),
+        avatar_name: sessionName.trim(),
+        subject: ticketForm.subject.trim(),
         category: ticketForm.category,
-        message: ticketForm.message,
+        message: ticketForm.message.trim(),
         status: 'open'
       };
 
@@ -182,11 +190,11 @@ const ResidentDashboard:FC = () => {
         .single();
 
       if (error) {
-        console.error("Detailed Error:", error.message, error.details, error.hint);
+        console.error("Supabase Support Ticket Error:", error.message, error.details);
         throw error;
       }
 
-      setTickets([data, ...tickets]);
+      setTickets(prev => [data, ...prev]);
       setTicketForm({ subject: '', category: 'Billing', message: '' });
       showToast("Ticket sent successfully");
     } catch (err: any) {
