@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe } from 'lucide-react';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe, DollarSign } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
@@ -53,6 +53,7 @@ export default function Navbar() {
     { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, external: false, label: 'Properties' },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, external: false, label: 'Gallery' },
     { name: 'Services', path: '/#services', icon: Paintbrush, external: false, label: 'Services' },
+    { name: 'Pricing', path: '/#pricing', icon: DollarSign, external: false, label: 'Pricing' },
     { name: 'Team', path: '/#team', icon: Users, external: false, label: 'Team' },
     { name: 'Covenant', path: '/covenant', icon: FileText, external: false, label: 'Covenant' },
   ];

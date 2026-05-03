@@ -35,10 +35,11 @@ import { AdminLandCovenant } from './admin/AdminLandCovenant';
 import { AdminPropertyForm } from './admin/AdminPropertyForm';
 import { AdminPropertyListings } from './admin/AdminPropertyListings';
 import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
+import { AdminPricingManager } from './admin/AdminPricingManager';
 
 export default function AdminArea() {
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets' | 'portfolio'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets' | 'portfolio' | 'pricing'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -991,6 +992,7 @@ export default function AdminArea() {
             { id: 'listings', name: "Properties", icon: BarChart3 },
             { id: 'renters', name: "Residents", icon: UserIcon },
             { id: 'portfolio', name: "Portfolio", icon: ImageIcon },
+            { id: 'pricing', name: "Pricing", icon: DollarSign },
             { id: 'gallery', name: "Gallery", icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: "Organization", icon: UserIcon },
@@ -1049,6 +1051,10 @@ export default function AdminArea() {
 
           {activeTab === 'portfolio' && (
             <AdminPortfolioManager showToast={showToast} />
+          )}
+
+          {activeTab === 'pricing' && (
+            <AdminPricingManager showToast={showToast} />
           )}
 
           {activeTab === 'hero' && (

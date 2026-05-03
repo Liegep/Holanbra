@@ -25,6 +25,7 @@ import Gallery from './components/Gallery';
 import QuoteSection from './components/QuoteSection';
 import AboutUs from './components/AboutUs';
 import Decoration from './components/Decoration';
+import Pricing from './components/Pricing';
 import Team from './components/Team';
 import AdminArea from './components/AdminArea';
 import Covenant from './components/Covenant';
@@ -63,6 +64,7 @@ export default function App() {
               <QuoteSection />
               <AboutUs />
               <Decoration />
+              <Pricing />
               <Team />
             </>
           } />
