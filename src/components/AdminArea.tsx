@@ -180,7 +180,7 @@ export default function AdminArea() {
   const fetchRenters = async () => {
     try {
       setRenters([]); // Clear state before update
-      const { data, error } = await supabase.from('renters').select('*');
+      const { data, error } = await supabase.from('renters').select('avatar_name, avatar_uuid, password');
       if (error) throw error;
 
       console.log('Residents loaded from DB (Table: renters):');

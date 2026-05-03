@@ -34,7 +34,7 @@ const ResidentDashboard:FC = () => {
   const showToast = (message: string, type: ToastType = 'success') => {
     setToast({ message, type, visible: true });
   };
-  const [residentName, setResidentName] = useState('');
+  const [avatarName, setAvatarName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -85,7 +85,7 @@ const ResidentDashboard:FC = () => {
   const handleLogin = async (e: React.FormEvent | null, nameOverride?: string, passOverride?: string) => {
     if (e) e.preventDefault();
     setError('');
-    const name = nameOverride || residentName;
+    const name = nameOverride || avatarName;
     const pass = passOverride || password;
 
     if (!name || !pass) {
@@ -95,10 +95,10 @@ const ResidentDashboard:FC = () => {
 
     setLoading(true);
     try {
-      // Step 1: Login via 'renters' table
+      // Step 1: Login via 'renters' table (Explicit columns to avoid 406)
       const { data: renter, error: renterError } = await supabase
         .from('renters')
-        .select('*')
+        .select('avatar_name, avatar_uuid, password')
         .eq('avatar_name', name.trim())
         .eq('password', pass.trim())
         .single();
@@ -194,10 +194,11 @@ const ResidentDashboard:FC = () => {
     setResidentData(null);
     setProperties([]);
     setTickets([]);
-    setResidentName('');
+    setAvatarName('');
     setPassword('');
     localStorage.removeItem('sl_resident_name');
     localStorage.removeItem('sl_resident_pass');
+    localStorage.removeItem('sl_resident_uuid');
     showToast("Logged out successfully", "info");
   };
 
@@ -238,13 +239,13 @@ const ResidentDashboard:FC = () => {
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">SL Username</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">Avatar Name</label>
                 <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                     <input 
                         type="text" 
-                        value={residentName}
-                        onChange={(e) => setResidentName(e.target.value)}
+                        value={avatarName}
+                        onChange={(e) => setAvatarName(e.target.value)}
                         placeholder="John Resident"
                         className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm focus:border-amber-500/50 outline-none transition-all"
                     />
