@@ -501,17 +501,23 @@ export default function AdminArea() {
     setIsUploading(true);
     setIsUploadingSlot('videos');
     try {
-      const filePath = `videos/hero-video.mp4`;
+      const fileName = `video_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+      const filePath = `videos/${fileName}`;
       const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
-      await supabase.from('videos').upsert({ id: 1, name: 'Hero Virtual Tour', url: publicUrl });
-      await supabase.from('site_settings').upsert({ id: 'hero_section', virtual_tour_url: publicUrl, updated_at: new Date().toISOString() });
+      
+      const { error: dbError } = await supabase.from('videos').insert({ name: file.name || 'Video Asset', url: publicUrl });
+      if (dbError) {
+        console.error("DB Insert Error", dbError);
+        throw dbError;
+      }
+      
       showToast("Saved successfully");
-      setHeroContent(prev => ({ ...prev, virtualTourUrl: publicUrl }));
       fetchVideos();
     } catch (err: any) {
-      showToast("Save error", "error");
+      console.error(err);
+      showToast("Save error: " + (err.message || 'Unknown error'), "error");
     } finally {
       setIsUploading(false);
       setIsUploadingSlot(null);
