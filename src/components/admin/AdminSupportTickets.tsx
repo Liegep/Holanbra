@@ -7,7 +7,8 @@ import {
   Tag, 
   ShieldCheck, 
   CheckCircle, 
-  Loader2 
+  Loader2,
+  Trash2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
@@ -22,6 +23,7 @@ interface AdminSupportTicketsProps {
   isSubmittingResponse: boolean;
   handleResolveTicket: (id: string) => void;
   handleSendResponse: (id: string) => void;
+  handleDeleteTicket: (id: string) => void;
   stats: any;
 }
 
@@ -35,6 +37,7 @@ export function AdminSupportTickets({
   isSubmittingResponse,
   handleResolveTicket,
   handleSendResponse,
+  handleDeleteTicket,
   stats
 }: AdminSupportTicketsProps) {
   return (
@@ -79,12 +82,21 @@ export function AdminSupportTickets({
                 <div className="lg:w-64 p-8 space-y-6 shrink-0 bg-white/[0.02]">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className={cn(
-                        "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
-                        ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
-                      )}>
-                        {ticket.status === 'open' ? "Open" : "Resolved"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
+                          ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
+                        )}>
+                          {ticket.status === 'open' ? "Open" : "Resolved"}
+                        </span>
+                        <button 
+                          onClick={() => handleDeleteTicket(ticket.id)}
+                          className="p-1 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                          title="Delete Ticket"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
                       <span className="text-[8px] text-white/20 font-mono tracking-tighter">
                         {new Date(ticket.created_at).toLocaleDateString()}
                       </span>

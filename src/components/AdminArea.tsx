@@ -308,12 +308,17 @@ export default function AdminArea() {
   const handleDeleteMessage = async (id: string) => {
     if (!confirm("Are you sure you want to delete this message?")) return;
     try {
+      // Optimistic update
+      setInboxMessages(prev => prev.filter(m => m.id !== id));
+      
       const { error } = await supabase.from('contact_messages').delete().eq('id', id);
       if (error) throw error;
+      
       showToast("Message deleted successfully");
       fetchInboxMessages();
-    } catch (error) {
-      showToast("Delete message error", "error");
+    } catch (error: any) {
+      showToast("Delete message error: " + error.message, "error");
+      fetchInboxMessages();
     }
   };
 
@@ -640,6 +645,23 @@ export default function AdminArea() {
     }
   };
 
+  const handleDeleteTicket = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this ticket?")) return;
+    try {
+      // Optimistic update: filter immediately for better UX
+      setTickets(prev => prev.filter(t => t.id !== id));
+      
+      const { error } = await supabase.from('support_tickets').delete().eq('id', id);
+      if (error) throw error;
+      
+      showToast("Ticket deleted successfully");
+      fetchTickets(); // Sync with database
+    } catch (error: any) {
+      showToast("Delete ticket error: " + error.message, "error");
+      fetchTickets(); // Revert state on error
+    }
+  };
+
   const stats = {
     total: properties.length,
     rented: properties.filter(p => p.status === 'rented').length,
@@ -788,6 +810,7 @@ export default function AdminArea() {
               isSubmittingResponse={isSubmittingResponse}
               handleResolveTicket={handleResolveTicket}
               handleSendResponse={handleSendResponse}
+              handleDeleteTicket={handleDeleteTicket}
               stats={stats}
             />
           )}
