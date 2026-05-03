@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import Pricing from './Pricing';
 
 // Definition of portfolio item
 interface PortfolioItem {
@@ -58,10 +59,9 @@ export default function Portfolio() {
           </div>
           <button 
             onClick={() => {
-              // @ts-ignore
-              if (window.Tawk_API) {
-                // @ts-ignore
-                window.Tawk_API.maximize();
+              const element = document.getElementById('pricing');
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
               }
             }}
             className="px-8 py-4 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-white transition-all w-full md:w-auto text-center"
@@ -105,6 +105,10 @@ export default function Portfolio() {
             ))}
           </div>
         )}
+      </div>
+      
+      <div className="mt-16">
+        <Pricing />
       </div>
     </div>
   );

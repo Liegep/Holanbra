@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { DollarSign, Plus, X, Trash2, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react';
+import { DollarSign, Plus, X, Trash2, CheckCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { ToastType } from '../Toast';
 
@@ -261,7 +261,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
             <div className="flex items-center gap-3 pt-2">
                 <label className="flex items-center gap-3 cursor-pointer group">
                     <div className={`w-6 h-6 rounded border flex items-center justify-center transition-all ${formData.is_popular ? 'bg-amber-500 border-amber-500' : 'bg-black/20 border-white/20 group-hover:border-amber-500/50'}`}>
-                        {formData.is_popular && <CheckCircle2 size={16} className="text-black" />}
+                        {formData.is_popular && <CheckCircle size={16} className="text-black" />}
                     </div>
                     <input 
                         type="checkbox" 
