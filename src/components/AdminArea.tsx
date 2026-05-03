@@ -198,7 +198,7 @@ export default function AdminArea() {
 
   const fetchInboxMessages = async () => {
     try {
-      const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setInboxMessages(data || []);
     } catch (err) {
@@ -278,7 +278,7 @@ export default function AdminArea() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, fetchInboxMessages)
         .subscribe();
 
       return () => {
@@ -332,7 +332,7 @@ export default function AdminArea() {
 
   const handleToggleRead = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase.from('contact_messages').update({ is_read: !currentStatus }).eq('id', id);
+      const { error } = await supabase.from('contacts').update({ is_read: !currentStatus }).eq('id', id);
       if (error) throw error;
       fetchInboxMessages();
     } catch (error) {
@@ -347,30 +347,29 @@ export default function AdminArea() {
       return;
     }
     
-    console.log("Starting delete for Message ID:", id);
+    console.log("Starting delete for Message ID (Table: contacts):", id);
     if (!confirm("Are you sure you want to delete this message?")) return;
     
     try {
       const { data, error } = await supabase
-        .from('contact_messages')
+        .from('contacts')
         .delete()
         .eq('id', id)
         .select();
       
       if (error) {
-        console.error('Supabase Delete Error (contact_messages):', error);
+        console.error('Supabase Delete Error (contacts):', error);
         showToast("Error in DB: " + error.message, "error");
-        alert("DB Error: " + error.message);
         return;
       }
 
       if (data && data.length === 0) {
-        console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
-        // If it's not in the DB, it shouldn't be on the screen - ghost cleanup
+        console.warn("Delete successful but no rows affected in 'contacts'. Possible sync issue.");
+        // UI Clean up
         setInboxMessages(prev => prev.filter(m => m.id !== id));
-        showToast("Message not found (Syncing...)", "info");
+        showToast("Message synchronization completed", "info");
       } else {
-        console.log("Success! Messages deleted:", data);
+        console.log("Deleted from 'contacts' successfully:", data);
         setInboxMessages(prev => prev.filter(m => m.id !== id));
         showToast("Message deleted successfully");
       }

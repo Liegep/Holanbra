@@ -98,7 +98,7 @@ export default function Team() {
     setIsSending(true);
     try {
       // Sending ONLY the requested columns
-      const { error: supabaseError } = await supabase.from('contact_messages').insert([{
+      const { error: supabaseError } = await supabase.from('contacts').insert([{
         visitor_name: visitorData.name,
         message: visitorData.message,
         recipient_name: activeMessageTarget.name
