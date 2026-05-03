@@ -111,10 +111,10 @@ const ResidentDashboard:FC = () => {
 
     setLoading(true);
     try {
-      // Step 1: Login via 'renter' table (singular)
+      // Step 1: Login via 'renters' table (plural)
       const { data: renter, error: renterError } = await supabase
-        .from('renter')
-        .select('id, avatar_name, avatar_uuid, password')
+        .from('renters')
+        .select('avatar_name, avatar_uuid, password') // Only confirmed columns
         .ilike('avatar_name', name.trim())
         .eq('password', pass.trim())
         .single();
@@ -127,7 +127,7 @@ const ResidentDashboard:FC = () => {
       setResidentData(renter);
 
       // Step 2: Fetch properties linked to this resident
-      const residentId = renter.avatar_uuid || renter.id;
+      const residentId = renter.avatar_uuid;
       const { data: userProperties, error: propError } = await supabase
         .from('properties')
         .select('*')

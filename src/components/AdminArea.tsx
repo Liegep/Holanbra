@@ -180,16 +180,15 @@ export default function AdminArea() {
   const fetchRenters = async () => {
     try {
       setRenters([]); // Clear state before update
-      const { data, error } = await supabase.from('renter').select('id, avatar_name, avatar_uuid, password');
+      const { data, error } = await supabase.from('renters').select('avatar_name, avatar_uuid, password');
       if (error) throw error;
 
-      console.log('Residents loaded from DB (Table: renter):');
+      console.log('Residents loaded from DB (Table: renters):');
       console.table(data);
 
-      // Explicit mapping and logging for security
       const mappedData = data?.map(renter => ({
         ...renter,
-        id: String(renter.id).trim() // Ensuring strict string UUID mapping
+        id: renter.avatar_uuid // Using UUID as the primary react key if id is missing
       })) || [];
 
       setRenters(mappedData);
@@ -310,7 +309,7 @@ export default function AdminArea() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'renter' }, fetchRenters)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
         .subscribe();
 
@@ -701,22 +700,22 @@ export default function AdminArea() {
     
     setIsUploading(true);
     try {
-      // Column names based on renter schema (avatar_name, avatar_uuid, password)
+      // Column names based on renters schema (avatar_name, avatar_uuid, password)
       const dataToSave = {
         avatar_name: renterFormData.avatarName.trim(),
         avatar_uuid: renterFormData.avatarUuid.trim(),
         password: renterFormData.password.trim()
       };
       
-      console.log("Saving Resident to 'renter':", dataToSave);
+      console.log("Saving Resident to 'renters':", dataToSave);
       
       const { data, error } = await supabase
-        .from('renter')
+        .from('renters')
         .upsert(dataToSave, { onConflict: 'avatar_uuid' })
         .select();
 
       if (error) {
-        alert("Supabase Error (renter): " + error.message);
+        alert("Supabase Error (renters): " + error.message);
         throw error;
       }
       
@@ -761,7 +760,7 @@ export default function AdminArea() {
 
     if (!confirm(`Are you sure you want to remove resident ${avatarUuid}?`)) return;
     
-    console.log(`Command: DELETE FROM renter WHERE id = '${cleanId}'`);
+    console.log(`Command: DELETE FROM renters WHERE avatar_uuid = '${cleanUuid}'`);
     
     try {
       // Step 1: Sweep properties first
@@ -770,11 +769,11 @@ export default function AdminArea() {
         .update({ tenant_id: null, tenant_name: null, status: 'available' })
         .eq('tenant_id', cleanUuid);
 
-      // Step 2: Delete from renter table
+      // Step 2: Delete from renters table using avatar_uuid
       const { data, error } = await supabase
-        .from('renter')
+        .from('renters')
         .delete()
-        .eq('id', cleanId)
+        .eq('avatar_uuid', cleanUuid)
         .select();
 
       if (error) {
@@ -784,14 +783,14 @@ export default function AdminArea() {
       }
 
       if (!data || data.length === 0) {
-        alert('Atenção: O comando foi enviado para a tabela RENTER mas o banco não encontrou o ID: ' + cleanId);
+        alert('Atenção: O comando foi enviado para a tabela RENTERS mas o banco não encontrou o UUID: ' + cleanUuid);
         console.warn('ID mismatch between Frontend and Database. Refresh (F5) is recommended.');
       } else {
-        console.log("Deleted successfully from 'renter':", data);
+        console.log("Deleted successfully from 'renters':", data);
       }
       
-      // Clean screen regardless of result to ensure sync
-      setRenters(prev => prev.filter(r => String(r.id).trim() !== cleanId));
+      // Clean screen
+      setRenters(prev => prev.filter(r => String(r.avatar_uuid).trim() !== cleanUuid));
       showToast("Resident removed successfully");
     } catch (error: any) {
       alert("Unexpected error: " + error.message);
