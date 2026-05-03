@@ -307,19 +307,36 @@ export default function AdminArea() {
 
   const handleDeleteMessage = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    if (!id) return;
+    if (!id) {
+      console.error("Delete Message: No ID provided");
+      return;
+    }
+    
+    console.log("Starting delete for Message ID:", id);
     if (!confirm("Are you sure you want to delete this message?")) return;
+    
     try {
-      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .delete()
+        .eq('id', id)
+        .select();
       
       if (error) {
         console.error('Supabase Delete Error (contact_messages):', error);
         showToast("Error in DB: " + error.message, "error");
+        alert("DB Error: " + error.message);
         return;
       }
-      
-      setInboxMessages(prev => prev.filter(m => m.id !== id));
-      showToast("Message deleted successfully");
+
+      if (data && data.length === 0) {
+        console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
+        showToast("Message not found or already deleted", "info");
+      } else {
+        console.log("Success! Messages deleted:", data);
+        setInboxMessages(prev => prev.filter(m => m.id !== id));
+        showToast("Message deleted successfully");
+      }
     } catch (error: any) {
       console.error('Unexpected error deleting message:', error);
       showToast("Delete message error: " + error.message, "error");
@@ -652,19 +669,36 @@ export default function AdminArea() {
 
   const handleDeleteTicket = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    if (!id) return;
+    if (!id) {
+      console.error("Delete Ticket: No ID provided");
+      return;
+    }
+
+    console.log("Starting delete for Ticket ID:", id);
     if (!confirm("Are you sure you want to permanently delete this ticket?")) return;
+    
     try {
-      const { error } = await supabase.from('support_tickets').delete().eq('id', id);
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .delete()
+        .eq('id', id)
+        .select();
       
       if (error) {
         console.error('Supabase Delete Error (support_tickets):', error);
         showToast("Error in DB: " + error.message, "error");
+        alert("DB Error: " + error.message);
         return;
       }
-      
-      setTickets(prev => prev.filter(t => t.id !== id));
-      showToast("Ticket deleted successfully");
+
+      if (data && data.length === 0) {
+        console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
+        showToast("Ticket not found or already deleted", "info");
+      } else {
+        console.log("Success! Tickets deleted:", data);
+        setTickets(prev => prev.filter(t => t.id !== id));
+        showToast("Ticket deleted successfully");
+      }
     } catch (error: any) {
       console.error('Unexpected error deleting ticket:', error);
       showToast("Delete ticket error: " + error.message, "error");
