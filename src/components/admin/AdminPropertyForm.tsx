@@ -69,6 +69,8 @@ export function AdminPropertyForm({
                 status: 'available',
                 description: '',
                 imageUrl: '',
+                gallery_image_1: '',
+                gallery_image_2: '',
                 expiry_date: '',
                 tenant_name: '',
                 tenant_id: '',
@@ -177,44 +179,97 @@ export function AdminPropertyForm({
           </div>
         </div>
 
-        <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
-            Property Photo <span className="text-red-500 text-lg">*</span>
-          </label>
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <input 
-                type="text"
-                name="imageUrl"
-                value={formData.imageUrl}
-                readOnly
-                className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm opacity-50 cursor-not-allowed outline-none text-white shadow-inner"
-                placeholder="Upload an image using the button..."
-              />
-              <label className="shrink-0 flex items-center justify-center px-6 bg-amber-500 border border-amber-400 rounded-xl cursor-pointer hover:bg-amber-400 transition-all group">
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={(e) => handleFileUpload(e, 'imageUrl')}
-                  disabled={isUploading}
-                />
-                {isUploading ? (
-                  <Loader2 className="animate-spin text-black" size={20} />
-                ) : (
-                  <div className="flex items-center gap-2 text-black font-bold text-[10px] uppercase tracking-widest">
-                    <ImageIcon size={16} />
-                    Upload Photo
-                  </div>
-                )}
+          <div className="space-y-6">
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
+                Main Image (Cover) <span className="text-red-500 text-lg">*</span>
               </label>
+              <div className="flex gap-4">
+                <input 
+                  type="text"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  readOnly
+                  className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm opacity-50 cursor-not-allowed outline-none text-white shadow-inner"
+                  placeholder="Main image URL..."
+                />
+                <label className="shrink-0 flex items-center justify-center px-4 bg-amber-500 border border-amber-400 rounded-xl cursor-pointer hover:bg-amber-400 transition-all group">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => handleFileUpload(e, 'imageUrl')}
+                    disabled={isUploading}
+                  />
+                  <ImageIcon size={16} className="text-black" />
+                </label>
+              </div>
+              {formData.imageUrl && (
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 group">
+                  <img src={formData.imageUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                  <button onClick={() => setFormData((prev: any) => ({ ...prev, imageUrl: '' }))} className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2 text-left">
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">Gallery Photo 01</label>
+                <div className="flex gap-2">
+                  <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => handleFileUpload(e, 'gallery_image_1')}
+                      disabled={isUploading}
+                    />
+                    {formData.gallery_image_1 ? (
+                      <img src={formData.gallery_image_1} className="w-full h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
+                    ) : (
+                      <Plus size={16} className="text-white/20 group-hover:text-amber-500" />
+                    )}
+                  </label>
+                  {formData.gallery_image_1 && (
+                    <button onClick={() => setFormData((prev: any) => ({ ...prev, gallery_image_1: '' }))} className="p-2 bg-white/5 border border-white/10 text-red-500 rounded-xl hover:bg-red-500/10 transition-all">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-left">
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">Gallery Photo 02</label>
+                <div className="flex gap-2">
+                  <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => handleFileUpload(e, 'gallery_image_2')}
+                      disabled={isUploading}
+                    />
+                    {formData.gallery_image_2 ? (
+                      <img src={formData.gallery_image_2} className="w-full h-12 object-cover rounded-lg" referrerPolicy="no-referrer" />
+                    ) : (
+                      <Plus size={16} className="text-white/20 group-hover:text-amber-500" />
+                    )}
+                  </label>
+                  {formData.gallery_image_2 && (
+                    <button onClick={() => setFormData((prev: any) => ({ ...prev, gallery_image_2: '' }))} className="p-2 bg-white/5 border border-white/10 text-red-500 rounded-xl hover:bg-red-500/10 transition-all">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
             {isUploading && (
               <div className="space-y-2">
                 <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-amber-500">
-                   <span>Processing...</span>
-                   <span>{uploadProgress}%</span>
+                   <span>Processing Media...</span>
                  </div>
                 <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                    <motion.div 
@@ -225,25 +280,7 @@ export function AdminPropertyForm({
                 </div>
               </div>
             )}
-            
-            {formData.imageUrl && (
-              <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                <img 
-                  src={formData.imageUrl} 
-                  alt="Preview" 
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-                <button 
-                  onClick={() => setFormData((prev: any) => ({ ...prev, imageUrl: '' }))}
-                  className="absolute top-4 right-4 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
           </div>
-        </div>
 
         {/* SECONDARY SETTINGS (OPTIONAL FIELDS) */}
         <div className="pt-8 border-t border-white/5 space-y-6 opacity-60 hover:opacity-100 transition-opacity">

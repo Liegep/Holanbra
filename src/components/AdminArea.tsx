@@ -90,6 +90,8 @@ export default function AdminArea() {
     status: 'available',
     description: '',
     imageUrl: '',
+    gallery_image_1: '',
+    gallery_image_2: '',
     expiry_date: '',
     tenant_name: '',
     tenant_id: '',
@@ -547,6 +549,8 @@ export default function AdminArea() {
       const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
 
       if (targetField === 'imageUrl') setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      else if (targetField === 'gallery_image_1') setFormData(prev => ({ ...prev, gallery_image_1: publicUrl }));
+      else if (targetField === 'gallery_image_2') setFormData(prev => ({ ...prev, gallery_image_2: publicUrl }));
       else if (targetField === 'image') setTeamFormData(prev => ({ ...prev, image: publicUrl }));
       else if (targetField === 'gallery') setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
       else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
@@ -609,6 +613,8 @@ export default function AdminArea() {
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
         image_url: formData.imageUrl?.trim() || null,
+        gallery_image_1: formData.gallery_image_1?.trim() || null,
+        gallery_image_2: formData.gallery_image_2?.trim() || null,
         teleport_url: formData.teleport_url?.trim() || null,
         status: formData.status || 'available',
         tenant_name: formData.tenant_name?.trim() || null,
@@ -643,6 +649,8 @@ export default function AdminArea() {
         status: 'available', 
         description: '', 
         imageUrl: '', 
+        gallery_image_1: '',
+        gallery_image_2: '',
         expiry_date: '',
         tenant_name: '',
         tenant_id: '',
@@ -673,6 +681,8 @@ export default function AdminArea() {
       description_es: prop.description_es || '',
       description_nl: prop.description_nl || '',
       imageUrl: prop.image_url || '',
+      gallery_image_1: prop.gallery_image_1 || '',
+      gallery_image_2: prop.gallery_image_2 || '',
       expiry_date: prop.expiry_date || '',
       tenant_name: prop.tenant_name || '',
       tenant_id: prop.tenant_id || '',

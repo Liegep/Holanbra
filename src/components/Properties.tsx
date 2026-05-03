@@ -53,15 +53,16 @@ export default function Properties() {
         setLoading(false);
       } else {
         const propertyList = (data || []).map(p => {
-          let galleryList = [];
-          try {
-            galleryList = typeof p.gallery === 'string' ? JSON.parse(p.gallery) : (p.gallery || []);
-          } catch(e) {
-            galleryList = [{ type: 'image', url: p.image_url || p.image }];
-          }
-
-          if (galleryList.length === 0 && (p.image_url || p.image)) {
-            galleryList = [{ type: 'image', url: p.image_url || p.image }];
+          const galleryList = [];
+          
+          // Construct gallery from explicit columns
+          if (p.image_url) galleryList.push({ type: 'image', url: p.image_url });
+          if (p.gallery_image_1) galleryList.push({ type: 'image', url: p.gallery_image_1 });
+          if (p.gallery_image_2) galleryList.push({ type: 'image', url: p.gallery_image_2 });
+          
+          // Legacy support
+          if (galleryList.length === 0 && p.image) {
+            galleryList.push({ type: 'image', url: p.image });
           }
 
           return {
@@ -345,6 +346,24 @@ export default function Properties() {
                       <ChevronRight size={24} />
                     </button>
                   </>
+                )}
+                
+                {/* Thumbnails */}
+                {selectedProperty.gallery.length > 1 && (
+                  <div className="absolute bottom-16 inset-x-0 flex justify-center gap-3 z-30 px-6">
+                    {selectedProperty.gallery.map((img: any, i: number) => (
+                      <button 
+                        key={i}
+                        onClick={() => setCurrentImgIdx(i)}
+                        className={cn(
+                          "w-12 h-12 rounded-lg overflow-hidden border-2 transition-all shrink-0 shadow-lg",
+                          i === currentImgIdx ? "border-amber-500 scale-110" : "border-white/20 opacity-50 hover:opacity-100"
+                        )}
+                      >
+                        <img src={img.url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      </button>
+                    ))}
+                  </div>
                 )}
                 
                 <div className="absolute bottom-8 inset-x-0 flex justify-center gap-2">
