@@ -88,10 +88,6 @@ export default function AdminArea() {
     teleport_url: '',
     status: 'available',
     description: '',
-    description_pt: '',
-    description_en: '',
-    description_es: '',
-    description_nl: '',
     imageUrl: '',
     expiry_date: '',
     tenant_name: '',
@@ -598,21 +594,17 @@ export default function AdminArea() {
   };
 
   const handleSaveProperty = async () => {
-    // Required fields: name and price (price is used for calculations)
+    // Required fields: name, price and image
     if (!formData.name || !formData.price || !formData.imageUrl) {
-      showToast("Property Name, Price and Image URL are essential", "info");
+      showToast("Name, Price and Image URL are mandatory", "info");
       return;
     }
 
     setIsUploading(true);
     try {
-      const dataToSave: any = {
+      const dataToSave = {
         name: formData.name.trim(),
-        description: formData.description || formData.description_pt || null,
-        description_pt: formData.description_pt || null,
-        description_en: formData.description_en || null,
-        description_es: formData.description_es || null,
-        description_nl: formData.description_nl || null,
+        description: formData.description?.trim() || null,
         price: parseFloat(formData.price) || 0,
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
@@ -625,24 +617,23 @@ export default function AdminArea() {
         property_type: formData.property_type || []
       };
 
-      console.log("Saving property to database (Table: properties):", dataToSave);
+      console.log("Saving property to 'properties':", dataToSave);
 
-      let fetchResponse;
+      let response;
       if (editingId) {
-        fetchResponse = await supabase.from('properties').update(dataToSave).eq('id', editingId);
+        response = await supabase.from('properties').update(dataToSave).eq('id', editingId);
       } else {
-        fetchResponse = await supabase.from('properties').insert([dataToSave]);
+        response = await supabase.from('properties').insert([dataToSave]);
       }
 
-      if (fetchResponse.error) {
-        console.error("Supabase Save Error (properties):", fetchResponse.error);
-        alert(`Erro no banco: ${fetchResponse.error.message}\nCódigo: ${fetchResponse.error.code}`);
-        throw fetchResponse.error;
+      if (response.error) {
+        console.error("Supabase Save Error:", response.error);
+        alert(`Erro no banco: ${response.error.message}`);
+        throw response.error;
       }
 
       showToast(editingId ? "Property updated" : "Property created", "success");
       
-      // Reset form
       setFormData({ 
         name: '', 
         casperletId: '', 
@@ -651,10 +642,6 @@ export default function AdminArea() {
         teleport_url: '', 
         status: 'available', 
         description: '', 
-        description_pt: '', 
-        description_en: '', 
-        description_es: '', 
-        description_nl: '', 
         imageUrl: '', 
         expiry_date: '',
         tenant_name: '',

@@ -68,10 +68,6 @@ export function AdminPropertyForm({
                 teleport_url: '',
                 status: 'available',
                 description: '',
-                description_pt: '',
-                description_en: '',
-                description_es: '',
-                description_nl: '',
                 imageUrl: '',
                 expiry_date: '',
                 tenant_name: '',
@@ -151,43 +147,19 @@ export function AdminPropertyForm({
           </div>
         </div>
 
-        <div className="space-y-4 text-left">
-          <div className="flex justify-between items-center">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">Property Description</label>
-            <div className="flex gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
-              {(['pt', 'en', 'es', 'nl'] as const).map(lang => (
-                <button
-                  key={lang}
-                  onClick={() => setFormLang(lang)}
-                  className={cn(
-                    "px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest transition-all",
-                    formLang === lang ? "bg-amber-500 text-black shadow-lg" : "text-white/40 hover:text-white"
-                  )}
-                >
-                  {lang}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="space-y-2 text-left">
+          <label className="text-xs font-bold text-amber-500/70 uppercase">Property Description</label>
           <textarea 
-            name={`description_${formLang}`}
-            value={(formData as any)[`description_${formLang}`]}
-            onChange={(e) => {
-              const val = e.target.value;
-              setFormData((prev: any) => ({ 
-                ...prev, 
-                [`description_${formLang}`]: val,
-                // Also update generic description if it's the primary language
-                description: formLang === 'en' ? val : (prev.description || val)
-              }));
-            }}
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
             rows={6}
-            className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all" 
-            placeholder={`Property Description (${formLang.toUpperCase()})...`}
+            className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all resize-none" 
+            placeholder="Describe the property highlights..."
           />
         </div>
 
-        {/* STATUS DROPDOWN (Now explicitly requested Available, Rented, Maintenance) */}
+        {/* STATUS DROPDOWN */}
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase">Availability Status</label>
           <div className="relative">
