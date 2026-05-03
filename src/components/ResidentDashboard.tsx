@@ -244,9 +244,10 @@ const ResidentDashboard:FC = () => {
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                     <input 
                         type="text" 
+                        autoComplete="off"
                         value={avatarName}
                         onChange={(e) => setAvatarName(e.target.value)}
-                        placeholder="John Resident"
+                        placeholder="Your Avatar Name"
                         className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm focus:border-amber-500/50 outline-none transition-all"
                     />
                 </div>
