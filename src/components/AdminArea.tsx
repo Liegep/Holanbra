@@ -729,45 +729,40 @@ export default function AdminArea() {
 
     if (!confirm(`Are you sure you want to remove resident ${avatarUuid}?`)) return;
     
-    console.log(`Starting deletion for Resident ID: ${cleanId} (Table: renters)`);
+    console.log(`Command: DELETE FROM renters WHERE id = '${cleanId}'`);
     
     try {
-      // Step 1: Unlink from properties first
-      const { error: propError } = await supabase
+      // Step 1: Sweep properties first
+      await supabase
         .from('properties')
         .update({ tenant_id: null, tenant_name: null, status: 'available' })
         .eq('tenant_id', cleanUuid);
-        
-      if (propError) {
-        console.warn("Could not sweep properties for this resident:", propError);
-      }
 
-      // Step 2: Delete from renters
+      // Step 2: Delete with verification
       const { data, error } = await supabase
         .from('renters')
         .delete()
-        .eq('id', String(cleanId).trim())
+        .eq('id', cleanId)
         .select();
 
       if (error) {
-        console.error('Supabase Delete Error (renters):', error);
-        alert('Erro no Supabase ao deletar da tabela renters: ' + error.message);
+        alert('Supabase Error (Delete Renter): ' + error.message);
+        console.error('Error details:', error);
         return;
       }
 
       if (!data || data.length === 0) {
-        console.warn("Delete successful in command, but zero rows affected in 'renters'.");
-        alert('Atenção: O residente sumiu da tela, mas não foi encontrado no banco (ID: ' + cleanId + ').');
+        alert('Atenção: O comando foi enviado para a tabela RENTERS mas o banco não encontrou o ID: ' + cleanId);
+        console.warn('ID mismatch between Frontend and Database. Refresh (F5) is recommended.');
       } else {
-        console.log("Deleted from 'renters' successfully:", data);
+        console.log("Deleted successfully from 'renters':", data);
       }
       
+      // Clean screen regardless of result to ensure sync
       setRenters(prev => prev.filter(r => String(r.id).trim() !== cleanId));
       showToast("Resident removed successfully");
     } catch (error: any) {
-      console.error("Delete resident error:", error);
-      alert("Unexpected error during deletion: " + error.message);
-      showToast("Delete error", "error");
+      alert("Unexpected error: " + error.message);
     }
   };
 
