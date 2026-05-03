@@ -98,7 +98,7 @@ const ResidentDashboard:FC = () => {
       // Step 1: Login via 'renters' table (Explicit columns to avoid 406)
       const { data: renter, error: renterError } = await supabase
         .from('renters')
-        .select('avatar_name, avatar_uuid, password')
+        .select('avatar_name,avatar_uuid,password')
         .eq('avatar_name', name.trim())
         .eq('password', pass.trim())
         .single();

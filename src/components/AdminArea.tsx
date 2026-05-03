@@ -180,7 +180,7 @@ export default function AdminArea() {
   const fetchRenters = async () => {
     try {
       setRenters([]); // Clear state before update
-      const { data, error } = await supabase.from('renters').select('avatar_name, avatar_uuid, password');
+      const { data, error } = await supabase.from('renters').select('avatar_name,avatar_uuid,password');
       if (error) throw error;
 
       console.log('Residents loaded from DB (Table: renters):');
@@ -712,7 +712,7 @@ export default function AdminArea() {
       const { data, error } = await supabase
         .from('renters')
         .upsert(dataToSave, { onConflict: 'avatar_uuid' })
-        .select();
+        .select('avatar_name,avatar_uuid,password');
 
       if (error) {
         alert("Supabase Error (renters): " + error.message);
@@ -774,7 +774,7 @@ export default function AdminArea() {
         .from('renters')
         .delete()
         .eq('avatar_uuid', cleanUuid)
-        .select();
+        .select('avatar_uuid');
 
       if (error) {
         alert('Supabase Error (Delete Renter): ' + error.message);
