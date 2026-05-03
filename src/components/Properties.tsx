@@ -40,6 +40,8 @@ export default function Properties() {
     sortBy: 'newest'
   });
 
+  const [visibleCount, setVisibleCount] = useState(6);
+
   useEffect(() => {
     const fetchProperties = async () => {
       const { data, error } = await supabase
@@ -206,7 +208,7 @@ export default function Properties() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedAndFilteredProperties.map((property, idx) => (
+          {sortedAndFilteredProperties.slice(0, visibleCount).map((property, idx) => (
             <motion.div 
               key={property.id}
               initial={{ opacity: 0, y: 20 }}
@@ -278,11 +280,29 @@ export default function Properties() {
           )}
         </div>
 
-        <div className="flex justify-center pt-12">
-           <button className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5">
-             View All Properties <ExternalLink size={16} className="text-amber-500" />
-           </button>
-        </div>
+        {sortedAndFilteredProperties.length > visibleCount && (
+          <div className="flex justify-center pt-12">
+            <button 
+              onClick={() => setVisibleCount(sortedAndFilteredProperties.length)}
+              className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5"
+            >
+              View All Properties <ExternalLink size={16} className="text-amber-500" />
+            </button>
+          </div>
+        )}
+        {sortedAndFilteredProperties.length > 6 && visibleCount === sortedAndFilteredProperties.length && (
+          <div className="flex justify-center pt-12">
+            <button 
+              onClick={() => {
+                setVisibleCount(6);
+                document.getElementById('properties')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5"
+            >
+              Show Less
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
