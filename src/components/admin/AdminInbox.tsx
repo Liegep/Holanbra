@@ -41,6 +41,7 @@ export function AdminInbox({
           inboxMessages.map((msg) => (
             <motion.div 
               key={msg.id}
+              id={`msg-${msg.id}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(

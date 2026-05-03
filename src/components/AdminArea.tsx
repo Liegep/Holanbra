@@ -160,6 +160,8 @@ export default function AdminArea() {
     try {
       const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
       if (error) throw error;
+      
+      console.log('Tickets loaded from DB:', data);
       setTickets(data || []);
     } catch (err) {
       console.error("Fetch tickets error:", err);
@@ -200,6 +202,8 @@ export default function AdminArea() {
     try {
       const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
       if (error) throw error;
+      
+      console.log('Messages loaded from DB (contact_messages):', data);
       setInboxMessages(data || []);
     } catch (err) {
       console.error("Fetch inbox error:", err);

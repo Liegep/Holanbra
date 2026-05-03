@@ -71,6 +71,7 @@ export function AdminSupportTickets({
           tickets.map((ticket) => (
             <motion.div 
               key={ticket.id}
+              id={`ticket-${ticket.id}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(
