@@ -215,9 +215,40 @@ export default function Team() {
                   </div>
                 </div>
                 
-                <p className="text-sm text-black/40 px-4 leading-relaxed line-clamp-2">
-                  {member.bio}
-                </p>
+                <div className="px-6 space-y-3">
+                  {(() => {
+                    const bioText = member.bio || '';
+                    const speaksMatch = bioText.match(/Speaks:\s*(.*)/i);
+                    const mainBio = speaksMatch ? bioText.replace(speaksMatch[0], '').trim() : bioText;
+                    const languagesStr = speaksMatch ? speaksMatch[1] : '';
+                    const languages = languagesStr.split(/\s+/).filter(Boolean);
+
+                    return (
+                      <>
+                        {mainBio && (
+                          <p className="text-sm text-black/60 leading-relaxed font-medium line-clamp-2">
+                            {mainBio}
+                          </p>
+                        )}
+                        {languages.length > 0 && (
+                          <div className="flex items-center gap-3">
+                            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-amber-500">Speaks</span>
+                            <div className="flex gap-1.5">
+                              {languages.map((flag, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="w-7 h-7 flex items-center justify-center bg-black/5 border border-black/5 rounded-full text-base transition-transform duration-300 hover:-translate-y-1 hover:shadow-md hover:bg-white cursor-default"
+                                >
+                                  {flag}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
               </motion.div>
             );
           })}
