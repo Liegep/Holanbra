@@ -61,42 +61,26 @@ const ResidentDashboard:FC = () => {
     }
   }, []);
 
-  // Sync with session and fetch tickets
+  // Sync and fetch tickets
   useEffect(() => {
-    const syncSession = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        console.log('Session sync - User metadata:', user.user_metadata);
-        
-        // Use ID from session
-        const residentId = user.id;
-
-        // Fetch tickets strictly by user_id
+    if (isLoggedIn && residentData) {
+      const residentId = residentData.avatar_uuid;
+      
+      const fetchInitialData = async () => {
+        // Fetch tickets strictly by avatar_uuid
         const { data: userTickets, error: ticketError } = await supabase
           .from('support_tickets')
           .select('*')
           .eq('user_id', residentId)
           .order('created_at', { ascending: false });
 
-        if (ticketError) {
-          console.error("Error fetching tickets for session:", ticketError);
-        } else {
-          console.log('Tickets fetched for session:', userTickets);
+        if (!ticketError) {
           setTickets(userTickets || []);
         }
-
-        // Set basic data from session as fallback/primary
-        if (!residentData) {
-          setResidentData({
-            avatar_name: user.user_metadata?.avatar_name || user.user_metadata?.name || user.email,
-            avatar_uuid: user.id
-          });
-          setIsLoggedIn(true);
-        }
-      }
-    };
-    syncSession();
-  }, [isLoggedIn]);
+      };
+      fetchInitialData();
+    }
+  }, [isLoggedIn, residentData]);
 
   const handleLogin = async (e: React.FormEvent | null, nameOverride?: string, passOverride?: string) => {
     if (e) e.preventDefault();
@@ -111,11 +95,11 @@ const ResidentDashboard:FC = () => {
 
     setLoading(true);
     try {
-      // Step 1: Login via 'renters' table (plural)
+      // Step 1: Login via 'renters' table
       const { data: renter, error: renterError } = await supabase
         .from('renters')
-        .select('avatar_name, avatar_uuid, password') // Only confirmed columns
-        .ilike('avatar_name', name.trim())
+        .select('*')
+        .eq('avatar_name', name.trim())
         .eq('password', pass.trim())
         .single();
 
@@ -167,12 +151,11 @@ const ResidentDashboard:FC = () => {
     setIsSubmittingTicket(true);
     
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error("Must be logged in");
+      if (!residentData?.avatar_uuid) throw new Error("Identify yourself first");
 
       const payload = {
-        user_id: user.id, // Supabase user.id is a UUID string compatible with UUID columns
-        avatar_name: user.user_metadata?.avatar_name || user.user_metadata?.name || 'Resident',
+        user_id: residentData.avatar_uuid,
+        avatar_name: residentData.avatar_name || 'Resident',
         subject: ticketForm.subject,
         category: ticketForm.category,
         message: ticketForm.message,
