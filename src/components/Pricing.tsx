@@ -52,8 +52,11 @@ export default function Pricing() {
           .select('*')
           .order('order_idx', { ascending: true });
 
-        if (error || !data || data.length === 0) {
-          console.warn('Could not fetch pricing table or it is empty:', error);
+        if (error) {
+          console.warn('Could not fetch pricing table:', error);
+          setPackages(DEFAULT_PACKAGES);
+        } else if (!data || data.length === 0) {
+          // Table exists but is empty
           setPackages(DEFAULT_PACKAGES);
         } else {
           setPackages(data);

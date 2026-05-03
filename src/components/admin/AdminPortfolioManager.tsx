@@ -19,7 +19,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
     try {
       const { data, error } = await supabase.from('portfolio').select('*').order('created_at', { ascending: false });
       if (error) {
-        console.warn("Could not fetch portfolio, maybe table doesn't exist yet", error);
+        console.warn("Error fetching portfolio:", error);
       } else {
         setPortfolioItems(data || []);
       }

@@ -52,8 +52,7 @@ export default function Navbar() {
     { name: 'About', path: '/#about', icon: Users, external: false, label: 'About' },
     { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, external: false, label: 'Properties' },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, external: false, label: 'Gallery' },
-    { name: 'Services', path: '/#services', icon: Paintbrush, external: false, label: 'Services' },
-    { name: 'Pricing', path: '/#pricing', icon: DollarSign, external: false, label: 'Pricing' },
+    { name: 'Decoration', path: '/#services', icon: Paintbrush, external: false, label: 'Decoration' },
     { name: 'Team', path: '/#team', icon: Users, external: false, label: 'Team' },
     { name: 'Covenant', path: '/covenant', icon: FileText, external: false, label: 'Covenant' },
   ];

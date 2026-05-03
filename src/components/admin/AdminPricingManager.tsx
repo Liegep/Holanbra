@@ -41,7 +41,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
         .order('order_idx', { ascending: true });
         
       if (error) {
-        console.warn('Pricing table likely missing, fallback to empty.', error);
+        console.warn('Pricing table error:', error);
         setPackages([]);
       } else {
         setPackages(data || []);
