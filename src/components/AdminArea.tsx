@@ -157,38 +157,73 @@ export default function AdminArea() {
 
   // Data Fetching
   const fetchTickets = async () => {
-    const { data } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
-    setTickets(data || []);
+    try {
+      const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setTickets(data || []);
+    } catch (err) {
+      console.error("Fetch tickets error:", err);
+    }
   };
 
   const fetchRenters = async () => {
-    const { data } = await supabase.from('renters').select('*');
-    setRenters(data || []);
+    try {
+      const { data, error } = await supabase.from('renters').select('*');
+      if (error) throw error;
+      setRenters(data || []);
+    } catch (err) {
+      console.error("Fetch renters error:", err);
+    }
   };
 
   const fetchProperties = async () => {
-    const { data } = await supabase.from('properties').select('*');
-    setProperties(data || []);
+    try {
+      const { data, error } = await supabase.from('properties').select('*');
+      if (error) throw error;
+      setProperties(data || []);
+    } catch (err) {
+      console.error("Fetch properties error:", err);
+    }
   };
 
   const fetchGallery = async () => {
-    const { data } = await supabase.from('gallery').select('*').order('id', { ascending: false });
-    setGalleryImages(data || []);
+    try {
+      const { data, error } = await supabase.from('gallery').select('*').order('id', { ascending: false });
+      if (error) throw error;
+      setGalleryImages(data || []);
+    } catch (err) {
+      console.error("Fetch gallery error:", err);
+    }
   };
 
   const fetchInboxMessages = async () => {
-    const { data } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
-    setInboxMessages(data || []);
+    try {
+      const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setInboxMessages(data || []);
+    } catch (err) {
+      console.error("Fetch inbox error:", err);
+    }
   };
 
   const fetchVideos = async () => {
-    const { data } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
-    setVideos(data || []);
+    try {
+      const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setVideos(data || []);
+    } catch (err) {
+      console.error("Fetch videos error:", err);
+    }
   };
 
   const fetchTeam = async () => {
-    const { data } = await supabase.from('team').select('*').order('display_order', { ascending: true });
-    setTeamMembers(data || []);
+    try {
+      const { data, error } = await supabase.from('team').select('*').order('display_order', { ascending: true });
+      if (error) throw error;
+      setTeamMembers(data || []);
+    } catch (err) {
+      console.error("Fetch team error:", err);
+    }
   };
 
   const fetchData = async () => {
@@ -331,7 +366,9 @@ export default function AdminArea() {
 
       if (data && data.length === 0) {
         console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
-        showToast("Message not found or already deleted", "info");
+        // If it's not in the DB, it shouldn't be on the screen - ghost cleanup
+        setInboxMessages(prev => prev.filter(m => m.id !== id));
+        showToast("Message not found (Syncing...)", "info");
       } else {
         console.log("Success! Messages deleted:", data);
         setInboxMessages(prev => prev.filter(m => m.id !== id));
@@ -693,7 +730,9 @@ export default function AdminArea() {
 
       if (data && data.length === 0) {
         console.warn("Delete command successful, but ZERO rows affected. The ID might be wrong or already deleted.");
-        showToast("Ticket not found or already deleted", "info");
+        // If it's not in the DB, it shouldn't be on the screen - ghost cleanup
+        setTickets(prev => prev.filter(t => t.id !== id));
+        showToast("Ticket not found (Syncing...)", "info");
       } else {
         console.log("Success! Tickets deleted:", data);
         setTickets(prev => prev.filter(t => t.id !== id));
