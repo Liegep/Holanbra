@@ -60,6 +60,7 @@ export default function Properties() {
           if (p.image_url) galleryList.push({ type: 'image', url: p.image_url });
           if (p.gallery_image_1) galleryList.push({ type: 'image', url: p.gallery_image_1 });
           if (p.gallery_image_2) galleryList.push({ type: 'image', url: p.gallery_image_2 });
+          if (p.video_url) galleryList.push({ type: 'video', url: p.video_url });
           
           // Legacy support
           if (galleryList.length === 0 && p.image) {
