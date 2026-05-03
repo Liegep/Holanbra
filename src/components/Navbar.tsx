@@ -50,9 +50,9 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/', icon: Home, external: false, label: 'Home' },
     { name: 'About', path: '/#about', icon: Users, external: false, label: 'About' },
-    { name: 'Properties', path: '/#imoveis', icon: Layers, highlight: true, external: false, label: 'Properties' },
+    { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, external: false, label: 'Properties' },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, external: false, label: 'Gallery' },
-    { name: 'Services', path: '/#servicos', icon: Paintbrush, external: false, label: 'Services' },
+    { name: 'Services', path: '/#services', icon: Paintbrush, external: false, label: 'Services' },
     { name: 'Team', path: '/#team', icon: Users, external: false, label: 'Team' },
     { name: 'Covenant', path: '/covenant', icon: FileText, external: false, label: 'Covenant' },
   ];
@@ -107,7 +107,7 @@ export default function Navbar() {
               className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
             >
               <LayoutDashboard size={14} className="text-amber-500" />
-              Admin
+              ADMIN
             </Link>
           )}
           <Link 

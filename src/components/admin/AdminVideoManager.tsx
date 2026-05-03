@@ -6,7 +6,6 @@ import {
   Play, 
   Trash2 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface AdminVideoManagerProps {
   videos: any[];
@@ -23,14 +22,12 @@ export function AdminVideoManager({
   handleVideoUpload,
   handleDeleteVideo
 }: AdminVideoManagerProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="max-w-5xl space-y-12">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h2 className="text-3xl font-bold font-display text-white">{t('video_management')}</h2>
-          <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('video_management_desc')}</p>
+          <h2 className="text-3xl font-bold font-display text-white">Cinema & Video Assets</h2>
+          <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Manage high-fidelity video backgrounds and cinematic sequences</p>
         </div>
         
         <label className="px-8 py-3 bg-white text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500 transition-all cursor-pointer flex items-center gap-2">
@@ -42,7 +39,7 @@ export function AdminVideoManager({
             onChange={handleVideoUpload}
             disabled={isUploading}
           />
-          {isUploading ? t('uploading_video') : t('upload_video')}
+          {isUploading ? "Uploading..." : "Upload Video"}
         </label>
       </div>
 
@@ -54,7 +51,7 @@ export function AdminVideoManager({
             transition={{ duration: 15, ease: "linear" }}
             className="h-full bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)]"
           />
-          <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">{t('uploading_high_quality_desc')}</p>
+          <p className="text-[8px] text-white/40 uppercase tracking-[0.2em] mt-2 text-right">Processing high-quality cinema file...</p>
         </div>
       )}
 
@@ -88,7 +85,7 @@ export function AdminVideoManager({
         ))}
         {videos.length === 0 && (
           <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_videos_uploaded')}</p>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No video assets registered</p>
           </div>
         )}
       </div>

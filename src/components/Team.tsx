@@ -22,14 +22,13 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Team() {
-  const t = (s: string) => s;
 
   const DEFAULT_TEAM: TeamMember[] = [
     {
       id: 'default-1',
       name: 'Marie Whitfield',
       role: 'Creative Director',
-      bio: 'Diretora criativa com foco em design de luxo e experiências imersivas.',
+      bio: 'Creative director focused on luxury design and immersive experiences.',
       image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80',
       icon: 'Paintbrush',
       slProfile: 'secondlife:///app/agent/uuid-marie/about'
@@ -37,8 +36,8 @@ export default function Team() {
     {
       id: 'default-2',
       name: 'Ymir Coronet',
-      role: 'Founder_Architect',
-      bio: 'Arquiteto fundador especialista em planejamento urbano e design modular.',
+      role: 'Founder & Architect',
+      bio: 'Founding architect specializing in urban planning and modular design.',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&q=80',
       icon: 'Briefcase',
       slProfile: 'secondlife:///app/agent/uuid-ymir/about'
@@ -47,7 +46,7 @@ export default function Team() {
       id: 'default-3',
       name: 'Victoria Holanbra',
       role: 'Community Manager',
-      bio: 'Gerente de comunidade dedicada a conectar residentes e gerenciar eventos.',
+      bio: 'Community manager dedicated to connecting residents and managing events.',
       image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=600&q=80',
       icon: 'Users',
       slProfile: 'secondlife:///app/agent/uuid-victoria/about'
@@ -107,13 +106,13 @@ export default function Team() {
 
       if (supabaseError) throw supabaseError;
 
-      setNotice(t('im_sent_success'));
+      setNotice("Message Sent Successfully");
       setActiveMessageTarget(null);
       setVisitorData({ name: '', message: '' });
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
-      window.alert("Erro ao enviar mensagem: " + (err.message || ""));
+      window.alert("Error sending message: " + (err.message || ""));
     } finally {
       setIsSending(false);
     }
@@ -152,7 +151,7 @@ export default function Team() {
                className="flex items-center gap-3 text-amber-600"
             >
               <div className="w-12 h-[1px] bg-amber-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{'NOSSA EQUIPE'}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{'OUR TEAM'}</span>
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -160,7 +159,7 @@ export default function Team() {
               viewport={{ once: true }}
               className="text-6xl md:text-8xl font-display font-bold tracking-tighter text-black"
             >
-              {t('our_team').toUpperCase()}
+              OUR TEAM
             </motion.h2>
           </div>
           <motion.p 
@@ -169,7 +168,7 @@ export default function Team() {
             viewport={{ once: true }}
             className="text-black/40 max-w-sm text-sm uppercase tracking-widest leading-relaxed"
           >
-            {t('team_desc')}
+            Meet the creative minds behind Holanbra. Our diverse team of architects and designers is dedicated to crafting extraordinary virtual spaces.
           </motion.p>
         </div>
 
@@ -203,7 +202,7 @@ export default function Team() {
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      {t('send_im')}
+                      Send Message
                     </a>
                   </div>
 
@@ -243,7 +242,7 @@ export default function Team() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
               <div className="absolute bottom-6 left-8 right-8">
-                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">{t('direct_message')}</p>
+                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Direct Message</p>
                 <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMessageTarget.name}</h4>
                 <p className="text-[10px] text-white/40 font-mono mt-1">{translateRole(activeMessageTarget.role)}</p>
               </div>
@@ -259,7 +258,7 @@ export default function Team() {
             <form onSubmit={handleSubmitMessage} className="p-8 pt-2 space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('your_name_sl')}</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Your Second Life Name</label>
                   <input 
                     required
                     type="text"
@@ -270,13 +269,13 @@ export default function Team() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('your_message')}</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Your Message</label>
                   <textarea 
                     required
                     rows={4}
                     value={visitorData.message}
                     onChange={(e) => setVisitorData({ ...visitorData, message: e.target.value })}
-                    placeholder={t('message_placeholder')}
+                    placeholder="Write your message here..."
                     className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner resize-none"
                   />
                 </div>
@@ -289,11 +288,11 @@ export default function Team() {
               >
                 {isSending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> {t('loading').toUpperCase()}
+                    <Loader2 size={16} className="animate-spin" /> SENDING...
                   </>
                 ) : (
                   <>
-                    {t('send_message')} <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    SEND MESSAGE <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </>
                 )}
               </button>

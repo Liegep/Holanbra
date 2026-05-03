@@ -32,10 +32,10 @@ export default function Properties() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [filter, setFilter] = useState({
-    type: 'Todos',
-    status: 'todos',
+    type: 'All',
+    status: 'all',
     maxPrice: 50000,
-    sortBy: 'mais-novos'
+    sortBy: 'newest'
   });
 
   useEffect(() => {
@@ -88,17 +88,17 @@ export default function Properties() {
 
   const sortedAndFilteredProperties = [...properties]
     .filter(p => {
-      const typeMatch = filter.type === 'Todos' || (filter.type === 'Terrenos' && !p.name.toLowerCase().includes('loft')) || (filter.type === 'Mobílias' && p.name.toLowerCase().includes('loft'));
-      const statusMatch = filter.status === 'todos' || p.status === filter.status;
+      const typeMatch = filter.type === 'All' || (filter.type === 'Land' && !p.name.toLowerCase().includes('loft')) || (filter.type === 'Furnished' && p.name.toLowerCase().includes('loft'));
+      const statusMatch = filter.status === 'all' || p.status === filter.status;
       const priceMatch = p.price <= filter.maxPrice;
       return typeMatch && statusMatch && priceMatch;
     })
     .sort((a, b) => {
       switch (filter.sortBy) {
-        case 'preco-baixo': return a.price - b.price;
-        case 'preco-alto': return b.price - a.price;
-        case 'nome-az': return a.name.localeCompare(b.name);
-        case 'nome-za': return b.name.localeCompare(a.name);
+        case 'price-low': return a.price - b.price;
+        case 'price-high': return b.price - a.price;
+        case 'name-az': return a.name.localeCompare(b.name);
+        case 'name-za': return b.name.localeCompare(a.name);
         default: return 0;
       }
     });
@@ -119,28 +119,28 @@ export default function Properties() {
   };
 
   const getLocalizedDescription = (p: any) => {
-    return p.description_pt || p.description || "Experimente um luxo e conforto sem paralelo em Holanbra.";
+    return p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
   };
 
   return (
-    <section id="imoveis" className="py-32 px-6 md:px-12 bg-white min-h-screen">
+    <section id="properties" className="py-32 px-6 md:px-12 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
           <div className="space-y-4 text-left">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">Imóveis Disponíveis</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">Available Properties</h2>
             <div className="space-y-2">
               <p className="text-amber-600/60 max-w-lg text-sm uppercase tracking-widest font-medium">
-                Encontre o seu próximo lar.
+                Find your next virtual home.
               </p>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">
-                {properties.filter(p => p.status === 'available').length} {properties.filter(p => p.status === 'available').length === 1 ? 'Imóvel' : 'Imóveis'} prontos para morar
+                {properties.filter(p => p.status === 'available').length} {properties.filter(p => p.status === 'available').length === 1 ? 'Property' : 'Properties'} ready for occupancy
               </p>
             </div>
           </div>
           
           <div className="flex flex-wrap gap-4 items-center">
             <div className="flex gap-2">
-              {['Todos', 'Terrenos', 'Mobílias'].map((typeName) => (
+              {['All', 'Land', 'Furnished'].map((typeName) => (
                 <button 
                   key={typeName}
                   onClick={() => setFilter({ ...filter, type: typeName })}
@@ -160,9 +160,9 @@ export default function Properties() {
                 onChange={(e) => setFilter({ ...filter, status: e.target.value })}
                 className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
               >
-                <option value="todos">Todos</option>
-                <option value="available">Disponível</option>
-                <option value="rented">Alugado</option>
+                <option value="all">All Status</option>
+                <option value="available">Available</option>
+                <option value="rented">Rented</option>
               </select>
 
               <select 
@@ -170,15 +170,15 @@ export default function Properties() {
                 onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
                 className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
               >
-                <option value="preco-baixo">Preço (Menor)</option>
-                <option value="preco-alto">Preço (Maior)</option>
-                <option value="nome-az">Nome (A-Z)</option>
-                <option value="nome-za">Nome (Z-A)</option>
+                <option value="price-low">Price (Lowest)</option>
+                <option value="price-high">Price (Highest)</option>
+                <option value="name-az">Name (A-Z)</option>
+                <option value="name-za">Name (Z-A)</option>
               </select>
             </div>
 
             <div className="flex items-center gap-3 bg-black/5 border-black/5 rounded-full px-6 py-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">até L$ {filter.maxPrice}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">up to L$ {filter.maxPrice}</span>
               <input 
                 type="range" 
                 min="500" 
@@ -201,7 +201,7 @@ export default function Properties() {
               transition={{ delay: idx * 0.1 }}
               className={cn(
                 "bento-card group h-[450px] cursor-pointer",
-                idx === 0 && filter.type === 'Todos' ? "lg:col-span-1 md:col-span-2" : ""
+                idx === 0 && filter.type === 'All' ? "lg:col-span-1 md:col-span-2" : ""
               )}
               onClick={() => openGallery(property)}
             >
@@ -220,7 +220,7 @@ export default function Properties() {
                   "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit mb-3",
                   property.status === 'available' ? "bg-amber-500 text-black" : "bg-white/20 text-white"
                 )}>
-                  {property.status === 'available' ? 'Disponível' : 'Alugado'}
+                  {property.status === 'available' ? 'Available' : 'Rented'}
                 </div>
                 <h3 className="text-3xl font-bold tracking-tight text-white">{property.name}</h3>
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
@@ -228,7 +228,7 @@ export default function Properties() {
                 </p>
                 <div className="flex items-center gap-4 pt-2">
                   <div className="text-2xl font-light text-white decoration-amber-500/50">
-                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ semana</span>
+                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">/ week</span>
                   </div>
                 </div>
 
@@ -241,7 +241,7 @@ export default function Properties() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
                   >
                     <MapPin size={12} />
-                    Teleporte
+                    Teleport
                   </button>
                   <button 
                     onClick={(e) => {
@@ -251,7 +251,7 @@ export default function Properties() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
                   >
                     <ExternalLink size={12} />
-                    Saiba Mais
+                    Learn More
                   </button>
                 </div>
               </div>
@@ -260,14 +260,14 @@ export default function Properties() {
           
           {sortedAndFilteredProperties.length === 0 && (
             <div className="col-span-full py-20 text-center bg-black/5 rounded-[2rem] border-2 border-dashed border-black/10">
-              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">Nenhum imóvel encontrado</p>
+              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">No properties found</p>
             </div>
           )}
         </div>
 
         <div className="flex justify-center pt-12">
            <button className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5">
-             Ver Todos os Imóveis <ExternalLink size={16} className="text-amber-500" />
+             View All Properties <ExternalLink size={16} className="text-amber-500" />
            </button>
         </div>
       </div>
@@ -356,7 +356,7 @@ export default function Properties() {
                         "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit",
                         selectedProperty.status === 'available' ? "bg-amber-500 text-black" : "bg-zinc-100 text-zinc-400"
                       )}>
-                        {selectedProperty.status === 'available' ? 'Disponível' : 'Alugado'}
+                        {selectedProperty.status === 'available' ? 'Available' : 'Rented'}
                       </div>
                       <h2 className="text-4xl md:text-5xl font-display font-bold leading-none tracking-tight text-black">
                         {selectedProperty.name}
@@ -375,24 +375,24 @@ export default function Properties() {
 
                   <div className="space-y-4">
                     <div className="text-3xl font-display font-medium text-black">
-                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">/ semana</span>
+                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">/ week</span>
                     </div>
                     
                     <div className="flex gap-4">
                       {selectedProperty.bedrooms !== undefined && selectedProperty.bedrooms > 0 && (
                         <div className="px-4 py-2 bg-zinc-100 rounded-xl">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bedrooms} QUARTOS</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bedrooms} BEDROOMS</span>
                         </div>
                       )}
                       {selectedProperty.bathrooms !== undefined && selectedProperty.bathrooms > 0 && (
                         <div className="px-4 py-2 bg-zinc-100 rounded-xl">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bathrooms} BANHEIROS</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-black/60">{selectedProperty.bathrooms} BATHROOMS</span>
                         </div>
                       )}
                     </div>
 
                     <div className="pt-4 border-t border-zinc-100">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Descrição</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">Description</h3>
                       <p className="text-sm text-zinc-600 leading-relaxed font-light">
                         {getLocalizedDescription(selectedProperty)}
                       </p>
@@ -406,7 +406,7 @@ export default function Properties() {
                     className="w-full flex items-center justify-center gap-3 px-8 py-5 rounded-full bg-amber-500 text-black text-xs font-black uppercase tracking-[0.2em] hover:bg-amber-400 transition-all shadow-2xl shadow-amber-500/30"
                   >
                     <MapPin size={18} />
-                    Teleportar agora
+                    Teleport Now
                   </button>
                   
                   {selectedProperty.status === 'available' && (
@@ -414,7 +414,7 @@ export default function Properties() {
                       to="/resident"
                       className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
                     >
-                      Iniciar Aluguel
+                      Start Rental
                     </Link>
                   )}
                 </div>

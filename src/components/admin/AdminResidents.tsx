@@ -31,8 +31,6 @@ export function AdminResidents({
   handleSaveRenter,
   handleDeleteRenter
 }: AdminResidentsProps) {
-  const t = (s: string) => s;
-
   const handleRenterInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setRenterFormData((prev: any) => ({ ...prev, [name]: value }));
@@ -42,15 +40,15 @@ export function AdminResidents({
     <div className="max-w-4xl space-y-8">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h3 className="text-2xl font-bold font-display text-white">{t('resident_management')}</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_residents_desc')}</p>
+          <h3 className="text-2xl font-bold font-display text-white">Resident Management</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Create, update and manage resident access credentials</p>
         </div>
       </div>
 
       <div className="glass-card p-8 border-white/10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2 text-left">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_name_sl')}</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar Name (SL)</label>
             <input 
               type="text" 
               name="avatarName"
@@ -61,7 +59,7 @@ export function AdminResidents({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('avatar_uuid')}</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Avatar UUID</label>
             <input 
               type="text" 
               name="avatarUuid"
@@ -72,7 +70,7 @@ export function AdminResidents({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('login_password')}</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Portal Access Password</label>
             <input 
               type="text" 
               name="password"
@@ -86,8 +84,8 @@ export function AdminResidents({
 
         <div className="space-y-4 text-left border-t border-white/5 pt-6">
           <div className="flex justify-between items-center">
-            <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('assign_properties')}</label>
-            <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} {t('selected_count')}</span>
+            <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Assign Properties</label>
+            <span className="text-[9px] text-white/30 uppercase">{selectedPropertyIds.length} Properties Selected</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {properties.map(prop => (
@@ -111,7 +109,7 @@ export function AdminResidents({
                   <img src={prop.image_url} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   {prop.status !== 'available' && !selectedPropertyIds.includes(prop.id) && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">{t('occupied')}</span>
+                      <span className="text-[6px] font-black uppercase text-white/50 tracking-tighter">Occupied</span>
                     </div>
                   )}
                 </div>
@@ -142,7 +140,7 @@ export function AdminResidents({
                   className="w-full h-full object-cover"
                 />
               </div>
-              <span className="text-[10px] font-bold uppercase text-amber-500/60">{t('sl_profile_preview')}</span>
+              <span className="text-[10px] font-bold uppercase text-amber-500/60">Avatar Preview</span>
             </div>
           )}
           <div className="flex gap-4">
@@ -155,14 +153,14 @@ export function AdminResidents({
                 }}
                 className="px-6 py-3 rounded-xl border border-white/10 text-white text-[10px] font-bold uppercase"
               >
-                {t('cancel')}
+                Cancel
               </button>
             )}
             <button 
               onClick={handleSaveRenter}
               className="px-8 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
             >
-              {editingRenterId ? t('update_resident') : t('register_resident')}
+              {editingRenterId ? "Update Resident" : "Register Resident"}
             </button>
           </div>
         </div>
@@ -186,7 +184,7 @@ export function AdminResidents({
             </div>
             <div className="mt-4 flex justify-between items-center bg-black/20 p-2 rounded-lg">
               <div className="text-left">
-                <span className="text-[8px] uppercase text-gray-500 font-bold block">{t('admin.password')}</span>
+                <span className="text-[8px] uppercase text-gray-500 font-bold block">Access PW</span>
                 <span className="text-[10px] text-amber-500/80 font-mono">{renter.password}</span>
               </div>
               <div className="flex gap-2">

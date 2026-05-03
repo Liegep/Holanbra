@@ -9,7 +9,7 @@ export default function Hero() {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
-    badgeText: 'Novas Ilhas Disponíveis',
+    badgeText: 'New Islands Available',
     title1: 'Holanbra',
     title2: 'Sims',
     virtualTourUrl: '',
@@ -94,7 +94,7 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center gap-8 mb-4">
              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">Bem-vindo</span>
+                <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">Welcome</span>
                 <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
                   <span className="text-amber-500">{content.title1}</span>
                   <span className="italic font-light flex items-center gap-4">
@@ -106,9 +106,9 @@ export default function Hero() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[400px] md:h-[500px]">
              {content.gridImages.map((url: string, idx: number) => (
-               <div key={idx} className={cn("rounded-2xl overflow-hidden shadow-2xl", idx % 2 !== 0 && "translate-y-8")}>
-                  <img src={url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt={`Hero grid ${idx}`} referrerPolicy="no-referrer" />
-               </div>
+                <div key={idx} className={cn("rounded-2xl overflow-hidden shadow-2xl", idx % 2 !== 0 && "translate-y-8")}>
+                   <img src={url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt={`Hero grid ${idx}`} referrerPolicy="no-referrer" />
+                </div>
              ))}
           </div>
         </motion.div>
@@ -120,10 +120,10 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
           <Link 
-            to="/properties"
+            to="/#properties"
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
-            Ver Imóveis <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            View Properties <ArrowRight className="group-hover:translate-x-1 transition-transform" />
           </Link>
           
           <button 
@@ -133,7 +133,7 @@ export default function Hero() {
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
               <Play size={10} fill="white" />
             </div>
-            Tour Virtual
+            Virtual Tour
           </button>
         </motion.div>
       </div>
@@ -172,7 +172,7 @@ export default function Hero() {
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-white/20 space-y-4">
                   <Play size={64} />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Nenhum vídeo configurado</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">No video configured</p>
                 </div>
               )}
             </motion.div>

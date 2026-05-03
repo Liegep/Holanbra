@@ -13,7 +13,6 @@ import {
   X,
   User as UserIcon
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 
@@ -40,19 +39,17 @@ export function AdminPropertyListings({
   handleDelete,
   showToast
 }: AdminPropertyListingsProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="space-y-12">
       <div className="space-y-6">
         <div className="flex justify-between items-end border-b border-white/5 pb-6">
           <div className="space-y-1">
-            <h3 className="text-4xl font-bold font-display tracking-tight text-left text-white">{t('executive_dashboard')}</h3>
-            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] text-left">{t('operational_overview_desc')}</p>
+            <h3 className="text-4xl font-bold font-display tracking-tight text-left text-white">Executive Dashboard</h3>
+            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] text-left">Operational overview of all virtual holdings and resident status</p>
           </div>
           <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white">
             <RefreshCw size={12} className="text-amber-500" />
-            {t('sync_casperlet')}
+            Sync Casperlet
           </button>
         </div>
 
@@ -66,9 +63,9 @@ export function AdminPropertyListings({
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <FileText size={48} className="text-white" />
             </div>
-            <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('admin.total_portfolio')}</p>
+            <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
             <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-            <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('admin.units_all_sims')}</p>
+            <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
           </motion.div>
 
           <motion.div 
@@ -84,9 +81,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
               <MessageSquare size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.open_tickets')}</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>Open Support Tickets</p>
             <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('admin.total_tickets')}</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} Total tickets in database</p>
           </motion.div>
 
           <motion.div 
@@ -98,12 +95,12 @@ export function AdminPropertyListings({
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <CheckCircle size={48} className="text-amber-500" />
             </div>
-            <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('admin.occupancy_rate')}</p>
+            <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Overall Occupancy</p>
             <div className="flex items-baseline gap-2">
                <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
                <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
             </div>
-            <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('admin.available_for_rent')}</p>
+            <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
           </motion.div>
 
           <motion.div 
@@ -118,9 +115,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
               <AlertCircle size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('admin.critical_issues')}</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Expirations</p>
             <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('admin.expiring_3_days')}</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 72 hours</p>
           </motion.div>
 
           <motion.div 
@@ -135,9 +132,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
               <Clock size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.attention')}</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Priority Renewals</p>
             <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('admin.expiring_7_days')}</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
           </motion.div>
         </div>
       </div>
@@ -152,7 +149,7 @@ export function AdminPropertyListings({
                 activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
               )}
             >
-              {t('admin.all_properties')} ({properties.length})
+              All Properties ({properties.length})
             </button>
             <button 
               onClick={() => setActiveFilter('expiring')}
@@ -162,7 +159,7 @@ export function AdminPropertyListings({
               )}
             >
               <Clock size={12} />
-              {t('admin.expiring_soon')} ({stats.critical + stats.attention})
+              Expiring Soon ({stats.critical + stats.attention})
             </button>
           </div>
         </div>

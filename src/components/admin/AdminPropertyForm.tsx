@@ -9,7 +9,6 @@ import {
   X,
   ChevronRight
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
 
@@ -40,13 +39,11 @@ export function AdminPropertyForm({
   handleFileUpload,
   handleSave
 }: AdminPropertyFormProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="max-w-2xl space-y-8">
       <div className="flex justify-between items-center text-white">
         <h3 className="text-2xl font-bold font-display text-left">
-          {editingId ? t('admin.property_edit_title') : t('admin.property_add_title')}
+          {editingId ? "Edit Property Configuration" : "Add New Real Estate Asset"}
         </h3>
         {editingId && (
           <button 
@@ -69,7 +66,7 @@ export function AdminPropertyForm({
             }}
             className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
           >
-            {t('common.cancel')}
+            Cancel
           </button>
         )}
       </div>
@@ -77,7 +74,7 @@ export function AdminPropertyForm({
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">{t('common.property_name')}</label>
+            <label className="text-xs font-bold text-amber-500/70 uppercase">Property Name</label>
             <input 
               type="text" 
               name="name"
@@ -88,14 +85,14 @@ export function AdminPropertyForm({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.casperlet_id_label')}</label>
+            <label className="text-xs font-bold text-gray-500 uppercase">Casperlet Device ID</label>
             <input 
               type="text" 
               name="casperletId"
               value={formData.casperletId}
               onChange={handleInputChange}
               className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-              placeholder={t('admin.paste_device_key')}
+              placeholder="Paste the SL device UUID here"
             />
           </div>
         </div>
@@ -144,7 +141,7 @@ export function AdminPropertyForm({
 
         <div className="space-y-4 text-left">
           <div className="flex justify-between items-center">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">{t('description')}</label>
+            <label className="text-xs font-bold text-amber-500/70 uppercase">Property Description</label>
             <div className="flex gap-2 bg-white/5 p-1 rounded-lg border border-white/10">
               {(['pt', 'en', 'es', 'nl'] as const).map(lang => (
                 <button
@@ -172,7 +169,7 @@ export function AdminPropertyForm({
             }}
             rows={6}
             className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all" 
-            placeholder={`${t('description')} (${formLang.toUpperCase()})...`}
+            placeholder={`Property Description (${formLang.toUpperCase()})...`}
           />
         </div>
 
@@ -267,7 +264,7 @@ export function AdminPropertyForm({
             className="w-full py-5 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(245,158,11,0.2)] hover:bg-amber-400 transition-all uppercase tracking-[0.2em] text-xs disabled:opacity-50"
           >
             {editingId ? <RefreshCw size={18} /> : <Plus size={18} />}
-            {editingId ? t('admin.update_property') : t('admin.publish_property')}
+            {editingId ? "Update Configuration" : "Publish to Listings"}
           </button>
         </div>
       </div>

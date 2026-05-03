@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FC } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { 
   Home, 
@@ -25,8 +24,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 
-const ResidentDashboard: React.FC = () => {
-  const { t } = useTranslation();
+const ResidentDashboard:FC = () => {
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -49,7 +47,7 @@ const ResidentDashboard: React.FC = () => {
   // Ticket Form State
   const [ticketForm, setTicketForm] = useState({
     subject: '',
-    category: 'Financeiro',
+    category: 'Billing',
     message: ''
   });
   const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
@@ -107,7 +105,7 @@ const ResidentDashboard: React.FC = () => {
     const pass = passOverride || password;
 
     if (!name || !pass) {
-        setError(t('fill_all_fields'));
+        setError("Please fill all fields");
         return;
     }
 
@@ -122,7 +120,7 @@ const ResidentDashboard: React.FC = () => {
         .single();
 
       if (renterError || !renter) {
-        throw new Error(t('invalid_credentials'));
+        throw new Error("Invalid credentials");
       }
 
       setResidentData(renter);
@@ -148,10 +146,10 @@ const ResidentDashboard: React.FC = () => {
       setIsLoggedIn(true);
       localStorage.setItem('sl_resident_name', name);
       localStorage.setItem('sl_resident_pass', pass);
-      showToast(`${t('welcome_back')}, ${name}!`);
+      showToast(`Welcome back, ${name}!`);
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(err.message || t('error_occurred'));
+      setError(err.message || "An error occurred");
       if (nameOverride) handleLogout();
     } finally {
       setLoading(false);
@@ -161,7 +159,7 @@ const ResidentDashboard: React.FC = () => {
   const handleSubmitTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketForm.subject || !ticketForm.message) {
-      showToast(t('fill_all_fields'), "info");
+      showToast("Please fill all fields", "info");
       return;
     }
 
@@ -169,7 +167,7 @@ const ResidentDashboard: React.FC = () => {
     
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) throw new Error(t('must_be_logged_in'));
+      if (userError || !user) throw new Error("Must be logged in");
 
       const payload = {
         user_id: user.id, // Supabase user.id is a UUID string compatible with UUID columns
@@ -187,17 +185,17 @@ const ResidentDashboard: React.FC = () => {
         .single();
 
       if (error) {
-        console.error("Erro Detalhado:", error.message, error.details, error.hint);
+        console.error("Detailed Error:", error.message, error.details, error.hint);
         throw error;
       }
 
       setTickets([data, ...tickets]);
-      setTicketForm({ subject: '', category: 'Financeiro', message: '' });
-      showToast(t('ticket_sent_success'));
+      setTicketForm({ subject: '', category: 'Billing', message: '' });
+      showToast("Ticket sent successfully");
     } catch (err: any) {
-      console.error("Erro na submissão do ticket:", err);
-      const errorMsg = err.message || t('unknown_error');
-      showToast(`${t('error_sending_ticket')}: ${errorMsg}`, "error");
+      console.error("Ticket submission error:", err);
+      const errorMsg = err.message || "Unknown error";
+      showToast(`Error sending ticket: ${errorMsg}`, "error");
     } finally {
       setIsSubmittingTicket(false);
     }
@@ -212,7 +210,7 @@ const ResidentDashboard: React.FC = () => {
     setPassword('');
     localStorage.removeItem('sl_resident_name');
     localStorage.removeItem('sl_resident_pass');
-    showToast(t('logged_out_success'), "info");
+    showToast("Logged out successfully", "info");
   };
 
   if (loading && !isLoggedIn) {
@@ -229,7 +227,7 @@ const ResidentDashboard: React.FC = () => {
           </motion.div>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-[10px] animate-pulse">{t('authenticating')}</h2>
+          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-[10px] animate-pulse">Authenticating</h2>
         </div>
       </div>
     );
@@ -246,13 +244,13 @@ const ResidentDashboard: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-3xl font-display font-bold text-white tracking-tight">{t('resident_portal')}</h1>
-            <p className="text-white/40 text-sm">{t('resident_portal_desc')}</p>
+            <h1 className="text-3xl font-display font-bold text-white tracking-tight">Resident Portal</h1>
+            <p className="text-white/40 text-sm">Access your properties and support</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">{t('sl_username')}</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">SL Username</label>
                 <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                     <input 
@@ -265,7 +263,7 @@ const ResidentDashboard: React.FC = () => {
                 </div>
             </div>
             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">{t('access_password')}</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 ml-1">Access Password</label>
                 <div className="relative">
                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={16} />
                     <input 
@@ -286,11 +284,11 @@ const ResidentDashboard: React.FC = () => {
                 className="w-full py-5 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-3 hover:bg-amber-400 transition-all shadow-xl shadow-white/5"
             >
                 {loading ? <Loader2 className="animate-spin" size={16} /> : <LogIn size={16} />} 
-                {t('enter_dashboard')}
+                Enter Dashboard
             </button>
           </form>
 
-          <Link to="/" className="block text-[10px] uppercase font-bold text-white/20 hover:text-white transition-colors">{t('back_to_home')}</Link>
+          <Link to="/" className="block text-[10px] uppercase font-bold text-white/20 hover:text-white transition-colors">Back to Home</Link>
         </div>
       </div>
     );
@@ -320,7 +318,7 @@ const ResidentDashboard: React.FC = () => {
             
             <div className="space-y-3">
               <div className="flex items-center justify-center gap-3 text-amber-500">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('authenticated_msg')}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">AUTHENTICATED SESSION</span>
               </div>
               <h1 className="text-4xl font-display font-bold tracking-tighter capitalize text-white">
                 {residentData?.avatar_name}
@@ -336,7 +334,7 @@ const ResidentDashboard: React.FC = () => {
               onClick={handleLogout}
               className="mt-4 flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
             >
-              <LogOut size={14} /> {t('logout')}
+              <LogOut size={14} /> LOGOUT
             </button>
           </div>
         </div>
@@ -350,7 +348,7 @@ const ResidentDashboard: React.FC = () => {
               activeTab === 'rentals' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
             )}
           >
-            <Home size={14} /> {t('all_rentals')} ({properties.length})
+            <Home size={14} /> My Rentals ({properties.length})
           </button>
           <button 
             onClick={() => setActiveTab('support')}
@@ -359,7 +357,7 @@ const ResidentDashboard: React.FC = () => {
               activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
             )}
           >
-            <MessageSquare size={14} /> {t('all_support')} ({tickets.length})
+            <MessageSquare size={14} /> Support ({tickets.length})
           </button>
         </div>
 
@@ -376,11 +374,11 @@ const ResidentDashboard: React.FC = () => {
                 <div className="glass-card p-20 text-center space-y-6 border-white/5">
                    <Home size={60} className="mx-auto text-white/10" />
                    <div className="space-y-2">
-                      <p className="text-xl text-white font-medium">{t('no_rentals')}</p>
-                      <p className="text-white/40 max-w-md mx-auto">{t('no_rentals_desc')}</p>
+                      <p className="text-xl text-white font-medium">No rentals found</p>
+                      <p className="text-white/40 max-w-md mx-auto">Explore our properties and start your new life in Holanbra.</p>
                    </div>
-                   <Link to="/#imoveis" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
-                     {t('browse_catalog')}
+                   <Link to="/#properties" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
+                     Browse Properties
                    </Link>
                 </div>
               ) : (
@@ -413,24 +411,24 @@ const ResidentDashboard: React.FC = () => {
                           <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
                             <div className="flex items-center justify-between">
                               <Clock className="text-amber-500" size={20} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('rental_status')}</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Status</span>
                             </div>
                             <div>
                               <p className={`text-4xl font-display font-black ${daysLeft <= 0 ? 'text-red-500' : 'text-white'}`}>
-                                  {daysLeft <= 0 ? t('expired') : `${daysLeft} ${t('days')}`}
+                                  {daysLeft <= 0 ? "EXPIRED" : `${daysLeft} Days`}
                               </p>
-                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('expires_in')} {t('days')}</p>
+                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Remaining Time</p>
                             </div>
                           </div>
 
                           <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
                             <div className="flex items-center justify-between">
                               <Calendar className="text-amber-500" size={20} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('expiration_date')}</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Expires</span>
                             </div>
                             <div>
-                              <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : t('active')}</p>
-                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('expiration_date')}</p>
+                              <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : "Active"}</p>
+                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">Due Date</p>
                             </div>
                           </div>
 
@@ -438,19 +436,19 @@ const ResidentDashboard: React.FC = () => {
                              <div className="flex items-center justify-between">
                                <div className="flex items-center gap-3">
                                  <CreditCard className="text-amber-500" size={20} />
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('rental_price')}</span>
+                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Rental Price</span>
                                </div>
-                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / {t('week')}</div>
+                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / Week</div>
                              </div>
                              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                                 <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
-                                  {t('manage_extension_msg')} {prop.name}.
+                                  Manage your extensions directly at the rental box in {prop.name}.
                                 </p>
                                 <button 
                                   onClick={() => window.open(prop.teleport_url, '_blank')}
                                   className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
                                 >
-                                  <MapPin size={12} /> {t('visit_property')}
+                                  <MapPin size={12} /> Visit Property
                                 </button>
                              </div>
                           </div>
@@ -477,25 +475,25 @@ const ResidentDashboard: React.FC = () => {
                       <Plus size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold font-display">{t('new_ticket')}</h3>
-                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">{t('submit_request_staff')}</p>
+                      <h3 className="text-lg font-bold font-display">New Ticket</h3>
+                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">Submit a request to our staff</p>
                     </div>
                   </div>
 
                   <form onSubmit={handleSubmitTicket} className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">{t('subject')}</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Subject</label>
                       <input 
                         type="text"
                         value={ticketForm.subject}
                         onChange={(e) => setTicketForm({...ticketForm, subject: e.target.value})}
                         className="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white text-sm outline-none focus:border-amber-500/50"
-                        placeholder={t('new_ticket_placeholder')}
+                        placeholder="Ex: Rental extension"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">{t('category')}</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Category</label>
                       <div className="relative">
                         <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={14} />
                         <select 
@@ -503,21 +501,21 @@ const ResidentDashboard: React.FC = () => {
                           onChange={(e) => setTicketForm({...ticketForm, category: e.target.value})}
                           className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
                         >
-                          <option value="Financeiro" className="bg-zinc-900">{t('financial')}</option>
-                          <option value="Problema na Terra" className="bg-zinc-900">{t('land_issue')}</option>
-                          <option value="Outros" className="bg-zinc-900">{t('others')}</option>
+                          <option value="Billing" className="bg-zinc-900">Billing</option>
+                          <option value="Land Issue" className="bg-zinc-900">Land Issue</option>
+                          <option value="Others" className="bg-zinc-900">Others</option>
                         </select>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">{t('message')}</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-1">Message</label>
                       <textarea 
                         rows={5}
                         value={ticketForm.message}
                         onChange={(e) => setTicketForm({...ticketForm, message: e.target.value})}
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-sm outline-none focus:border-amber-500/50 resize-none"
-                        placeholder={t('message_placeholder')}
+                        placeholder="Write your message here..."
                       />
                     </div>
 
@@ -527,7 +525,7 @@ const ResidentDashboard: React.FC = () => {
                       className="w-full py-4 bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] rounded-xl flex items-center justify-center gap-2 hover:bg-amber-400 transition-all disabled:opacity-50"
                     >
                       {isSubmittingTicket ? <Loader2 className="animate-spin" size={14} /> : <Plus size={14} />}
-                      {t('submit')}
+                      SUBMIT
                     </button>
                   </form>
                 </div>
@@ -538,18 +536,17 @@ const ResidentDashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <History className="text-white/20" size={20} />
-                    <h3 className="text-lg font-bold font-display">{t('recent_tickets')}</h3>
+                    <h3 className="text-lg font-bold font-display">Recent Tickets</h3>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   {tickets.length === 0 ? (
                     <div className="glass-card p-20 text-center border-dashed border-white/5">
-                      <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">{t('no_tickets_found')}</p>
+                      <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">No tickets found</p>
                     </div>
                   ) : (
                     tickets.map((ticket) => {
-                      console.log('Dados do Ticket (Render):', ticket);
                       return (
                         <div key={ticket.id} className="glass-card p-6 border-white/5 space-y-4">
                           <div className="flex items-start justify-between">
@@ -564,15 +561,15 @@ const ResidentDashboard: React.FC = () => {
                                   "text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded",
                                   ticket.status === 'open' ? "bg-amber-500/10 text-amber-500" : "bg-green-500/10 text-green-500"
                                 )}>
-                                  {ticket.status === 'open' ? t('open') : t('resolved')}
+                                  {ticket.status === 'open' ? "OPEN" : "RESOLVED"}
                                 </span>
                                 <span className="text-[10px] text-white/20 uppercase font-black tracking-widest ml-2">
-                                  {ticket.category ? t(ticket.category.toLowerCase().replace(/ /g, '_')) || ticket.category : ''}
+                                  {ticket.category || "General"}
                                 </span>
                               </div>
                               <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
                               <p className="text-white/40 text-[10px] uppercase font-bold">
-                                {t('opened_on')} {new Date(ticket.created_at).toLocaleDateString()}
+                                Opened on {new Date(ticket.created_at).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
@@ -585,7 +582,7 @@ const ResidentDashboard: React.FC = () => {
                             <div className="bg-blue-900/40 p-4 mt-2 rounded-xl border border-blue-500/30 space-y-3">
                               <div className="flex items-center gap-2">
                                 <ShieldCheck className="text-blue-400" size={14} />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{t('staff_response')}</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">Staff Response</span>
                               </div>
                               <p className="text-sm text-white/80 leading-relaxed">{ticket.admin_reply}</p>
                             </div>

@@ -9,7 +9,6 @@ import {
   CheckCircle, 
   Loader2 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 
@@ -38,19 +37,17 @@ export function AdminSupportTickets({
   handleSendResponse,
   stats
 }: AdminSupportTicketsProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="max-w-6xl space-y-8">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h3 className="text-2xl font-bold font-display text-white">{t('recent_tickets')}</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('manage_tickets_desc')}</p>
+          <h3 className="text-2xl font-bold font-display text-white">Support Tickets</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Respond to resident inquiries and technical issues</p>
         </div>
         <div className="flex gap-4">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} {t('open')}</span>
+            <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} Open</span>
           </div>
           <button 
             onClick={onRefresh}
@@ -65,7 +62,7 @@ export function AdminSupportTickets({
         {tickets.length === 0 ? (
           <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[40px]">
             <MessageSquare size={48} className="mx-auto text-white/5 mb-4" />
-            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('no_tickets_found')}</p>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No support tickets found</p>
           </div>
         ) : (
           tickets.map((ticket) => (
@@ -86,7 +83,7 @@ export function AdminSupportTickets({
                         "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
                         ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
                       )}>
-                        {ticket.status === 'open' ? t('open') : t('resolved')}
+                        {ticket.status === 'open' ? "Open" : "Resolved"}
                       </span>
                       <span className="text-[8px] text-white/20 font-mono tracking-tighter">
                         {new Date(ticket.created_at).toLocaleDateString()}
@@ -114,7 +111,7 @@ export function AdminSupportTickets({
                       onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
                       className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
                     >
-                      {replyingTicketId === ticket.id ? t('cancel_reply') : t('reply_resolve')}
+                      {replyingTicketId === ticket.id ? "Cancel" : "Reply & Resolve"}
                     </button>
                   )}
                 </div>
@@ -131,7 +128,7 @@ export function AdminSupportTickets({
                     <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="text-amber-500" size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('official_response')}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Official Response</span>
                       </div>
                       <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
                     </div>
@@ -149,7 +146,7 @@ export function AdminSupportTickets({
                           <textarea 
                             value={adminResponse}
                             onChange={(e) => setAdminResponse(e.target.value)}
-                            placeholder={t('type_response_placeholder')}
+                            placeholder="Type your official response here..."
                             className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
                             rows={4}
                           />
@@ -158,7 +155,7 @@ export function AdminSupportTickets({
                               onClick={() => handleResolveTicket(ticket.id)}
                               className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
                             >
-                              {t('mark_resolved_no_reply')}
+                              Resolve without reply
                             </button>
                             <button 
                               onClick={() => handleSendResponse(ticket.id)}
@@ -166,7 +163,7 @@ export function AdminSupportTickets({
                               className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
                             >
                               {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
-                              {t('send_resolve')}
+                              Send Response & Resolve
                             </button>
                           </div>
                         </div>

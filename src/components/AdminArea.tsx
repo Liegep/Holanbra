@@ -20,7 +20,6 @@ import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 import { User } from '@supabase/supabase-js';
 import imageCompression from 'browser-image-compression';
-import { useTranslation } from 'react-i18next';
 
 // Sub-components
 import { AdminAuthForm } from './admin/AdminAuthForm';
@@ -36,8 +35,6 @@ import { AdminPropertyForm } from './admin/AdminPropertyForm';
 import { AdminPropertyListings } from './admin/AdminPropertyListings';
 
 export default function AdminArea() {
-  const { t } = useTranslation();
-  
   // UI State
   const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
@@ -273,9 +270,9 @@ export default function AdminArea() {
         updated_at: new Date().toISOString()
       });
       if (error) throw error;
-      showToast(t('admin.settings_saved'));
+      showToast("Settings saved successfully");
     } catch (error: any) {
-      showToast(`${t('admin.save_fail')}: ${error.message}`, "error");
+      showToast("Save failed: " + error.message, "error");
     }
   };
 
@@ -292,9 +289,9 @@ export default function AdminArea() {
       const { error } = await supabase.from('land_covenants').upsert(payload);
       if (error) throw error;
       setIsDirty(false);
-      showToast(t('covenant.update_success'));
+      showToast("Covenant updated successfully");
     } catch (error) {
-      showToast(t('covenant.update_error'), "error");
+      showToast("Error updating covenant", "error");
     }
   };
 
@@ -304,25 +301,25 @@ export default function AdminArea() {
       if (error) throw error;
       fetchInboxMessages();
     } catch (error) {
-      showToast(t('admin.status_update_error'), "error");
+      showToast("Status update error", "error");
     }
   };
 
   const handleDeleteMessage = async (id: string) => {
-    if (!confirm(t('admin.delete_message_confirm'))) return;
+    if (!confirm("Are you sure you want to delete this message?")) return;
     try {
       const { error } = await supabase.from('contact_messages').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('admin.message_deleted_success'));
+      showToast("Message deleted successfully");
       fetchInboxMessages();
     } catch (error) {
-      showToast(t('admin.delete_msg_error'), "error");
+      showToast("Delete message error", "error");
     }
   };
 
   const handleSaveTeam = async () => {
     if (!teamFormData.name || !teamFormData.role || !teamFormData.image) {
-      showToast(t('team.fill_required_fields'), "info");
+      showToast("Please fill all required fields", "info");
       return;
     }
     try {
@@ -338,7 +335,7 @@ export default function AdminArea() {
       if (editingTeamId) dataToSave.id = editingTeamId;
       const { error } = await supabase.from('team').upsert(dataToSave);
       if (error) throw error;
-      showToast(t('team.member_update_success'));
+      showToast("Team member updated successfully");
       setTeamFormData({ name: '', role: '', bio: '', image: '', icon: 'Users', slProfile: '#', order: (teamMembers.length + 1).toString() });
       setEditingTeamId(null);
     } catch (error) {
@@ -347,13 +344,13 @@ export default function AdminArea() {
   };
 
   const handleDeleteTeam = async (id: string) => {
-    if (!confirm(t('common.confirm_delete'))) return;
+    if (!confirm("Are you sure you want to delete this?")) return;
     try {
       const { error } = await supabase.from('team').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('common.deleted_success'));
+      showToast("Deleted successfully");
     } catch (error) {
-      showToast(t('common.delete_error'), "error");
+      showToast("Delete error", "error");
     }
   };
 
@@ -372,29 +369,29 @@ export default function AdminArea() {
 
   const handleGallerySave = async () => {
     if (!galleryFormData.imageUrl) {
-      showToast(t('gallery.choose_photo'), "info");
+      showToast("Please choose a photo first", "info");
       return;
     }
     try {
       const { error } = await supabase.from('gallery').insert({ url: galleryFormData.imageUrl, caption: galleryFormData.caption });
       if (error) throw error;
       setGalleryFormData({ caption: '', imageUrl: '' });
-      showToast(t('common.saved_success'));
+      showToast("Saved successfully");
       fetchGallery();
     } catch (err: any) {
-      showToast(t('common.save_error'), "error");
+      showToast("Save error", "error");
     }
   };
 
   const handleDeleteGallery = async (id: number) => {
-    if (!confirm(t('common.confirm_delete'))) return;
+    if (!confirm("Are you sure you want to delete this?")) return;
     try {
       const { error } = await supabase.from('gallery').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('common.deleted_success'));
+      showToast("Deleted successfully");
       fetchGallery();
     } catch (err: any) {
-      showToast(t('common.delete_error'), "error");
+      showToast("Delete error", "error");
     }
   };
 
@@ -410,11 +407,11 @@ export default function AdminArea() {
       const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
       await supabase.from('videos').upsert({ id: 1, name: 'Hero Virtual Tour', url: publicUrl });
       await supabase.from('site_settings').upsert({ id: 'hero_section', virtual_tour_url: publicUrl, updated_at: new Date().toISOString() });
-      showToast(t('common.saved_success'));
+      showToast("Saved successfully");
       setHeroContent(prev => ({ ...prev, virtualTourUrl: publicUrl }));
       fetchVideos();
     } catch (err: any) {
-      showToast(t('common.save_error'), "error");
+      showToast("Save error", "error");
     } finally {
       setIsUploading(false);
       setIsUploadingSlot(null);
@@ -422,14 +419,14 @@ export default function AdminArea() {
   };
 
   const handleDeleteVideo = async (id: number) => {
-    if (!confirm(t('common.confirm_delete'))) return;
+    if (!confirm("Are you sure you want to delete this?")) return;
     try {
       const { error } = await supabase.from('videos').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('common.deleted_success'));
+      showToast("Deleted successfully");
       fetchVideos();
     } catch (err: any) {
-      showToast(t('common.delete_error'), "error");
+      showToast("Delete error", "error");
     }
   };
 
@@ -492,7 +489,7 @@ export default function AdminArea() {
           updated_at: new Date().toISOString()
         });
       }
-      showToast(t('common.processing_success'));
+      showToast("Media processed successfully");
     } catch (error: any) {
       showToast(error.message || "Upload failed", "error");
     } finally {
@@ -503,7 +500,7 @@ export default function AdminArea() {
 
   const handleSaveProperty = async () => {
     if (!formData.name || !formData.price || !formData.imageUrl || !formData.description || !formData.casperletId || !formData.teleport_url) {
-      showToast(t('common.fill_required_fields'), "info");
+      showToast("Please fill all required fields", "info");
       return;
     }
     try {
@@ -524,17 +521,17 @@ export default function AdminArea() {
       if (editingId) {
         const { error } = await supabase.from('properties').update(dataToSave).eq('id', editingId);
         if (error) throw error;
-        showToast(t('common.saved_success'));
+        showToast("Saved successfully");
       } else {
         const { error } = await supabase.from('properties').insert([dataToSave]);
         if (error) throw error;
-        showToast(t('common.saved_success'));
+        showToast("Saved successfully");
       }
       setFormData({ name: '', casperletId: '', price: '', teleport_url: '', status: 'available', description: '', description_pt: '', description_en: '', description_es: '', description_nl: '', imageUrl: '', expiry_date: '' });
       setEditingId(null);
       setActiveTab('listings');
     } catch (error) {
-      showToast(t('common.save_error'), "error");
+      showToast("Save error", "error");
     }
   };
 
@@ -558,19 +555,19 @@ export default function AdminArea() {
   };
 
   const handleDeleteProperty = async (id: string) => {
-    if (!confirm(t('common.confirm_delete'))) return;
+    if (!confirm("Are you sure you want to delete this property?")) return;
     try {
       const { error } = await supabase.from('properties').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('common.deleted_success'));
+      showToast("Deleted successfully");
     } catch (error) {
-      showToast(t('common.delete_error'), "error");
+      showToast("Delete error", "error");
     }
   };
 
   const handleSaveRenter = async () => {
     if (!renterFormData.avatarName || !renterFormData.avatarUuid || !renterFormData.password) {
-      showToast(t('admin.fill_all_fields'), "info");
+      showToast("Please fill all fields", "info");
       return;
     }
     try {
@@ -594,24 +591,24 @@ export default function AdminArea() {
       if (toLink.length > 0) {
         await supabase.from('properties').update({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName, status: 'rented' }).in('id', toLink);
       }
-      showToast(t('admin.resident_update_success'));
+      showToast("Resident update successful");
       setRenterFormData({ avatarName: '', avatarUuid: '', password: '' });
       setSelectedPropertyIds([]);
       setEditingRenterId(null);
     } catch (error: any) {
-      showToast(t('common.save_error'), "error");
+      showToast("Save error", "error");
     }
   };
 
   const handleDeleteRenter = async (id: string, avatarUuid: string) => {
-    if (!confirm(t('admin.delete_renter_confirm'))) return;
+    if (!confirm("Are you sure you want to remove this resident?")) return;
     try {
       await supabase.from('properties').update({ tenant_id: null, tenant_name: null, status: 'available' }).eq('tenant_id', avatarUuid);
       const { error } = await supabase.from('renters').delete().eq('id', id);
       if (error) throw error;
-      showToast(t('admin.renter_removed_success'));
+      showToast("Resident removed successfully");
     } catch (error) {
-      showToast(t('admin.delete_renter_error'), "error");
+      showToast("Delete resident error", "error");
     }
   };
 
@@ -620,9 +617,9 @@ export default function AdminArea() {
       const { error } = await supabase.from('support_tickets').update({ status: 'resolved' }).eq('id', id);
       if (error) throw error;
       setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
-      showToast(t('tickets.resolved'));
+      showToast("Ticket marked as resolved");
     } catch (err) {
-      showToast(t('tickets.resolve_error'), "error");
+      showToast("Error resolving ticket", "error");
     }
   };
 
@@ -635,9 +632,9 @@ export default function AdminArea() {
       setTickets(prev => prev.map(t => t.id === id ? { ...t, admin_reply: adminResponse, status: 'resolved' } : t));
       setReplyingTicketId(null);
       setAdminResponse('');
-      showToast(t('tickets.response_sent'));
+      showToast("Response sent successfully");
     } catch (err: any) {
-      showToast(t('tickets.send_error'), "error");
+      showToast("Error sending response", "error");
     } finally {
       setIsSubmittingResponse(false);
     }
@@ -693,7 +690,7 @@ export default function AdminArea() {
           </motion.div>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-xs animate-pulse">{t('common.loading')}</h2>
+          <h2 className="text-amber-500 font-bold uppercase tracking-[0.5em] text-xs animate-pulse">Loading Systems</h2>
           <div className="w-48 h-[1px] bg-white/10 relative overflow-hidden">
             <motion.div 
               initial={{ left: "-100%" }}
@@ -717,13 +714,13 @@ export default function AdminArea() {
                 <AlertCircle className="text-red-500 w-10 h-10" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-3xl font-display font-bold text-white">{t('auth.access_denied')}</h2>
-                <p className="text-white/40 uppercase tracking-widest text-[10px]">{t('auth.access_denied_desc')}</p>
+                <h2 className="text-3xl font-display font-bold text-white">ACCESS DENIED</h2>
+                <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account does not have administrative privileges</p>
               </div>
               <div className="space-y-4 text-white">
                 <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
                 <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
-                  {t('auth.logout_switch')}
+                  Sign out & switch account
                 </button>
               </div>
             </div>
@@ -747,23 +744,23 @@ export default function AdminArea() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
-              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">{t('auth.logout')}</button>
+              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Log out</button>
             </div>
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.admin_dashboard')}</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">Executive Terminal</h2>
           {[
-            { id: 'listings', name: t('common.properties'), icon: BarChart3 },
-            { id: 'renters', name: t('admin.residents'), icon: UserIcon },
-            { id: 'gallery', name: t('common.gallery'), icon: ImageIcon },
+            { id: 'listings', name: "Properties", icon: BarChart3 },
+            { id: 'renters', name: "Residents", icon: UserIcon },
+            { id: 'gallery', name: "Gallery", icon: ImageIcon },
             { id: 'hero', name: 'Hero', icon: ImageIcon },
-            { id: 'team', name: t('common.team'), icon: UserIcon },
-            { id: 'inbox', name: t('admin.inbox'), icon: Mail },
-            { id: 'videos', name: t('admin.videos'), icon: Video },
-            { id: 'tickets', name: t('tickets.recent_tickets'), icon: MessageSquare },
-            { id: 'add', name: editingId ? t('common.edit') : t('admin.add_new'), icon: Plus },
-            { id: 'covenant', name: t('common.covenant'), icon: FileText },
-            { id: 'settings', name: t('admin.settings'), icon: Settings },
+            { id: 'team', name: "Organization", icon: UserIcon },
+            { id: 'inbox', name: "Inbox", icon: Mail },
+            { id: 'videos', name: "Video Assets", icon: Video },
+            { id: 'tickets', name: "Support Tickets", icon: MessageSquare },
+            { id: 'add', name: editingId ? "Edit Property" : "Add New Property", icon: Plus },
+            { id: 'covenant', name: "Covenants", icon: FileText },
+            { id: 'settings', name: "Portal Settings", icon: Settings },
           ].map((item) => (
             <button
               key={item.id}

@@ -6,7 +6,6 @@ import {
   CheckCircle, 
   Trash2 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 interface AdminInboxProps {
@@ -22,14 +21,12 @@ export function AdminInbox({
   handleToggleRead,
   handleDeleteMessage
 }: AdminInboxProps) {
-  const { t } = useTranslation();
-
   return (
     <div className="max-w-5xl space-y-8">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h3 className="text-2xl font-bold font-display text-white italic">{t('inbox_messages')}</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('inbox_messages_desc')}</p>
+          <h3 className="text-2xl font-bold font-display text-white italic">Visitor Communications</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Direct inquiries from the public portal</p>
         </div>
         <button 
           onClick={onRefresh}
@@ -69,11 +66,11 @@ export function AdminInbox({
                     <div className="flex items-center gap-3">
                       <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
                       {!msg.is_read && (
-                        <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">{t('new')}</span>
+                        <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">NEW</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">{t('to')}:</span>
+                      <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">TO:</span>
                       <span className="text-[10px] text-white/40 uppercase font-black tracking-widest">{msg.recipient_name}</span>
                     </div>
                   </div>
@@ -102,7 +99,7 @@ export function AdminInbox({
         ) : (
           <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
             <Mail size={40} className="mx-auto text-white/5 mb-4" />
-            <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">{t('empty_inbox')}</p>
+            <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">Inbox is purely silent</p>
           </div>
         )}
       </div>

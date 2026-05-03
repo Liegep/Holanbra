@@ -6,7 +6,6 @@ import {
   ChevronRight, 
   Image as ImageIcon 
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 interface AdminTeamManagerProps {
   teamMembers: any[];
@@ -33,8 +32,6 @@ export function AdminTeamManager({
   handleDeleteTeam,
   handleEditTeam
 }: AdminTeamManagerProps) {
-  const { t } = useTranslation();
-
   const handleTeamInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setTeamFormData((prev: any) => ({ ...prev, [name]: value }));
@@ -43,7 +40,7 @@ export function AdminTeamManager({
   return (
     <div className="max-w-4xl space-y-8">
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-bold font-display text-left text-white">{t('team_management')}</h3>
+        <h3 className="text-2xl font-bold font-display text-left text-white">Team Management</h3>
         <button 
           onClick={() => {
             setEditingTeamId(null);
@@ -59,7 +56,7 @@ export function AdminTeamManager({
           }}
           className="text-[10px] font-black uppercase text-amber-500 tracking-widest hover:underline"
         >
-          {t('reset_form')}
+          Reset Form
         </button>
       </div>
 
@@ -67,7 +64,7 @@ export function AdminTeamManager({
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-amber-500/70 uppercase">{t('member_name')}</label>
+              <label className="text-xs font-bold text-amber-500/70 uppercase">Avatar Name</label>
               <input 
                 type="text"
                 name="name"
@@ -78,7 +75,7 @@ export function AdminTeamManager({
               />
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('member_role')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">Professional Role</label>
               <input 
                 type="text"
                 name="role"
@@ -90,7 +87,7 @@ export function AdminTeamManager({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 text-left">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t('member_icon')}</label>
+                <label className="text-xs font-bold text-gray-500 uppercase">UI Icon Style</label>
                 <select 
                   name="icon"
                   value={teamFormData.icon}
@@ -105,7 +102,7 @@ export function AdminTeamManager({
                 </select>
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t('member_order')}</label>
+                <label className="text-xs font-bold text-gray-500 uppercase">Display Sequence</label>
                 <input 
                   type="number"
                   name="order"
@@ -116,7 +113,7 @@ export function AdminTeamManager({
               </div>
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('member_sl_profile')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">SL Profile URL</label>
               <input 
                 type="text"
                 name="slProfile"
@@ -127,7 +124,7 @@ export function AdminTeamManager({
               />
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('member_bio')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">Background & Expertise</label>
               <textarea 
                 name="bio"
                 value={teamFormData.bio}
@@ -140,7 +137,7 @@ export function AdminTeamManager({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-gray-500 uppercase">{t('portrait_photo')}</label>
+            <label className="text-xs font-bold text-gray-500 uppercase">Executive Portrait</label>
             <div className="space-y-4">
               <div className="flex gap-4">
                 <input 
@@ -149,7 +146,7 @@ export function AdminTeamManager({
                   value={teamFormData.image}
                   onChange={handleTeamInputChange}
                   className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner"
-                  placeholder={t('paste_url_or_upload')}
+                  placeholder="Paste URL or upload"
                 />
                 <label className="shrink-0 flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all group">
                   <input 
@@ -174,12 +171,12 @@ export function AdminTeamManager({
             onClick={handleSaveTeam}
             className="w-full py-5 rounded-2xl bg-white text-black font-bold flex items-center justify-center gap-3 shadow-xl hover:bg-amber-500 transition-all uppercase tracking-widest text-xs"
           >
-            <Save size={18} /> {editingTeamId ? t('update_member') : t('add_to_team')}
+            <Save size={18} /> {editingTeamId ? "Update Profile" : "Add to Directory"}
           </button>
         </div>
 
         <div className="space-y-4">
-          <label className="text-xs font-bold text-gray-500 uppercase block text-left">{t('current_team')}</label>
+          <label className="text-xs font-bold text-gray-500 uppercase block text-left">Organization Directory</label>
           <div className="grid gap-4">
             {teamMembers.map((member) => (
               <div key={member.id} className="glass-card p-4 flex items-center gap-4 group">
