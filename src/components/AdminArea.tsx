@@ -672,7 +672,6 @@ export default function AdminArea() {
       // The user mentioned name, email, unit as EXAMPLES, but we stick to SL logic
       const dataToSave = {
         avatar_name: renterFormData.avatarName.trim(),
-        tenant_id: renterFormData.avatarUuid.trim(),
         avatar_uuid: renterFormData.avatarUuid.trim(),
         password: renterFormData.password.trim()
       };
@@ -747,7 +746,7 @@ export default function AdminArea() {
       const { data, error } = await supabase
         .from('renters')
         .delete()
-        .eq('id', cleanId)
+        .eq('id', String(cleanId).trim())
         .select();
 
       if (error) {

@@ -196,7 +196,7 @@ export function AdminResidents({
                       avatarUuid: renter.avatar_uuid,
                       password: renter.password
                     });
-                    const id = renter.tenant_id || renter.avatar_uuid;
+                    const id = renter.avatar_uuid;
                     const assignedIds = properties
                       .filter(p => (p.tenant_id === id))
                       .map(p => p.id);
