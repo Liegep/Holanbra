@@ -98,7 +98,8 @@ export default function AdminArea() {
     expiry_date: '',
     tenant_name: '',
     tenant_id: '',
-    property_type: [] as string[]
+    property_type: [] as string[],
+    videoUrl: ''
   });
 
   const [renterFormData, setRenterFormData] = useState({
@@ -539,6 +540,12 @@ export default function AdminArea() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: string, gridIdx?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    if (file.size > 10 * 1024 * 1024) {
+      showToast("File is too large (max 10MB)", "error");
+      return;
+    }
+    
     const uploadId = gridIdx !== undefined ? `grid-${gridIdx}` : targetField;
     setIsUploadingSlot(uploadId);
     setIsUploading(true);
@@ -546,10 +553,15 @@ export default function AdminArea() {
     try {
       let fileToUpload: File | Blob = file;
       const isImage = file.type.startsWith('image/');
+      const isVideo = file.type === 'video/mp4';
+      
       if (isImage) {
         const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920, useWebWorker: true, fileType: 'image/webp', initialQuality: 0.8 };
         fileToUpload = await imageCompression(file, options);
+      } else if (!isVideo) {
+          throw new Error("Unsupported file type");
       }
+      
       const fileExt = isImage ? 'webp' : file.name.split('.').pop();
       const fileName = `${targetField}_${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `media/${fileName}`;
@@ -560,6 +572,7 @@ export default function AdminArea() {
       if (targetField === 'imageUrl') setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
       else if (targetField === 'gallery_image_1') setFormData(prev => ({ ...prev, gallery_image_1: publicUrl }));
       else if (targetField === 'gallery_image_2') setFormData(prev => ({ ...prev, gallery_image_2: publicUrl }));
+      else if (targetField === 'videoUrl') setFormData(prev => ({ ...prev, videoUrl: publicUrl }));
       else if (targetField === 'image') setTeamFormData(prev => ({ ...prev, image: publicUrl }));
       else if (targetField === 'gallery') setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
       else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
@@ -624,6 +637,7 @@ export default function AdminArea() {
         image_url: formData.imageUrl?.trim() || null,
         gallery_image_1: formData.gallery_image_1?.trim() || null,
         gallery_image_2: formData.gallery_image_2?.trim() || null,
+        video_url: formData.videoUrl?.trim() || null,
         teleport_url: formData.teleport_url?.trim() || null,
         status: formData.status || 'available',
         tenant_name: formData.tenant_name?.trim() || null,
@@ -660,6 +674,7 @@ export default function AdminArea() {
         imageUrl: '', 
         gallery_image_1: '',
         gallery_image_2: '',
+        videoUrl: '',
         expiry_date: '',
         tenant_name: '',
         tenant_id: '',
@@ -692,6 +707,7 @@ export default function AdminArea() {
       imageUrl: prop.image_url || '',
       gallery_image_1: prop.gallery_image_1 || '',
       gallery_image_2: prop.gallery_image_2 || '',
+      videoUrl: prop.video_url || '',
       expiry_date: prop.expiry_date || '',
       tenant_name: prop.tenant_name || '',
       tenant_id: prop.tenant_id || '',

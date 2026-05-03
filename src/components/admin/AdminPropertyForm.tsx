@@ -71,6 +71,7 @@ export function AdminPropertyForm({
                 imageUrl: '',
                 gallery_image_1: '',
                 gallery_image_2: '',
+                videoUrl: '',
                 expiry_date: '',
                 tenant_name: '',
                 tenant_id: '',
@@ -259,6 +260,31 @@ export function AdminPropertyForm({
                   </label>
                   {formData.gallery_image_2 && (
                     <button onClick={() => setFormData((prev: any) => ({ ...prev, gallery_image_2: '' }))} className="p-2 bg-white/5 border border-white/10 text-red-500 rounded-xl hover:bg-red-500/10 transition-all">
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-left col-span-2">
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">Video Asset (MP4, max 10MB)</label>
+                <div className="flex gap-2">
+                  <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
+                    <input 
+                      type="file" 
+                      accept="video/mp4" 
+                      className="hidden" 
+                      onChange={(e) => handleFileUpload(e, 'videoUrl')}
+                      disabled={isUploading}
+                    />
+                    {formData.videoUrl ? (
+                      <video src={formData.videoUrl} className="w-full h-12 object-cover rounded-lg" />
+                    ) : (
+                      <Plus size={16} className="text-white/20 group-hover:text-amber-500" />
+                    )}
+                  </label>
+                  {formData.videoUrl && (
+                    <button onClick={() => setFormData((prev: any) => ({ ...prev, videoUrl: '' }))} className="p-2 bg-white/5 border border-white/10 text-red-500 rounded-xl hover:bg-red-500/10 transition-all">
                       <X size={14} />
                     </button>
                   )}
