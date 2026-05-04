@@ -848,7 +848,8 @@ const resources = {
           "expertise": "Experiência e Especialidade",
           "portrait": "Retrato Executivo",
           "price_week": "Preço (L$ / Semana)",
-          "language": "Versão do Idioma"
+          "language": "Versão do Idioma",
+          "current_gallery": "Galeria Atual"
         },
         "buttons": {
           "add_photo": "Adicionar Nova Foto de Atmosfera",
