@@ -1303,6 +1303,23 @@ const resources = {
           "confirm_delete": "¿Estás seguro de que quieres eliminar este paquete de precios?",
           "success_deleted": "Paquete eliminado exitosamente"
         },
+        "hero": {
+          "title": "Sección principal",
+          "subtitle": "Gestiona la imagen de marca de tu sitio web y los elementos visuales principales",
+          "background_photo": "imagen de fondo",
+          "change_background": "subir una imagen",
+          "tour_video": "Vídeo de presentación global",
+          "change_video": "Change Video",
+          "upload_video": "subir video",
+          "upload_image": "subir una imagen",
+          "featured_photos": "Cuadrícula de fotos destacadas",
+          "badge_text": "Texto de la insignia",
+          "main_title": "Título principal",
+          "secondary_title": "Título secundario",
+          "about_photo": "Foto de sobre nosotros",
+          "save_all": "guardar todos los cambios",
+          "uploading": "Uploading..."
+        },
         "navigation": {
           "title": "Terminal Ejecutiva",
           "listings": "Inmuebles",
@@ -1360,7 +1377,31 @@ const resources = {
           "update_button": "Actualizar Residente",
           "register_button": "Registrar residente",
           "preview": "Vista Previa del Avatar"
+        },
+        "team": {
+          "title": "Gestión de Equipo",
+          "reset": "restablecer formulario",
+          "avatar_name": "Nombre del Avatar",
+          "role": "Rol Profesional",
+          "icon_style": "Estilo de Icono",
+          "sequence": "Secuencia de Visualización",
+          "profile_url": "URL del Perfil SL",
+          "expertise": "Experiencia y Especialidad",
+          "portrait": "Retrato Ejecutivo",
+          "update_button": "Actualizar Perfil",
+          "add_button": "añadir al directorio",
+          "directory": "Directorio de la organización",
+          "placeholder_url": "Pegar URL o subir",
+          "placeholder_bio": "Breve biografía...",
+          "icons": {
+            "briefcase": "Maletín",
+            "paintbrush": "Pincel",
+            "shield": "Escudo",
+            "legal": "Legal",
+            "community": "Comunidad"
+          }
         }
+
       }
     }
   },
