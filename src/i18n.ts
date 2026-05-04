@@ -855,7 +855,8 @@ const resources = {
           "add": "Adicionar ao Diretório",
           "save": "Salvar Alterações",
           "cancel": "Cancelar",
-          "resolve": "Responder e Resolver"
+          "resolve": "Responder e Resolver",
+          "add_to_collection": "Adicionar à coleção"
         },
         "common": {
           "save": "Salvar Alterações",
