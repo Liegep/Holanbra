@@ -69,7 +69,10 @@ export function AdminPropertyForm({
                 rental_price: '',
                 teleport_url: '',
                 status: 'available',
-                description: '',
+                description_pt: '',
+                description_en: '',
+                description_es: '',
+                description_nl: '',
                 imageUrl: '',
                 gallery_image_1: '',
                 gallery_image_2: '',
@@ -188,8 +191,8 @@ export function AdminPropertyForm({
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
           <textarea 
-            name="description"
-            value={formData.description}
+            name={`description_${formLang}`}
+            value={formData[`description_${formLang}`]}
             onChange={handleInputChange}
             rows={6}
             className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all resize-none" 
