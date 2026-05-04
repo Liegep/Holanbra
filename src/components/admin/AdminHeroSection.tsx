@@ -7,6 +7,7 @@ import {
   Video,
   X
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 interface AdminHeroSectionProps {
@@ -24,6 +25,7 @@ export function AdminHeroSection({
   handleFileUpload,
   handleSaveHero
 }: AdminHeroSectionProps) {
+  const { t } = useTranslation();
   const handleHeroInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setHeroContent((prev: any) => ({ ...prev, [name]: value }));
@@ -32,8 +34,8 @@ export function AdminHeroSection({
   return (
     <div className="max-w-4xl space-y-12">
       <div className="text-left">
-        <h3 className="text-2xl font-bold font-display text-white">Hero Section</h3>
-        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Manage your website branding and main visuals</p>
+        <h3 className="text-2xl font-bold font-display text-white">{t('admin.hero.title')}</h3>
+        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('admin.hero.subtitle')}</p>
       </div>
 
       <div className="space-y-12">
@@ -41,7 +43,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 < ImageIcon size={14} /> Background Photo
+                 < ImageIcon size={14} /> {t('admin.hero.background_photo')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.backgroundImage ? (
@@ -75,7 +77,7 @@ export function AdminHeroSection({
 
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 <Video size={14} /> Global Tour Video
+                 <Video size={14} /> {t('admin.hero.tour_video')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.virtualTourUrl ? (
@@ -124,7 +126,7 @@ export function AdminHeroSection({
 
           <div className="space-y-4 text-left">
             <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-               < ImageIcon size={14} /> Featured Photos Grid
+               < ImageIcon size={14} /> {t('admin.hero.featured_photos')}
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((idx) => (
@@ -170,7 +172,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Badge Text</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.badge_text')}</label>
                 <input 
                   type="text"
                   name="badgeText"
@@ -180,7 +182,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Main Title</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.main_title')}</label>
                 <input 
                   type="text"
                   name="title1"
@@ -190,7 +192,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Italic Secondary Title</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.secondary_title')}</label>
                 <input 
                   type="text"
                   name="title2"
@@ -202,7 +204,7 @@ export function AdminHeroSection({
             </div>
 
             <div className="space-y-4 text-left border-l border-white/5 pl-8">
-               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">About Us Photo</label>
+               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('admin.hero.about_photo')}</label>
                <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
                   {heroContent.aboutImage ? (
                     <img src={heroContent.aboutImage} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -238,7 +240,7 @@ export function AdminHeroSection({
             onClick={handleSaveHero}
             className="w-full py-5 rounded-2xl bg-white text-black font-black flex items-center justify-center gap-3 hover:bg-amber-500 transition-all uppercase tracking-widest text-[10px] shadow-2xl"
           >
-            <Save size={18} /> SAVE ALL CHANGES
+            <Save size={18} /> {t('admin.hero.save_all')}
           </button>
         </div>
       </div>

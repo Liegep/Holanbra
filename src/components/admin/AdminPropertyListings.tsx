@@ -47,12 +47,12 @@ export function AdminPropertyListings({
       <div className="space-y-6">
         <div className="flex justify-between items-end border-b border-white/5 pb-6">
           <div className="space-y-1 text-left">
-            <h3 className="text-4xl font-bold font-display tracking-tight text-white">{t('admin.listings', 'Executive Dashboard')}</h3>
-            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] uppercase">Operational overview of all virtual holdings and resident status</p>
+            <h3 className="text-4xl font-bold font-display tracking-tight text-white">{t('admin.dashboard')}</h3>
+            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] uppercase">{t('admin.operational_overview')}</p>
           </div>
           <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white">
             <RefreshCw size={12} className="text-amber-500" />
-            Sync Casperlet
+            {t('admin.sync')}
           </button>
         </div>
 
@@ -66,9 +66,9 @@ export function AdminPropertyListings({
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <FileText size={48} className="text-white" />
             </div>
-            <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">Total Portfolio</p>
+            <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-4">{t('admin.stats.total_portfolio')}</p>
             <div className="text-5xl font-black text-white leading-none">{stats.total}</div>
-            <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">Units across all Sims</p>
+            <p className="text-[9px] text-white/20 uppercase mt-4 tracking-tighter">{t('admin.stats.units_across')}</p>
           </motion.div>
 
           <motion.div 
@@ -98,12 +98,12 @@ export function AdminPropertyListings({
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <CheckCircle size={48} className="text-amber-500" />
             </div>
-            <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">Overall Occupancy</p>
+            <p className="text-[10px] text-amber-500/60 uppercase font-black tracking-widest mb-4">{t('admin.stats.occupancy')}</p>
             <div className="flex items-baseline gap-2">
                <div className="text-5xl font-black text-amber-500 leading-none">{Math.round((stats.rented / stats.total) * 100) || 0}%</div>
                <div className="text-xs font-bold text-amber-500/40">{stats.rented}/{stats.total}</div>
             </div>
-            <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} Available for rent</p>
+            <p className="text-[9px] text-amber-500/20 uppercase mt-4 tracking-tighter">{stats.available} {t('admin.stats.available')}</p>
           </motion.div>
 
           <motion.div 
@@ -152,7 +152,7 @@ export function AdminPropertyListings({
                 activeFilter === 'all' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
               )}
             >
-              All Properties ({properties.length})
+              {t('admin.filters.all')} ({properties.length})
             </button>
             <button 
               onClick={() => setActiveFilter('expiring')}
@@ -162,7 +162,7 @@ export function AdminPropertyListings({
               )}
             >
               <Clock size={12} />
-              Expiring Soon ({stats.critical + stats.attention})
+              {t('admin.filters.expiring')} ({stats.critical + stats.attention})
             </button>
           </div>
         </div>
@@ -209,7 +209,7 @@ export function AdminPropertyListings({
                         isCritical ? "bg-red-500 text-white" : isAttention ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
                       )}>
                         <Clock size={8} />
-                        {daysRemaining <= 0 ? 'Expired' : `${daysRemaining} days left`}
+                        {daysRemaining <= 0 ? t('common.expired', 'Expired') : `${daysRemaining} ${t('common.days_left', 'days left')}`}
                       </div>
                     )}
 
@@ -250,7 +250,7 @@ export function AdminPropertyListings({
                     <button 
                       onClick={() => handleEdit(prop)}
                       className="p-2 text-gray-500 hover:text-white transition-colors"
-                      title="Edit Property"
+                      title={t('admin.common.edit')}
                     >
                       <ChevronRight size={14} />
                     </button>
@@ -264,7 +264,7 @@ export function AdminPropertyListings({
                     <button 
                       onClick={() => handleDelete(prop.id)}
                       className="p-2 text-red-500/30 hover:text-red-500 transition-colors"
-                      title="Delete Property"
+                      title={t('admin.common.delete')}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -277,7 +277,7 @@ export function AdminPropertyListings({
 
         {properties.length === 0 && (
           <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-3xl">
-            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">No properties registered</p>
+            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">{t('common.no_items', 'No items registered')}</p>
           </div>
         )}
       </div>

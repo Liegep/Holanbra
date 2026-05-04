@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DollarSign, Plus, X, Trash2, CheckCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { ToastType } from '../Toast';
 
@@ -14,6 +15,7 @@ interface PricingPackage {
 }
 
 export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, type?: ToastType) => void }) => {
+  const { t } = useTranslation();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -83,7 +85,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.price || formData.features.filter(f => f.trim()).length === 0) {
-      showToast("Name, price, and at least 1 feature are required", "error");
+      showToast(t('admin.pricing.error_required'), "error");
       return;
     }
 
@@ -100,11 +102,11 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
       if (formData.id) {
         const { error } = await supabase.from('pricing_packages').update(payload).eq('id', formData.id);
         if (error) throw error;
-        showToast("Package updated successfully!");
+        showToast(t('admin.pricing.success_updated'));
       } else {
         const { error } = await supabase.from('pricing_packages').insert([payload]);
         if (error) throw error;
-        showToast("Package created successfully!");
+        showToast(t('admin.pricing.success_created'));
       }
 
       resetForm();
@@ -115,11 +117,11 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this pricing package?")) return;
+    if (!confirm(t('admin.pricing.confirm_delete'))) return;
     try {
       const { error } = await supabase.from('pricing_packages').delete().eq('id', id);
       if (error) throw error;
-      showToast("Package deleted successfully");
+      showToast(t('admin.pricing.success_deleted'));
       fetchPackages();
     } catch (err: any) {
       showToast(err.message, "error");
@@ -151,7 +153,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
       for (const pkg of [newPackages[index], newPackages[swapIndex]]) {
         await supabase.from('pricing_packages').update({ order_idx: pkg.order_idx }).eq('id', pkg.id);
       }
-      showToast("Order updated", "success");
+      showToast(t('admin.pricing.order_updated'), "success");
     } catch (err) {
       console.error(err);
       fetchPackages(); // Revert on error
@@ -178,25 +180,25 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
           <DollarSign className="text-amber-500" size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">Pricing Packages</h2>
-          <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Manage decoration pricing tables</p>
+          <h2 className="text-2xl font-bold text-white">{t('admin.pricing.title')}</h2>
+          <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">{t('admin.pricing.subtitle')}</p>
         </div>
       </div>
 
       {/* Editor Form */}
       <div className="glass-card p-8 rounded-2xl border border-white/5 bg-white/5 space-y-8">
         <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
-            <h3 className="text-lg font-bold text-white">{isEditing ? 'Editing Package' : 'Create New Package'}</h3>
+            <h3 className="text-lg font-bold text-white">{isEditing ? t('admin.pricing.editing') : t('admin.pricing.create_new')}</h3>
             {isEditing && (
                 <button onClick={resetForm} className="text-xs text-amber-500 hover:text-white uppercase tracking-widest font-bold">
-                    Cancel Edit
+                    {t('admin.pricing.cancel_edit')}
                 </button>
             )}
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Package Name *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.pricing.package_name')} *</label>
                     <input 
                         type="text" 
                         value={formData.name}
@@ -207,7 +209,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Price *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.pricing.price')} *</label>
                     <input 
                         type="text" 
                         value={formData.price}
@@ -221,9 +223,9 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
 
             <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 flex items-center justify-between">
-                    <span>Features List *</span>
+                    <span>{t('admin.pricing.features_list')} *</span>
                     <button type="button" onClick={addFeature} className="text-amber-500/70 hover:text-amber-500 flex items-center gap-1">
-                        <Plus size={12} /> Add Row
+                        <Plus size={12} /> {t('admin.pricing.add_row')}
                     </button>
                 </label>
                 <div className="space-y-3">
@@ -241,7 +243,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                                     value={feature}
                                     onChange={(e) => handleFeatureChange(idx, e.target.value)}
                                     className="flex-1 bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-amber-500/50 outline-none"
-                                    placeholder={`Feature #${idx + 1}`}
+                                    placeholder={`${t('admin.pricing.feature_placeholder')} ${idx + 1}`}
                                 />
                                 {formData.features.length > 1 && (
                                     <button 
@@ -269,24 +271,24 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                         checked={formData.is_popular} 
                         onChange={(e) => setFormData({...formData, is_popular: e.target.checked})} 
                     />
-                    <span className="text-sm font-bold text-white group-hover:text-amber-500 transition-colors">Highlight as "Most Popular"</span>
+                    <span className="text-sm font-bold text-white group-hover:text-amber-500 transition-colors">{t('admin.pricing.highlight_popular')}</span>
                 </label>
             </div>
 
             <button type="submit" className="w-full px-8 py-4 bg-amber-500 text-black rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex justify-center gap-2 items-center">
-                {isEditing ? 'Update Package' : 'Create Package'}
+                {isEditing ? t('admin.pricing.update_button') : t('admin.pricing.create_button')}
             </button>
         </form>
       </div>
 
       {/* Package List */}
-      <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4">Current Packages ({packages.length})</h3>
+      <h3 className="text-lg font-bold text-white border-b border-white/10 pb-4">{t('admin.pricing.current_packages')} ({packages.length})</h3>
       
       {loading ? (
-        <div className="text-center py-12"><p className="text-white/50 text-xs uppercase tracking-widest animate-pulse font-bold">Loading Packages...</p></div>
+        <div className="text-center py-12"><p className="text-white/50 text-xs uppercase tracking-widest animate-pulse font-bold">{t('admin.pricing.loading')}</p></div>
       ) : packages.length === 0 ? (
         <div className="text-center py-8 bg-white/5 rounded-2xl border border-white/10">
-            <p className="text-amber-500/70 text-xs uppercase tracking-widest font-bold">No packages found. Add one above.</p>
+            <p className="text-amber-500/70 text-xs uppercase tracking-widest font-bold">{t('admin.pricing.none_found')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -299,7 +301,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                         <button disabled={idx === packages.length - 1} onClick={() => handleMove(idx, 'down')} className="p-1 hover:text-amber-500 disabled:opacity-30 disabled:hover:text-white transition-colors"><ChevronDown size={16} /></button>
                     </div>
 
-                    {pkg.is_popular && <div className="absolute top-[-10px] left-6 bg-amber-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Most Popular</div>}
+                    {pkg.is_popular && <div className="absolute top-[-10px] left-6 bg-amber-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">{t('pricing.popular')}</div>}
                     
                     <h4 className="text-lg font-bold mt-2 text-white">{pkg.name}</h4>
                     <p className="text-2xl font-black mb-4 text-white">{pkg.price}</p>
@@ -311,7 +313,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                     </ul>
 
                     <div className="flex gap-2 mt-auto pt-4 border-t border-white/10">
-                        <button onClick={() => handleEdit(pkg)} className="flex-1 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">Edit</button>
+                        <button onClick={() => handleEdit(pkg)} className="flex-1 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin.common.edit')}</button>
                         <button onClick={() => handleDelete(pkg.id)} className="px-4 py-2 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all"><Trash2 size={16} /></button>
                     </div>
                 </div>

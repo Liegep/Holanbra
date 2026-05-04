@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Image as ImageIcon, Loader2, Plus, X, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { ToastType } from '../Toast';
 import imageCompression from 'browser-image-compression';
 
 export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, type?: ToastType) => void }) => {
+  const { t } = useTranslation();
   const [portfolioItems, setPortfolioItems] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -61,7 +63,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
       const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
       
       setFormData(prev => ({ ...prev, image_url: publicUrl }));
-      showToast("Media processed successfully");
+      showToast(t('admin.common.success.media_processed'));
       
     } catch (error: any) {
       showToast(error.message, "error");
@@ -74,7 +76,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.image_url || !formData.title) {
-        showToast("Image and Title are required", "error");
+        showToast(t('admin.common.error.required'), "error");
         return;
     }
 
@@ -89,7 +91,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
 
         if (error) throw error;
         
-        showToast("Portfolio item added!");
+        showToast(t('admin.common.success.added'));
         setFormData({ title: '', description: '', image_url: '' });
         fetchPortfolio();
     } catch (err: any) {
@@ -98,7 +100,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
   };
 
   const deleteItem = async (id: string, imageUrl: string) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
+    if (!confirm(t('admin.common.confirm_delete'))) return;
 
     try {
       const { error } = await supabase.from('portfolio').delete().eq('id', id);
@@ -115,7 +117,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
         }
       }
 
-      showToast("Item deleted successfully");
+      showToast(t('admin.common.success.deleted'));
       fetchPortfolio();
     } catch (err: any) {
       showToast(err.message, "error");
@@ -129,8 +131,8 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
           <ImageIcon className="text-amber-500" size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-white">Decoration Portfolio</h2>
-          <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Manage decoration projects and reference images</p>
+          <h2 className="text-2xl font-bold text-white">{t('admin.portfolio.title')}</h2>
+          <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest">{t('admin.portfolio.subtitle')}</p>
         </div>
       </div>
 
@@ -138,7 +140,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Project Title *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.portfolio.project_title')} *</label>
                     <input 
                         type="text" 
                         value={formData.title}
@@ -148,7 +150,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Description</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.property.description')}</label>
                     <input 
                         type="text" 
                         value={formData.description}
@@ -159,18 +161,18 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
             </div>
 
             <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Project Photo *</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.portfolio.project_photo')} *</label>
                 <div className="flex gap-4">
                     <input 
                         type="text" 
                         value={formData.image_url} 
                         readOnly 
                         className="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm opacity-50 outline-none" 
-                        placeholder="Image URL"
+                        placeholder={t('admin.portfolio.placeholder_url')}
                     />
                     <label className="shrink-0 flex items-center justify-center px-6 bg-amber-500 text-black font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-all cursor-pointer">
                         <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
-                        {isUploading ? <Loader2 className="animate-spin" size={16} /> : "Upload Image"}
+                        {isUploading ? <Loader2 className="animate-spin" size={16} /> : t('admin.portfolio.upload_image')}
                     </label>
                 </div>
 
@@ -190,7 +192,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
 
             <button type="submit" disabled={isUploading || !formData.image_url || !formData.title} className="px-8 py-4 bg-amber-500 text-black rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all w-full flex justify-center gap-2 items-center">
                 <Plus size={16} />
-                Add to Portfolio
+                {t('admin.portfolio.add_button')}
             </button>
         </form>
       </div>

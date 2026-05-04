@@ -10,6 +10,7 @@ import {
   Loader2,
   Trash2
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
 
@@ -40,17 +41,18 @@ export function AdminSupportTickets({
   handleDeleteTicket,
   stats
 }: AdminSupportTicketsProps) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-6xl space-y-8">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h3 className="text-2xl font-bold font-display text-white">Support Tickets</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Respond to resident inquiries and technical issues</p>
+          <h3 className="text-2xl font-bold font-display text-white">{t('admin.tickets.title')}</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('admin.tickets.subtitle')}</p>
         </div>
         <div className="flex gap-4">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl border border-white/5">
             <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} Open</span>
+            <span className="text-[10px] text-white/60 font-black uppercase tracking-widest">{stats.openTickets} {t('admin.tickets.status_open')}</span>
           </div>
           <button 
             onClick={onRefresh}
@@ -65,7 +67,7 @@ export function AdminSupportTickets({
         {tickets.length === 0 ? (
           <div className="py-24 text-center border-2 border-dashed border-white/5 rounded-[40px]">
             <MessageSquare size={48} className="mx-auto text-white/5 mb-4" />
-            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">No support tickets found</p>
+            <p className="text-white/20 text-[10px] font-black uppercase tracking-[0.3em]">{t('admin.tickets.none_found')}</p>
           </div>
         ) : (
           tickets.map((ticket) => (
@@ -88,12 +90,12 @@ export function AdminSupportTickets({
                           "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
                           ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
                         )}>
-                          {ticket.status === 'open' ? "Open" : "Resolved"}
+                          {ticket.status === 'open' ? t('admin.tickets.status_open') : t('admin.tickets.status_resolved')}
                         </span>
                         <button 
                           onClick={(e) => handleDeleteTicket(e, ticket.id)}
                           className="p-1 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
-                          title="Delete Ticket"
+                          title={t('admin.tickets.delete_title')}
                         >
                           <Trash2 size={12} />
                         </button>
@@ -141,7 +143,7 @@ export function AdminSupportTickets({
                     <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="text-amber-500" size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Official Response</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('admin.tickets.official_response')}</span>
                       </div>
                       <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
                     </div>
@@ -159,7 +161,7 @@ export function AdminSupportTickets({
                           <textarea 
                             value={adminResponse}
                             onChange={(e) => setAdminResponse(e.target.value)}
-                            placeholder="Type your official response here..."
+                            placeholder={t('admin.tickets.placeholder_reply')}
                             className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
                             rows={4}
                           />
@@ -168,7 +170,7 @@ export function AdminSupportTickets({
                               onClick={() => handleResolveTicket(ticket.id)}
                               className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
                             >
-                              Resolve without reply
+                              {t('admin.tickets.resolve_only')}
                             </button>
                             <button 
                               onClick={() => handleSendResponse(ticket.id)}
@@ -176,7 +178,7 @@ export function AdminSupportTickets({
                               className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
                             >
                               {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
-                              Send Response & Resolve
+                              {t('admin.tickets.send_resolve')}
                             </button>
                           </div>
                         </div>

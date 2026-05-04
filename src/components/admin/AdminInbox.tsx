@@ -6,6 +6,7 @@ import {
   CheckCircle, 
   Trash2 
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 interface AdminInboxProps {
@@ -21,12 +22,13 @@ export function AdminInbox({
   handleToggleRead,
   handleDeleteMessage
 }: AdminInboxProps) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-5xl space-y-8">
       <div className="flex justify-between items-end">
         <div className="text-left">
-          <h3 className="text-2xl font-bold font-display text-white italic">Visitor Communications</h3>
-          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">Direct inquiries from the public portal</p>
+          <h3 className="text-2xl font-bold font-display text-white italic">{t('admin.inbox.title')}</h3>
+          <p className="text-white/40 text-[10px] uppercase tracking-widest mt-2">{t('admin.inbox.subtitle')}</p>
         </div>
         <button 
           onClick={onRefresh}
@@ -67,7 +69,7 @@ export function AdminInbox({
                     <div className="flex items-center gap-3">
                       <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
                       {!msg.is_read && (
-                        <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">NEW</span>
+                        <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">{t('admin.inbox.new_badge')}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
@@ -78,7 +80,7 @@ export function AdminInbox({
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleToggleRead(msg.id, msg.is_read)}
-                      title={msg.is_read ? "Mark as unread" : "Mark as read"}
+                      title={msg.is_read ? t('admin.inbox.mark_unread') : t('admin.inbox.mark_read')}
                       className="p-2 text-white/10 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all"
                     >
                       {msg.is_read ? <Mail size={16} /> : <CheckCircle size={16} />}
@@ -100,7 +102,7 @@ export function AdminInbox({
         ) : (
           <div className="py-32 text-center border-2 border-dashed border-white/5 rounded-[3rem]">
             <Mail size={40} className="mx-auto text-white/5 mb-4" />
-            <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">Inbox is purely silent</p>
+            <p className="text-white/20 text-[10px] uppercase font-black tracking-widest">{t('admin.inbox.none_found')}</p>
           </div>
         )}
       </div>
