@@ -66,7 +66,7 @@ export function AdminTeamManager({
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.team.avatar_name')}</label>
+              <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.fields.name')}</label>
               <input 
                 type="text"
                 name="name"
@@ -77,7 +77,7 @@ export function AdminTeamManager({
               />
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.role')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.role')}</label>
               <input 
                 type="text"
                 name="role"
@@ -89,7 +89,7 @@ export function AdminTeamManager({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 text-left">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.icon_style')}</label>
+                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.style')}</label>
                 <select 
                   name="icon"
                   value={teamFormData.icon}
@@ -104,7 +104,7 @@ export function AdminTeamManager({
                 </select>
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.sequence')}</label>
+                <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.sequence')}</label>
                 <input 
                   type="number"
                   name="order"
@@ -115,7 +115,7 @@ export function AdminTeamManager({
               </div>
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.profile_url')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.url')}</label>
               <input 
                 type="text"
                 name="slProfile"
@@ -126,7 +126,7 @@ export function AdminTeamManager({
               />
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.expertise')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.expertise')}</label>
               <textarea 
                 name="bio"
                 value={teamFormData.bio}
@@ -139,7 +139,7 @@ export function AdminTeamManager({
           </div>
 
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.team.portrait')}</label>
+            <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.portrait')}</label>
             <div className="space-y-4">
               <div className="flex gap-4">
                 <input 

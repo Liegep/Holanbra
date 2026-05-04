@@ -50,7 +50,7 @@ export function AdminResidents({
       <div className="glass-card p-8 border-white/10 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2 text-left">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.residents.avatar_name')}</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.name')}</label>
             <input 
               type="text" 
               name="avatarName"
@@ -61,7 +61,7 @@ export function AdminResidents({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.residents.avatar_uuid')}</label>
+            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.tenant_uuid', 'Avatar UUID')}</label>
             <input 
               type="text" 
               name="avatarUuid"

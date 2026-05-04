@@ -140,7 +140,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.portfolio.project_title')} *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.title')} *</label>
                     <input 
                         type="text" 
                         value={formData.title}
@@ -161,7 +161,7 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
             </div>
 
             <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.portfolio.project_photo')} *</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.photo')} *</label>
                 <div className="flex gap-4">
                     <input 
                         type="text" 

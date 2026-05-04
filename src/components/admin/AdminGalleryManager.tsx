@@ -6,6 +6,7 @@ import {
   Save, 
   Trash2 
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AdminGalleryManagerProps {
   galleryImages: any[];
@@ -26,6 +27,7 @@ export function AdminGalleryManager({
   handleGallerySave,
   handleDeleteGallery
 }: AdminGalleryManagerProps) {
+  const { t } = useTranslation();
   return (
     <div className="max-w-5xl space-y-12">
       <div className="text-left">
@@ -37,7 +39,7 @@ export function AdminGalleryManager({
         <div className="lg:col-span-1 space-y-6">
            <div className="glass-card p-8 border-white/5 space-y-6">
               <div className="space-y-4 text-left">
-                <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Add New Atmosphere Photo</label>
+                <label className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">{t('admin.buttons.add_photo')}</label>
                 <div className="relative group aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-white/10 bg-white/5 hover:border-amber-500/50 transition-all">
                    {galleryFormData.imageUrl ? (
                      <img src={galleryFormData.imageUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -70,7 +72,7 @@ export function AdminGalleryManager({
               </div>
 
               <div className="space-y-4 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Image Caption</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.caption')}</label>
                 <input 
                   type="text"
                   value={galleryFormData.caption}
@@ -92,7 +94,7 @@ export function AdminGalleryManager({
 
         <div className="lg:col-span-2 space-y-6">
           <div className="flex justify-between items-center px-2">
-            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Current Gallery ({galleryImages.length})</label>
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t('admin.fields.current_gallery', 'Current Gallery')} ({galleryImages.length})</label>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

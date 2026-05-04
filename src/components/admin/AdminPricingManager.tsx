@@ -15,7 +15,7 @@ interface PricingPackage {
 }
 
 export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, type?: ToastType) => void }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -32,7 +32,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
 
   useEffect(() => {
     fetchPackages();
-  }, []);
+  }, [i18n.language]);
 
   const fetchPackages = async () => {
     try {
@@ -198,7 +198,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.pricing.package_name')} *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.package_name', 'Package Name')} *</label>
                     <input 
                         type="text" 
                         value={formData.name}
@@ -209,7 +209,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                     />
                 </div>
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.pricing.price')} *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.price')} *</label>
                     <input 
                         type="text" 
                         value={formData.price}

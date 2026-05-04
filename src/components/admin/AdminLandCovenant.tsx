@@ -104,7 +104,7 @@ export function AdminLandCovenant({
 
       <div className="grid grid-cols-1 gap-12">
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.covenant.lang_en')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (EN)</label>
           <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
             <Editor 
               value={covenants.en}
@@ -117,7 +117,7 @@ export function AdminLandCovenant({
           </div>
         </div>
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.covenant.lang_pt')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (PT)</label>
           <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
             <Editor 
               value={covenants.pt}
@@ -130,7 +130,7 @@ export function AdminLandCovenant({
           </div>
         </div>
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.covenant.lang_es')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (ES)</label>
           <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
             <Editor 
               value={covenants.es}
@@ -143,7 +143,7 @@ export function AdminLandCovenant({
           </div>
         </div>
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.covenant.lang_nl')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (NL)</label>
           <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
             <Editor 
               value={covenants.nl}

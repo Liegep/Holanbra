@@ -315,14 +315,45 @@ const resources = {
           "verify_google": "Identity verification via Google",
           "login_failed": "Login failed"
         },
-        "navigation": "Executive Terminal",
-        "listings": "Properties",
-        "renters": "Residents",
-        "hero_section": "Banner",
-        "support_tickets": "Support Tickets",
-        "edit_property": "Edit Property",
-        "add_property": "Add New Property",
-        "settings": "Portal Settings",
+        "navigation": {
+          "title": "Executive Terminal",
+          "listings": "Properties",
+          "renters": "Residents",
+          "portfolio": "Portfolio",
+          "pricing": "Pricing",
+          "gallery": "Gallery",
+          "hero_section": "Banner",
+          "team": "Organization",
+          "inbox": "Inbox",
+          "support": "Support Tickets",
+          "edit_property": "Edit Property",
+          "add_property": "Add New Property",
+          "covenant": "Covenants",
+          "settings": "Portal Settings"
+        },
+        "fields": {
+          "price": "Price",
+          "caption": "Image Caption",
+          "title": "Project Title",
+          "photo": "Project Photo",
+          "name": "Avatar Name",
+          "role": "Professional Role",
+          "style": "UI Icon Style",
+          "sequence": "Display Sequence",
+          "url": "SL Profile URL",
+          "expertise": "Background & Expertise",
+          "portrait": "Executive Portrait",
+          "price_week": "Price (L$ / Week)",
+          "language": "Language Version"
+        },
+        "buttons": {
+          "add_photo": "Add New Atmosphere Photo",
+          "update": "Update Profile",
+          "add": "Add to Directory",
+          "save": "Save Changes",
+          "cancel": "Cancel",
+          "resolve": "Reply & Resolve"
+        },
         "common": {
           "save": "Save Changes",
           "cancel": "Cancel",
@@ -787,14 +818,45 @@ const resources = {
           "verify_google": "Verificação de identidade via Google",
           "login_failed": "Falha no login"
         },
-        "navigation": "Terminal Executivo",
-        "listings": "Imóveis",
-        "renters": "Residentes",
-        "hero_section": "Banner",
-        "support_tickets": "Tickets de Suporte",
-        "edit_property": "Editar Imóvel",
-        "add_property": "Novo Imóvel",
-        "settings": "Configurações do Portal",
+        "navigation": {
+          "title": "Terminal Executivo",
+          "listings": "Imóveis",
+          "renters": "Residentes",
+          "portfolio": "Portfólio",
+          "pricing": "Preços",
+          "gallery": "Galeria",
+          "hero_section": "Banner",
+          "team": "Organização",
+          "inbox": "Inbox",
+          "support": "Tickets de Suporte",
+          "edit_property": "Editar Imóvel",
+          "add_property": "Novo Imóvel",
+          "covenant": "Regras/Termos",
+          "settings": "Configurações do Portal"
+        },
+        "fields": {
+          "price": "Preço",
+          "caption": "Legenda da Imagem",
+          "title": "Título do Projeto",
+          "photo": "Foto do Projeto",
+          "name": "Nome do Avatar",
+          "role": "Cargo Profissional",
+          "style": "Estilo de Ícone",
+          "sequence": "Sequência de Exibição",
+          "url": "URL do Perfil SL",
+          "expertise": "Experiência e Especialidade",
+          "portrait": "Retrato Executivo",
+          "price_week": "Preço (L$ / Semana)",
+          "language": "Versão do Idioma"
+        },
+        "buttons": {
+          "add_photo": "Adicionar Nova Foto de Atmosfera",
+          "update": "Atualizar Perfil",
+          "add": "Adicionar ao Diretório",
+          "save": "Salvar Alterações",
+          "cancel": "Cancelar",
+          "resolve": "Responder e Resolver"
+        },
         "common": {
           "save": "Salvar Alterações",
           "cancel": "Cancelar",
@@ -1181,20 +1243,45 @@ const resources = {
         "logged_out": "Sesión cerrada con éxito"
       },
       "admin": {
-        "navigation": "Terminal Ejecutiva",
-        "listings": "Inmuebles",
-        "renters": "Residentes",
-        "portfolio": "Portafolio",
-        "pricing": "Precios",
-        "gallery": "Galería",
-        "hero_section": "Banner",
-        "team": "Organización",
-        "inbox": "Bandeja de Entrada",
-        "support": "Tickets de Soporte",
-        "edit_property": "Editar Inmueble",
-        "add_property": "Nuevo Inmueble",
-        "covenant": "Reglas de Residencia",
-        "settings": "Configuración"
+        "navigation": {
+          "title": "Terminal Ejecutiva",
+          "listings": "Inmuebles",
+          "renters": "Residentes",
+          "portfolio": "Portafolio",
+          "pricing": "Precios",
+          "gallery": "Galería",
+          "hero_section": "Banner",
+          "team": "Organización",
+          "inbox": "Bandeja de Entrada",
+          "support": "Tickets de Soporte",
+          "edit_property": "Editar Inmueble",
+          "add_property": "Nuevo Inmueble",
+          "covenant": "Reglas de Residencia",
+          "settings": "Configuración"
+        },
+        "fields": {
+          "price": "Precio",
+          "caption": "Leyenda de Imagen",
+          "title": "Título del Proyecto",
+          "photo": "Foto del Proyecto",
+          "name": "Nombre de Avatar",
+          "role": "Rol Profesional",
+          "style": "Estilo de Icono",
+          "sequence": "Secuencia de Visualización",
+          "url": "URL del Perfil SL",
+          "expertise": "Experiencia",
+          "portrait": "Retrato Ejecutivo",
+          "price_week": "Precio (L$ / Semana)",
+          "language": "Versión de Idioma"
+        },
+        "buttons": {
+          "add_photo": "Agregar Nueva Foto",
+          "update": "Actualizar Perfil",
+          "add": "Agregar al Directorio",
+          "save": "Guardar Cambios",
+          "cancel": "Cancelar",
+          "resolve": "Responder y Resolver"
+        }
       }
     }
   },
@@ -1431,20 +1518,45 @@ const resources = {
         "logged_out": "Succesvol uitgelogd"
       },
       "admin": {
-        "navigation": "Beheersterminal",
-        "listings": "Eigendommen",
-        "renters": "Bewoners",
-        "portfolio": "Portfolio",
-        "pricing": "Prijzen",
-        "gallery": "Galerij",
-        "hero_section": "Banner",
-        "team": "Organisatie",
-        "inbox": "Inbox",
-        "support": "Ondersteuningstickets",
-        "edit_property": "Woning Bewerken",
-        "add_property": "Nieuwe Woning Toevoegen",
-        "covenant": "Voorschriften",
-        "settings": "Instellingen"
+        "navigation": {
+          "title": "Beheersterminal",
+          "listings": "Eigendommen",
+          "renters": "Bewoners",
+          "portfolio": "Portfolio",
+          "pricing": "Prijzen",
+          "gallery": "Galerij",
+          "hero_section": "Banner",
+          "team": "Organisatie",
+          "inbox": "Inbox",
+          "support": "Ondersteuningstickets",
+          "edit_property": "Woning Bewerken",
+          "add_property": "Nieuwe Woning Toevoegen",
+          "covenant": "Voorschriften",
+          "settings": "Instellingen"
+        },
+        "fields": {
+          "price": "Prijs",
+          "caption": "Bijschrift",
+          "title": "Projecttitel",
+          "photo": "Projectfoto",
+          "name": "Avatarnaam",
+          "role": "Professionele Rol",
+          "style": "Icoon Stijl",
+          "sequence": "Weergavevolgorde",
+          "url": "SL Profiel URL",
+          "expertise": "Achtergrond en Expertise",
+          "portrait": "Portret",
+          "price_week": "Prijs (L$ / Week)",
+          "language": "Taalversie"
+        },
+        "buttons": {
+          "add_photo": "Nieuwe Sfeerfoto Toevoegen",
+          "update": "Profiel Bijwerken",
+          "add": "Toevoegen aan Map",
+          "save": "Wijzigingen Opslaan",
+          "cancel": "Annuleren",
+          "resolve": "Beantwoorden & Oplossen"
+        }
       }
     }
   }

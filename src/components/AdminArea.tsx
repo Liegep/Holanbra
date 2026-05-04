@@ -972,20 +972,20 @@ export default function AdminArea() {
             </div>
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.navigation')}</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.navigation.title')}</h2>
           {[
-            { id: 'listings', name: t('admin.listings'), icon: BarChart3 },
-            { id: 'renters', name: t('admin.renters'), icon: UserIcon },
-            { id: 'portfolio', name: t('admin.portfolio'), icon: ImageIcon },
-            { id: 'pricing', name: t('admin.pricing'), icon: DollarSign },
-            { id: 'gallery', name: t('admin.gallery'), icon: ImageIcon },
-            { id: 'hero', name: t('admin.hero_section'), icon: ImageIcon },
-            { id: 'team', name: t('admin.team'), icon: UserIcon },
-            { id: 'inbox', name: t('admin.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
-            { id: 'tickets', name: t('admin.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
-            { id: 'add', name: editingId ? t('admin.edit_property') : t('admin.add_property'), icon: Plus },
-            { id: 'covenant', name: t('admin.covenant'), icon: FileText },
-            { id: 'settings', name: t('admin.settings'), icon: Settings },
+            { id: 'listings', name: t('admin.navigation.listings'), icon: BarChart3 },
+            { id: 'renters', name: t('admin.navigation.renters'), icon: UserIcon },
+            { id: 'portfolio', name: t('admin.navigation.portfolio'), icon: ImageIcon },
+            { id: 'pricing', name: t('admin.navigation.pricing'), icon: DollarSign },
+            { id: 'gallery', name: t('admin.navigation.gallery'), icon: ImageIcon },
+            { id: 'hero', name: t('admin.navigation.hero_section'), icon: ImageIcon },
+            { id: 'team', name: t('admin.navigation.team'), icon: UserIcon },
+            { id: 'inbox', name: t('admin.navigation.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
+            { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
+            { id: 'add', name: editingId ? t('admin.navigation.edit_property') : t('admin.navigation.add_property'), icon: Plus },
+            { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
+            { id: 'settings', name: t('admin.navigation.settings'), icon: Settings },
           ].map((item) => (
             <button
               key={item.id}

@@ -43,7 +43,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 < ImageIcon size={14} /> {t('admin.hero.background_photo')}
+                 < ImageIcon size={14} /> {t('admin.fields.background_photo', 'Background Photo')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.backgroundImage ? (
@@ -63,7 +63,7 @@ export function AdminHeroSection({
                        onChange={(e) => handleFileUpload(e, 'backgroundImage')}
                        disabled={isUploadingSlot === 'backgroundImage'}
                      />
-                     {isUploadingSlot === 'backgroundImage' ? "Uploading..." : "Change Background"}
+                     {isUploadingSlot === 'backgroundImage' ? "Uploading..." : t('admin.buttons.change_background', 'Change Background')}
                   </label>
                 </div>
 
@@ -77,7 +77,7 @@ export function AdminHeroSection({
 
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 <Video size={14} /> {t('admin.hero.tour_video')}
+                 <Video size={14} /> {t('admin.fields.tour_video', 'Global Tour Video')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.virtualTourUrl ? (
@@ -97,7 +97,7 @@ export function AdminHeroSection({
                        onChange={(e) => handleFileUpload(e, 'virtualTourUrl')}
                        disabled={isUploadingSlot === 'virtualTourUrl'}
                      />
-                     {isUploadingSlot === 'virtualTourUrl' ? "Uploading..." : heroContent.virtualTourUrl ? "Change Video" : "Upload Video"}
+                     {isUploadingSlot === 'virtualTourUrl' ? "Uploading..." : heroContent.virtualTourUrl ? t('admin.buttons.change_video', 'Change Video') : t('admin.buttons.upload_video', 'Upload Video')}
                   </label>
                   {heroContent.virtualTourUrl && (
                     <button 
@@ -126,7 +126,7 @@ export function AdminHeroSection({
 
           <div className="space-y-4 text-left">
             <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-               < ImageIcon size={14} /> {t('admin.hero.featured_photos')}
+               < ImageIcon size={14} /> {t('admin.fields.featured_photos', 'Featured Photos Grid')}
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((idx) => (
@@ -172,7 +172,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.badge_text')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.badge_text', 'Badge Text')}</label>
                 <input 
                   type="text"
                   name="badgeText"
@@ -182,7 +182,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.main_title')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.main_title', 'Main Title')}</label>
                 <input 
                   type="text"
                   name="title1"
@@ -192,7 +192,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.secondary_title')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.secondary_title', 'Secondary Title')}</label>
                 <input 
                   type="text"
                   name="title2"
@@ -204,7 +204,7 @@ export function AdminHeroSection({
             </div>
 
             <div className="space-y-4 text-left border-l border-white/5 pl-8">
-               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('admin.hero.about_photo')}</label>
+               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('admin.fields.about_photo', 'About Us Photo')}</label>
                <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
                   {heroContent.aboutImage ? (
                     <img src={heroContent.aboutImage} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
