@@ -90,7 +90,7 @@ export function AdminPropertyForm({
       <div className="space-y-6">
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
-            {t('admin.fields.display_name', 'Property Display Name')} <span className="text-red-500 text-lg">*</span>
+            {t('admin.property.display_name')} <span className="text-red-500 text-lg">*</span>
           </label>
           <input 
             type="text" 
@@ -103,7 +103,7 @@ export function AdminPropertyForm({
         </div>
 
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.fields.type', 'Property Type')} ({t('common.multi_select', 'Multi-select')})</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.type')} ({t('common.multi_select', 'Multi-select')})</label>
           <div className="flex flex-wrap gap-2">
             {propertyTypeOptions.map(type => (
               <button
@@ -125,7 +125,7 @@ export function AdminPropertyForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2 text-left">
             <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
-              {t('admin.fields.price_week', 'Price (L$ / Week)')} <span className="text-red-500 text-lg">*</span>
+              {t('admin.property.price_week')} <span className="text-red-500 text-lg">*</span>
             </label>
             <input 
               type="number" 
@@ -137,7 +137,7 @@ export function AdminPropertyForm({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.fields.teleport_slurl', 'Teleport Link (SLURL)')}</label>
+            <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.teleport_slurl')}</label>
             <div className="relative">
               <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
               <input 
@@ -153,7 +153,7 @@ export function AdminPropertyForm({
         </div>
 
         <div className="space-y-2 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.fields.description', 'Property Description')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
           <textarea 
             name="description"
             value={formData.description}
@@ -166,7 +166,7 @@ export function AdminPropertyForm({
 
         {/* STATUS DROPDOWN */}
         <div className="space-y-2 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.fields.availability', 'Availability Status')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.availability')}</label>
           <div className="relative">
             <select 
               name="status"
@@ -219,7 +219,7 @@ export function AdminPropertyForm({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.fields.gallery_photo', 'Gallery Photo')} 01</label>
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.property.gallery_photo_1')}</label>
                 <div className="flex gap-2">
                   <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
                     <input 
@@ -244,7 +244,7 @@ export function AdminPropertyForm({
               </div>
 
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.fields.gallery_photo', 'Gallery Photo')} 02</label>
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.property.gallery_photo_2')}</label>
                 <div className="flex gap-2">
                   <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
                     <input 
@@ -269,7 +269,7 @@ export function AdminPropertyForm({
               </div>
 
               <div className="space-y-2 text-left col-span-2">
-                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.fields.video_asset', 'Video Asset')}</label>
+                <label className="text-[10px] font-bold text-amber-500/70 uppercase">{t('admin.property.video_asset')}</label>
                 <div className="flex gap-2">
                   <label className="w-full flex items-center justify-center p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:border-amber-500/50 transition-all group">
                     <input 
@@ -320,7 +320,7 @@ export function AdminPropertyForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.tenant_name', 'Tenant Name')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.property.tenant_name')}</label>
               <input 
                 type="text" 
                 name="tenant_name"
@@ -331,7 +331,7 @@ export function AdminPropertyForm({
               />
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.tenant_uuid', 'Tenant UUID')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.property.tenant_uuid')}</label>
               <input 
                 type="text" 
                 name="tenant_id"
@@ -345,7 +345,7 @@ export function AdminPropertyForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.expiry_date', 'Expiry Date')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.property.expiry_date')}</label>
               <div className="relative">
                 <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" />
                 <input 
@@ -358,7 +358,7 @@ export function AdminPropertyForm({
               </div>
             </div>
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.fields.casperlet_id', 'Casperlet ID')}</label>
+              <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.property.casperlet_id')}</label>
               <input 
                 type="text" 
                 name="casperletId"
