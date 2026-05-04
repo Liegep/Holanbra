@@ -1263,12 +1263,47 @@ const resources = {
           "expiring": "Expirando Pronto"
         },
         "property": {
+          "edit_config": "Editar Configuración de la Propiedad",
+          "add_new": "Añadir Nuevo Activo Inmobiliario",
+          "cancel": "Cancelar",
+          "display_name": "Nombre para mostrar de la propiedad",
+          "type": "Tipo de propiedad (selección múltiple)",
+          "price_week": "Precio (L$ / Semana)",
+          "teleport_slurl": "Enlace de Teletransporte (SLURL)",
+          "description": "Descripción de la propiedad",
+          "availability": "Estado de disponibilidad",
+          "main_image": "Imagen principal (portada)",
+          "gallery_photo_01": "Foto de galería 01",
+          "gallery_photo_02": "Foto de galería (02)",
+          "video_asset": "Recurso de vídeo",
+          "processing_media": "Procesando medios...",
+          "secondary_settings": "Configuración secundaria (opcional)",
+          "tenant_name": "Nombre del inquilino",
+          "tenant_uuid": "UUID del inquilino",
+          "expiry_date": "Fecha de vencimiento",
+          "casperlet_id": "ID del dispositivo Casperlet",
+          "update": "Actualizar configuración",
+          "publish": "publicar en listados",
+          "placeholder_name": "Ej: Dutch Mansion Luxury Parcel",
+          "placeholder_price": "1000",
+          "placeholder_slurl": "http://maps.secondlife.com/secondlife/...",
+          "placeholder_desc": "Describa los puntos destacados de la propiedad...",
+          "placeholder_tenant": "Nombre del residente",
+          "placeholder_uuid": "UUID de Second Life",
+          "placeholder_device": "UUID del dispositivo",
           "status": {
             "available": "Disponible",
-            "rented": "alquilado",
+            "rented": "Alquilado",
             "maintenance": "Mantenimiento"
           },
-          "description": "Descrición del proyecto"
+          "types": {
+            "land": "terreno",
+            "furnished": "amueblado",
+            "not_furnished": "no amueblado",
+            "skybox": "skybox",
+            "shop": "tienda",
+            "house": "casa"
+          }
         },
         "portfolio": {
           "title": "Portafolio de Decoración",
