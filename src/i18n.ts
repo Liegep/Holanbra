@@ -1307,6 +1307,23 @@ const resources = {
           "save": "Guardar Cambios",
           "cancel": "Cancelar",
           "resolve": "Responder y Resolver"
+        },
+        "residents": {
+          "title": "Gestión de Residentes",
+          "subtitle": "Crear, actualizar y gestionar credenciales de acceso de residentes",
+          "none_found": "No se encontraron residentes",
+          "last_seen": "Visto por última vez",
+          "never_seen": "Nunca visto",
+          "online": "En línea",
+          "avatar_name": "Nombre del Avatar (SL)",
+          "avatar_uuid": "Avatar UUID",
+          "password": "Acceso al portal",
+          "assign_properties": "Asignar propiedades",
+          "selected_count": "Propiedades Seleccionadas",
+          "occupied": "Ocupado",
+          "update_button": "Actualizar Residente",
+          "register_button": "Registrar residente",
+          "preview": "Vista Previa del Avatar"
         }
       }
     }
