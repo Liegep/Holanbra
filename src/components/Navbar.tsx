@@ -5,6 +5,7 @@ import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+const SUPPORTED_LANGS = ['en', 'pt', 'es', 'nl'];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -51,9 +52,21 @@ export default function Navbar() {
   }, []);
 
   const changeLanguage = (newLang: string) => {
+    // If we are on admin or resident portal, don't change the URL prefix
+    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/resident')) {
+      i18n.changeLanguage(newLang);
+      localStorage.setItem('i18nextLng', newLang);
+      return;
+    }
+
     // Replace the language part of the current path
     const pathParts = location.pathname.split('/');
-    pathParts[1] = newLang;
+    if (SUPPORTED_LANGS.includes(pathParts[1])) {
+      pathParts[1] = newLang;
+    } else {
+      // If there's no lang prefix, prepend it
+      pathParts.splice(1, 0, newLang);
+    }
     const newPath = pathParts.join('/') + location.search + location.hash;
     navigate(newPath);
   };
@@ -96,7 +109,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6 relative z-10">
           <div className="flex items-center gap-6 pr-6 border-r border-white/10">
             {navLinks.map((link: any) => (
               <Link 
@@ -115,13 +128,16 @@ export default function Navbar() {
 
           <div className="flex items-center gap-4">
             {/* Language Switcher */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 relative z-20">
               {languages.map((l) => (
                 <button
                   key={l.code}
-                  onClick={() => changeLanguage(l.code)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    changeLanguage(l.code);
+                  }}
                   className={cn(
-                    "text-lg transition-all hover:scale-125",
+                    "text-lg transition-all hover:scale-125 cursor-pointer relative z-30",
                     lang === l.code ? "grayscale-0 opacity-100" : "grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
                   )}
                 >
@@ -133,7 +149,7 @@ export default function Navbar() {
             {isAdmin && (
               <Link 
                 to="/admin" 
-                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
+                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10 relative z-20"
               >
                 <LayoutDashboard size={14} className="text-amber-500" />
                 ADMIN
@@ -142,7 +158,7 @@ export default function Navbar() {
 
             <Link 
               to="/resident" 
-              className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
+              className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 relative z-20"
             >
               <ShieldCheck size={14} />
               Portal

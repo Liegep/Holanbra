@@ -916,23 +916,22 @@ export default function AdminArea() {
       <div className="pt-32 pb-24 px-6 bg-black min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md">
           {!user ? <AdminAuthForm /> : (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8 space-y-12">
-        <div className="text-center space-y-6 max-w-md">
-          <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
-            <AlertCircle className="text-red-500 w-10 h-10" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-3xl font-display font-bold text-white tracking-tight uppercase">ACCESS DENIED</h1>
-            <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account does not have administrative privileges</p>
-          </div>
-          <div className="space-y-4 text-white">
-            <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
-            <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
-              {t('resident.logout')}
-            </button>
-          </div>
-        </div>
-      </div>
+            <div className="text-center space-y-6 max-w-md bg-zinc-900/50 p-12 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl" />
+              <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20 relative z-10">
+                <AlertCircle className="text-red-500 w-10 h-10" />
+              </div>
+              <div className="space-y-2 relative z-10">
+                <h1 className="text-3xl font-display font-bold text-white tracking-tight uppercase">ACCESS DENIED</h1>
+                <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account does not have administrative privileges</p>
+              </div>
+              <div className="space-y-4 text-white relative z-10">
+                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
+                <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
+                  {t('resident.logout')}
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

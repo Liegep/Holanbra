@@ -60,6 +60,13 @@ function LanguageWrapper() {
 
   useEffect(() => {
     if (lang && SUPPORTED_LANGS.includes(lang)) {
+      // Check if we are trying to access admin or resident via localized path
+      const subPath = location.pathname.split('/').slice(2).join('/');
+      if (subPath === 'admin' || subPath.startsWith('admin/') || subPath === 'resident' || subPath.startsWith('resident/')) {
+        navigate(`/${subPath}`, { replace: true });
+        return;
+      }
+
       if (i18n.language !== lang) {
         i18n.changeLanguage(lang);
         localStorage.setItem('i18nextLng', lang);
@@ -95,14 +102,12 @@ function LanguageWrapper() {
               <Team />
             </>
           } />
-          <Route path="/admin/*" element={<AdminArea />} />
           <Route path="/properties" element={
             <div className="pt-20">
               <Properties />
             </div>
           } />
           <Route path="/covenant" element={<Covenant />} />
-          <Route path="/resident" element={<ResidentDashboard />} />
           <Route path="/portfolio" element={<Portfolio />} />
         </Routes>
       </main>
@@ -130,6 +135,8 @@ export default function App() {
   return (
     <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
       <Routes>
+        <Route path="/admin/*" element={<AdminArea />} />
+        <Route path="/resident/*" element={<ResidentDashboard />} />
         <Route path="/" element={<LanguageRedirect />} />
         <Route path="/:lang/*" element={<LanguageWrapper />} />
         {/* Fallback for static assets or other routes if needed */}
