@@ -178,6 +178,22 @@ const resources = {
         "fill_all": "Please fill all fields",
         "ticket_sent": "Ticket sent successfully",
         "logged_out": "Logged out successfully"
+      },
+      "admin": {
+        "navigation": "Executive Terminal",
+        "listings": "Properties",
+        "renters": "Residents",
+        "portfolio": "Portfolio",
+        "pricing": "Pricing",
+        "gallery": "Gallery",
+        "hero_section": "Hero Section",
+        "team": "Organization",
+        "inbox": "Inbox",
+        "support": "Support Tickets",
+        "edit_property": "Edit Property",
+        "add_property": "Add New Property",
+        "covenant": "Covenants",
+        "settings": "Portal Settings"
       }
     }
   },
@@ -357,6 +373,22 @@ const resources = {
         "fill_all": "Por favor, preencha todos os campos",
         "ticket_sent": "Ticket enviado com sucesso",
         "logged_out": "Sessão encerrada com sucesso"
+      },
+      "admin": {
+        "navigation": "Terminal Executivo",
+        "listings": "Imóveis",
+        "renters": "Residentes",
+        "portfolio": "Portfólio",
+        "pricing": "Preços",
+        "gallery": "Galeria",
+        "hero_section": "Seção Hero",
+        "team": "Organização",
+        "inbox": "Inbox",
+        "support": "Tickets de Suporte",
+        "edit_property": "Editar Imóvel",
+        "add_property": "Novo Imóvel",
+        "covenant": "Regras/Termos",
+        "settings": "Configurações"
       }
     }
   },
@@ -432,7 +464,7 @@ const resources = {
         "sl_name": "Su Nombre en Second Life",
         "placeholder_name": "Ej: Resident Name",
         "your_message": "Su Mensaje",
-        "placeholder_message": "Escriba su mensaje aquí...",
+        "placeholder_message": "Escribe tu mensaje aquí...",
         "sending": "ENVIANDO...",
         "btn_send": "ENVIAR MENSAJE"
       },
@@ -498,7 +530,7 @@ const resources = {
         "password": "Contraseña de Acceso",
         "password_placeholder": "••••••••",
         "enter": "Entrar al Panel",
-        "authenticating": "Autenticando",
+        "authenticating": "Authenticating",
         "welcome": "Bienvenido de nuevo",
         "session": "SESIÓN AUTENTICADA",
         "my_rentals": "Mis Alquileres",
@@ -536,6 +568,22 @@ const resources = {
         "fill_all": "Por favor, complete todos los campos",
         "ticket_sent": "Ticket enviado con éxito",
         "logged_out": "Sesión cerrada con éxito"
+      },
+      "admin": {
+        "navigation": "Terminal Ejecutiva",
+        "listings": "Inmuebles",
+        "renters": "Residentes",
+        "portfolio": "Portafolio",
+        "pricing": "Precios",
+        "gallery": "Galería",
+        "hero_section": "Sección Hero",
+        "team": "Organización",
+        "inbox": "Bandeja de Entrada",
+        "support": "Tickets de Soporte",
+        "edit_property": "Editar Inmueble",
+        "add_property": "Nuevo Inmueble",
+        "covenant": "Reglas de Residencia",
+        "settings": "Configuración"
       }
     }
   },
@@ -715,6 +763,22 @@ const resources = {
         "fill_all": "Vul a.u.b. alle velden in",
         "ticket_sent": "Ticket succesvol verzonden",
         "logged_out": "Succesvol uitgelogd"
+      },
+      "admin": {
+        "navigation": "Beheersterminal",
+        "listings": "Eigendommen",
+        "renters": "Bewoners",
+        "portfolio": "Portfolio",
+        "pricing": "Prijzen",
+        "gallery": "Galerij",
+        "hero_section": "Hero Sectie",
+        "team": "Organisatie",
+        "inbox": "Inbox",
+        "support": "Ondersteuningstickets",
+        "edit_property": "Woning Bewerken",
+        "add_property": "Nieuwe Woning Toevoegen",
+        "covenant": "Voorschriften",
+        "settings": "Instellingen"
       }
     }
   }

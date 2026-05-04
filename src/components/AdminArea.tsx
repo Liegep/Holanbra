@@ -39,7 +39,16 @@ import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
 
 export default function AdminArea() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
+  // Ensure we have translations loaded
+  useEffect(() => {
+    if (!i18n.language) {
+      const savedLang = localStorage.getItem('i18nextLng') || 'en';
+      i18n.changeLanguage(savedLang);
+    }
+  }, [i18n]);
+
   // UI State
   const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({

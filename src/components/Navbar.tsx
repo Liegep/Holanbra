@@ -109,7 +109,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6 relative z-10">
+        <div className="hidden md:flex items-center gap-6">
           <div className="flex items-center gap-6 pr-6 border-r border-white/10">
             {navLinks.map((link: any) => (
               <Link 
@@ -128,7 +128,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-4">
             {/* Language Switcher */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 relative z-20">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
               {languages.map((l) => (
                 <button
                   key={l.code}
@@ -137,7 +137,7 @@ export default function Navbar() {
                     changeLanguage(l.code);
                   }}
                   className={cn(
-                    "text-lg transition-all hover:scale-125 cursor-pointer relative z-30",
+                    "text-lg transition-all hover:scale-125 cursor-pointer",
                     lang === l.code ? "grayscale-0 opacity-100" : "grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
                   )}
                 >
@@ -149,7 +149,7 @@ export default function Navbar() {
             {isAdmin && (
               <Link 
                 to="/admin" 
-                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10 relative z-20"
+                className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 border border-white/10"
               >
                 <LayoutDashboard size={14} className="text-amber-500" />
                 ADMIN
@@ -158,7 +158,7 @@ export default function Navbar() {
 
             <Link 
               to="/resident" 
-              className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 relative z-20"
+              className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
             >
               <ShieldCheck size={14} />
               Portal

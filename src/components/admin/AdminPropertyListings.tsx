@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { 
   RefreshCw, 
   FileText, 
@@ -39,13 +40,15 @@ export function AdminPropertyListings({
   handleDelete,
   showToast
 }: AdminPropertyListingsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-12">
       <div className="space-y-6">
         <div className="flex justify-between items-end border-b border-white/5 pb-6">
-          <div className="space-y-1">
-            <h3 className="text-4xl font-bold font-display tracking-tight text-left text-white">Executive Dashboard</h3>
-            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] text-left">Operational overview of all virtual holdings and resident status</p>
+          <div className="space-y-1 text-left">
+            <h3 className="text-4xl font-bold font-display tracking-tight text-white">{t('admin.listings', 'Executive Dashboard')}</h3>
+            <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] uppercase">Operational overview of all virtual holdings and resident status</p>
           </div>
           <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white">
             <RefreshCw size={12} className="text-amber-500" />

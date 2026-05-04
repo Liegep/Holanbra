@@ -87,7 +87,6 @@ function LanguageWrapper() {
 
   return (
     <>
-      <Navbar />
       <main>
         <Routes>
           <Route path="/" element={
@@ -112,7 +111,6 @@ function LanguageWrapper() {
         </Routes>
       </main>
       <TeleportCTA />
-      <Footer />
     </>
   );
 }
@@ -134,6 +132,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+      <Navbar />
       <Routes>
         <Route path="/admin/*" element={<AdminArea />} />
         <Route path="/resident/*" element={<ResidentDashboard />} />
@@ -143,6 +142,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <TawkChat />
+      <Footer />
     </div>
   );
 }
