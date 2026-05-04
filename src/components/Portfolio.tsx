@@ -23,13 +23,9 @@ export default function Portfolio() {
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
-        // Handle localized fields
-        const titleField = lang && lang !== 'en' ? `title_${lang}` : 'title';
-        const descField = lang && lang !== 'en' ? `description_${lang}` : 'description';
-        
         const { data, error } = await supabase
           .from('portfolio')
-          .select(`id, ${titleField}, ${descField}, image_url, created_at`)
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -37,12 +33,17 @@ export default function Portfolio() {
           setItems([]);
         } else {
           // Normalize the data to use standard title/description keys
-          const normalizedData = (data || []).map((item: any) => ({
-            id: item.id,
-            title: item[titleField] || item.title || '',
-            description: item[descField] || item.description || '',
-            image_url: item.image_url
-          }));
+          const normalizedData = (data || []).map((item: any) => {
+            const titleField = lang && lang !== 'en' ? `title_${lang}` : 'title';
+            const descField = lang && lang !== 'en' ? `description_${lang}` : 'description';
+            
+            return {
+              id: item.id,
+              title: item[titleField] || item.title || '',
+              description: item[descField] || item.description || '',
+              image_url: item.image_url
+            };
+          });
           setItems(normalizedData);
         }
       } catch (err) {

@@ -5,32 +5,53 @@ const resources = {
   en: {
     translation: {
       "nav": {
-        "home": "Home",
+        "home": "Welcome",
         "properties": "Properties",
         "gallery": "Gallery",
         "about": "About Us",
         "pricing": "Pricing",
         "team": "Team",
-        "covenant": "Covenant",
+        "covenant": "Rules",
         "portfolio": "Portfolio",
-        "decoration": "Decoration"
+        "decoration": "Decoration",
+        "resident_portal": "Resident Login"
       },
       "hero": {
-        "tour": "Virtual Tour",
-        "rentals": "New Rentals Available"
+        "rentals": "New Rentals Available",
+        "tour": "Virtual Tour"
       },
       "properties": {
         "title": "Available",
         "subtitle": "Properties",
         "view_all": "View All Properties",
         "show_less": "Show Less",
-        "no_found": "No properties found"
+        "no_found": "No properties found",
+        "filter_all": "All",
+        "filter_land": "Land",
+        "filter_furnished": "Furnished",
+        "status_all": "All Status",
+        "status_available": "Available",
+        "status_rented": "Rented",
+        "sort_price_low": "Price (Lowest)",
+        "sort_price_high": "Price (Highest)",
+        "sort_name_az": "Name (A-Z)",
+        "sort_name_za": "Name (Z-A)",
+        "up_to": "up to",
+        "per_week": "/ week",
+        "teleport": "Teleport",
+        "teleport_now": "Teleport Now",
+        "bedrooms": "BEDROOMS",
+        "bathrooms": "BATHROOMS",
+        "description_label": "Description",
+        "contact_agent_btn": "CONTACT AGENT",
+        "ready_msg_singular": "Property ready for occupancy",
+        "ready_msg_plural": "Properties ready for occupancy"
       },
       "about": {
         "history": "History",
         "title1": "ABOUT",
         "title2": "US",
-        "p1": "In 2010, <0>Ymir Coronet</0>, from the Netherlands, and <1>Marie Whitfield</1>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.",
+        "p1": "In 2010, <ymir>Ymir Coronet</ymir>, from the Netherlands, and <marie>Marie Whitfield</marie>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.",
         "p2": "As years passed and technology evolved, we expanded our vision, bringing elegance and sophistication to every project.",
         "quote": "Today, we are a benchmark in luxury real estate within Second Life, creating unique experiences for our residents.",
         "p4": "We are unwavering in our dedication to providing the best spaces, always focusing on comfort and beauty."
@@ -186,7 +207,7 @@ const resources = {
         "portfolio": "Portfolio",
         "pricing": "Pricing",
         "gallery": "Gallery",
-        "hero_section": "Hero Section",
+        "hero_section": "Banner",
         "team": "Organization",
         "inbox": "Inbox",
         "support": "Support Tickets",
@@ -200,7 +221,7 @@ const resources = {
   pt: {
     translation: {
       "nav": {
-        "home": "Início",
+        "home": "Bem-vindo",
         "properties": "Propriedades",
         "gallery": "Galeria",
         "about": "Sobre Nós",
@@ -208,24 +229,45 @@ const resources = {
         "team": "Equipe",
         "covenant": "Regras",
         "portfolio": "Portfólio",
-        "decoration": "Decoração"
+        "decoration": "Decoração",
+        "resident_portal": "Portal do Residente"
       },
       "hero": {
-        "tour": "Tour Virtual",
-        "rentals": "Novas Locações Disponíveis"
+        "rentals": "Novos Aluguéis Disponíveis",
+        "tour": "Tour Virtual"
       },
       "properties": {
         "title": "Disponíveis",
         "subtitle": "Propriedades",
         "view_all": "Ver Todas as Propriedades",
-        "show_less": "Mostrar Menos",
-        "no_found": "Nenhuma propriedade encontrada"
+        "show_less": "Ver Menos",
+        "no_found": "Nenhuma propriedade encontrada",
+        "filter_all": "Todas",
+        "filter_land": "Terrenos",
+        "filter_furnished": "Mobiliadas",
+        "status_all": "Todos os Status",
+        "status_available": "Disponível",
+        "status_rented": "Alugado",
+        "sort_price_low": "Preço (Menor)",
+        "sort_price_high": "Preço (Maior)",
+        "sort_name_az": "Nome (A-Z)",
+        "sort_name_za": "Nome (Z-A)",
+        "up_to": "até",
+        "per_week": "/ semana",
+        "teleport": "Teleportar",
+        "teleport_now": "Teleportar Agora",
+        "bedrooms": "QUARTOS",
+        "bathrooms": "BANHEIROS",
+        "description_label": "Descrição",
+        "contact_agent_btn": "CONTATAR AGENTE",
+        "ready_msg_singular": "Propriedade pronta para morar",
+        "ready_msg_plural": "Propriedades prontas para morar"
       },
       "about": {
         "history": "História",
         "title1": "SOBRE",
         "title2": "NÓS",
-        "p1": "Em 2010, <0>Ymir Coronet</0>, da Holanda, e <1>Marie Whitfield</1>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembravam cidades reais era uma raridade, conferindo um charme distinto às suas criações.",
+        "p1": "Em 2010, <ymir>Ymir Coronet</ymir>, da Holanda, e <marie>Marie Whitfield</marie>, originária do Brasil, uniram forças para criar mundos virtuais primorosamente projetados. Naquela época, o conceito de sims com ruas que lembravam cidades reais era uma raridade, conferindo um charme distinto às suas criações.",
         "p2": "À medida que os anos passaram e a tecnologia evoluiu, expandimos nossa visão, trazendo elegância e sofisticação a cada projeto.",
         "quote": "Hoje, somos referência em imóveis de luxo no Second Life, criando experiências únicas para nossos residentes.",
         "p4": "Somos inabaláveis em nossa dedicação em oferecer os melhores espaços, sempre focando no conforto e na beleza."
@@ -290,7 +332,7 @@ const resources = {
         "all_rights": "Todos os direitos reservados."
       },
       "teleport_cta": {
-        "title": "Pronto para Mudar?",
+        "title": "Pronto para se mudar?",
         "span": "Sua nova vida começa aqui",
         "btn": "TELEPORTAR PARA HOLANBRA",
         "req": "REQUER VIEWER DO SECOND LIFE INSTALADO"
@@ -381,7 +423,7 @@ const resources = {
         "portfolio": "Portfólio",
         "pricing": "Preços",
         "gallery": "Galeria",
-        "hero_section": "Seção Hero",
+        "hero_section": "Banner",
         "team": "Organização",
         "inbox": "Inbox",
         "support": "Tickets de Suporte",
@@ -395,7 +437,7 @@ const resources = {
   es: {
     translation: {
       "nav": {
-        "home": "Inicio",
+        "home": "Bienvenido",
         "properties": "Propiedades",
         "gallery": "Galería",
         "about": "Nosotros",
@@ -403,7 +445,8 @@ const resources = {
         "team": "Equipo",
         "covenant": "Reglas",
         "portfolio": "Portafolio",
-        "decoration": "Decoración"
+        "decoration": "Decoración",
+        "resident_portal": "Portal del Residente"
       },
       "hero": {
         "tour": "Tour Virtual",
@@ -411,16 +454,36 @@ const resources = {
       },
       "properties": {
         "title": "Disponibles",
-        "subtitle": "Propiedades",
-        "view_all": "Ver Todas as Propriedades",
-        "show_less": "Mostrar Menos",
-        "no_found": "No se encontraron propiedades"
+        "subtitle": "Inmuebles",
+        "view_all": "Ver Todas las Propiedades",
+        "show_less": "Ver Menos",
+        "no_found": "No se encontraron propiedades",
+        "filter_all": "Todas",
+        "filter_land": "Terrenos",
+        "filter_furnished": "Amuebladas",
+        "status_all": "Todos los Estados",
+        "status_available": "Disponible",
+        "status_rented": "Alquilado",
+        "sort_price_low": "Precio (Menor)",
+        "sort_price_high": "Precio (Mayor)",
+        "sort_name_az": "Nombre (A-Z)",
+        "sort_name_za": "Nombre (Z-A)",
+        "up_to": "hasta",
+        "per_week": "/ semana",
+        "teleport": "Teletransporte",
+        "teleport_now": "Teletransportarse Ahora",
+        "bedrooms": "HABITACIONES",
+        "bathrooms": "BAÑOS",
+        "description_label": "Descripción",
+        "contact_agent_btn": "CONTACTAR AGENTE",
+        "ready_msg_singular": "Propiedad lista para ocupar",
+        "ready_msg_plural": "Propiedades listas para ocupar"
       },
       "about": {
         "history": "Historia",
         "title1": "SOBRE",
         "title2": "NOSOTROS",
-        "p1": "En 2010, <0>Ymir Coronet</0>, de los Países Bajos, y <1>Marie Whitfield</1>, originaria de Brasil, unieron fuerzas para crear mundos virtuales exquisitamente diseñados. En aquel entonces, el concepto de sims con calles que recordaban a ciudades reales era una raridades, lo que otorgaba un encanto especial a sus creaciones.",
+        "p1": "En 2010, <ymir>Ymir Coronet</ymir>, de los Países Bajos, y <marie>Marie Whitfield</marie>, originaria de Brasil, unieron fuerzas para crear mundos virtuales exquisitamente diseñados. En aquel entonces, el concepto de sims con calles que recordaban a ciudades reales era una rareza, lo que otorgaba un encanto especial a sus creaciones.",
         "p2": "Con el paso de los años y la evolución de la tecnología, ampliamos nuestra visión, aportando elegancia y sofisticación a cada proyecto.",
         "quote": "Hoy en día, somos un referente en el sector inmobiliario de lujo dentro de Second Life, creando experiencias únicas para nuestros residentes.",
         "p4": "No cejamos en nuestra dedicación por ofrecer los mejores espacios, centrándonos siempre en el confort y la belleza."
@@ -485,7 +548,7 @@ const resources = {
         "all_rights": "Todos los derechos reservados."
       },
       "teleport_cta": {
-        "title": "¿Listo para Mudarte?",
+        "title": "¿Listo para mudarte?",
         "span": "Tu nueva vida comienza aquí",
         "btn": "TELETRANSPORTARSE A HOLANBRA",
         "req": "REQUIERE TENER INSTALADO EL VISOR DE SECOND LIFE"
@@ -576,7 +639,7 @@ const resources = {
         "portfolio": "Portafolio",
         "pricing": "Precios",
         "gallery": "Galería",
-        "hero_section": "Sección Hero",
+        "hero_section": "Banner",
         "team": "Organización",
         "inbox": "Bandeja de Entrada",
         "support": "Tickets de Soporte",
@@ -590,7 +653,7 @@ const resources = {
   nl: {
     translation: {
       "nav": {
-        "home": "Home",
+        "home": "Welkom",
         "properties": "Woningen",
         "gallery": "Galerij",
         "about": "Over Ons",
@@ -598,24 +661,45 @@ const resources = {
         "team": "Team",
         "covenant": "Regels",
         "portfolio": "Portfolio",
-        "decoration": "Decoratie"
+        "decoration": "Decoratie",
+        "resident_portal": "Bewonersportaal"
       },
       "hero": {
-        "tour": "Virtuele Tour",
-        "rentals": "Nieuwe Woningen Beschikbaar"
+        "rentals": "Nieuwe Woningen Beschikbaar",
+        "tour": "Virtuele Tour"
       },
       "properties": {
         "title": "Beschikbaar",
         "subtitle": "Woningen",
         "view_all": "Bekijk Alle Woningen",
-        "show_less": "Minder Weergeven",
-        "no_found": "Geen woningen gevonden"
+        "show_less": "Toon Minder",
+        "no_found": "Geen woningen gevonden",
+        "filter_all": "Alle",
+        "filter_land": "Grond",
+        "filter_furnished": "Gemeubileerd",
+        "status_all": "Alle Status",
+        "status_available": "Beschikbaar",
+        "status_rented": "Verhuurd",
+        "sort_price_low": "Prijs (Laagste)",
+        "sort_price_high": "Prijs (Hoogste)",
+        "sort_name_az": "Naam (A-Z)",
+        "sort_name_za": "Naam (Z-A)",
+        "up_to": "tot",
+        "per_week": "/ week",
+        "teleport": "Teleporteer",
+        "teleport_now": "Nu Teleporteren",
+        "bedrooms": "SLAAPKAMERS",
+        "bathrooms": "BADKAMERS",
+        "description_label": "Beschrijving",
+        "contact_agent_btn": "CONTACTEER AGENT",
+        "ready_msg_singular": "Woning klaar voor bewoning",
+        "ready_msg_plural": "Woningen klaar voor bewoning"
       },
       "about": {
         "history": "Geschiedenis",
         "title1": "OVER",
         "title2": "ONS",
-        "p1": "In 2010 bundelden <0>Ymir Coronet</0> uit Nederland en <1>Marie Whitfield</1> uit Brazilië hun krachten om prachtig ontworpen virtuele werelden te creëren. In die tijd was het concept van sims with straten die deden denken aan echte steden een zeldzaamheid, wat een unieke charme aan hun creaties gaf.",
+        "p1": "In 2010 bundelden <ymir>Ymir Coronet</ymir> uit Nederland en <marie>Marie Whitfield</marie> uit Brazilië hun krachten om prachtig ontworpen virtuele werelden te creëren. In die tijd was het concept van sims met straten die deden denken aan echte steden een zeldzaamheid, wat een unieke charme aan hun creaties gaf.",
         "p2": "Naarmate de jaren verstreken och de technologie evolueerde, breidden we onze visie uit en brachten we elegantie en verfijning in elk project.",
         "quote": "Vandaag de dag zijn we een referentie in luxe vastgoed binnen Second Life och creëren we unieke ervaringen voor onze bewoners.",
         "p4": "We zijn onvermoeibaar in onze toewijding om de beste ruimtes te bieden, waarbij we ons always richten op comfort en schoonheid."
@@ -680,7 +764,7 @@ const resources = {
         "all_rights": "Alle rechten voorbehouden."
       },
       "teleport_cta": {
-        "title": "Klaar om te Verhuizen?",
+        "title": "Klaar om te verhuizen?",
         "span": "Uw nieuwe leven begint hier",
         "btn": "TELEPORTEER NAAR HOLANBRA",
         "req": "VEREIST TWEEDE LIFE VIEWER GEINSTALLEERD"
@@ -771,7 +855,7 @@ const resources = {
         "portfolio": "Portfolio",
         "pricing": "Prijzen",
         "gallery": "Galerij",
-        "hero_section": "Hero Sectie",
+        "hero_section": "Banner",
         "team": "Organisatie",
         "inbox": "Inbox",
         "support": "Ondersteuningstickets",

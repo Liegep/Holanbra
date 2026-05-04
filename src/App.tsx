@@ -101,13 +101,13 @@ function LanguageWrapper() {
               <Team />
             </>
           } />
-          <Route path="/properties" element={
+          <Route path="properties" element={
             <div className="pt-20">
               <Properties />
             </div>
           } />
-          <Route path="/covenant" element={<Covenant />} />
-          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="covenant" element={<Covenant />} />
+          <Route path="portfolio" element={<Portfolio />} />
         </Routes>
       </main>
       <TeleportCTA />

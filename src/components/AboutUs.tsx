@@ -46,9 +46,13 @@ export default function AboutUs() {
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                <Trans i18nKey="about.p1">
-                  In 2010, <span className="text-white font-medium">Ymir Coronet</span>, from the Netherlands, and <span className="text-white font-medium">Marie Whitfield</span>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.
-                </Trans>
+                <Trans 
+                  i18nKey="about.p1"
+                  components={{
+                    ymir: <span className="text-white font-medium" />,
+                    marie: <span className="text-white font-medium" />
+                  }}
+                />
               </p>
               
               <p>

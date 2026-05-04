@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe, DollarSign } from 'lucide-react';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe, DollarSign, Briefcase } from 'lucide-react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
@@ -13,9 +13,12 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const { t, i18n } = useTranslation();
-  const { lang } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Extract lang from pathname since Navbar is outside the parameterized Routes
+  const pathParts = location.pathname.split('/');
+  const lang = SUPPORTED_LANGS.includes(pathParts[1]) ? pathParts[1] : (i18n.language?.split('-')[0] || 'en');
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -75,6 +78,7 @@ export default function Navbar() {
     { name: 'About', path: `/${lang}/#about`, icon: Users, label: t('nav.about') },
     { name: 'Properties', path: `/${lang}/#properties`, icon: Layers, highlight: true, label: t('nav.properties') },
     { name: 'Gallery', path: `/${lang}/#gallery`, icon: ImageIcon, label: t('nav.gallery') },
+    { name: 'Portfolio', path: `/${lang}/portfolio`, icon: Briefcase, label: t('nav.portfolio') },
     { name: 'Decoration', path: `/${lang}/#services`, icon: Paintbrush, label: t('nav.decoration') },
     { name: 'Team', path: `/${lang}/#team`, icon: Users, label: t('nav.team') },
     { name: 'Covenant', path: `/${lang}/covenant`, icon: FileText, label: t('nav.covenant') },
@@ -161,7 +165,7 @@ export default function Navbar() {
               className="px-6 py-2 bg-amber-500 text-black rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20"
             >
               <ShieldCheck size={14} />
-              Portal
+              {t('nav.resident_portal')}
             </Link>
           </div>
         </div>
@@ -219,7 +223,7 @@ export default function Navbar() {
                   className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold flex items-center justify-center gap-3 border border-white/10"
                 >
                   <LayoutDashboard size={20} className="text-amber-500" />
-                  Admin Panel
+                  {t('admin.navigation')}
                 </Link>
               )}
               <Link 
@@ -228,7 +232,7 @@ export default function Navbar() {
                 className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
               >
                 <ShieldCheck size={20} />
-                Portal
+                {t('nav.resident_portal')}
               </Link>
             </div>
           </motion.div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Paintbrush, Sparkles, Layout, ArrowUpRight } from 'lucide-react';
@@ -7,6 +7,7 @@ import { cn } from '../lib/utils';
 
 export default function Decoration() {
   const { t } = useTranslation();
+  const { lang } = useParams<{ lang: string }>();
 
   return (
     <section id="services" className="py-32 px-6 md:px-12 bg-background-light relative overflow-hidden">
@@ -172,7 +173,7 @@ export default function Decoration() {
                 </div>
               </div>
               <Link 
-                to="/portfolio"
+                to={`/${lang}/portfolio`}
                 className="flex items-center gap-2 px-6 py-4 bg-white text-black rounded-full hover:bg-amber-400 transition-colors text-[10px] font-bold uppercase tracking-widest"
               >
                 {t('decoration.view_portfolio')}

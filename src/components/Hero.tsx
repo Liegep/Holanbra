@@ -12,7 +12,7 @@ export default function Hero() {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
-    badgeText: 'New Islands Available',
+    badgeText: '',
     title1: 'Holanbra',
     title2: 'Sims',
     virtualTourUrl: '',
@@ -41,20 +41,18 @@ export default function Hero() {
         };
 
         setContent({
-          backgroundImage: data.background_url || content.backgroundImage,
-          badgeText: getLocalized('badge_text') || content.badgeText,
-          title1: getLocalized('title_main') || content.title1,
-          title2: getLocalized('title_italic') || content.title2,
-          virtualTourUrl: data.virtual_tour_url || content.virtualTourUrl,
+          backgroundImage: data.background_url || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
+          badgeText: getLocalized('badge_text'),
+          title1: getLocalized('title_main') || 'Holanbra',
+          title2: getLocalized('title_italic') || 'Sims',
+          virtualTourUrl: data.virtual_tour_url || '',
           gridImages: [
-            data.grid_photo_1 || content.gridImages[0],
-            data.grid_photo_2 || content.gridImages[1],
-            data.grid_photo_3 || content.gridImages[2],
-            data.grid_photo_4 || content.gridImages[3]
+            data.grid_photo_1 || 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600&q=80',
+            data.grid_photo_2 || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+            data.grid_photo_3 || 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80',
+            data.grid_photo_4 || 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80'
           ]
         });
-      } else if (error) {
-        console.error("Hero Load Error:", error);
       }
     };
 
@@ -92,7 +90,7 @@ export default function Hero() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-white/5 text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-            {content.badgeText}
+            {(!content.badgeText || content.badgeText === 'New Rentals Available' || content.badgeText === 'New Islands Available') ? t('hero.rentals') : content.badgeText}
           </div>
         </motion.div>
 
@@ -104,7 +102,6 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center gap-8 mb-4">
             <div className="flex flex-col items-center">
-              <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">{t('nav.home')}</span>
               <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
                 <span className="text-amber-500">{content.title1}</span>
                 <span className="italic font-light flex items-center gap-4">
