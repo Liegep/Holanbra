@@ -172,7 +172,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.badge_text', 'Badge Text')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.badge_text')}</label>
                 <input 
                   type="text"
                   name="badgeText"
@@ -182,7 +182,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.main_title', 'Main Title')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.main_title')}</label>
                 <input 
                   type="text"
                   name="title1"
@@ -192,7 +192,7 @@ export function AdminHeroSection({
                 />
               </div>
               <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.fields.secondary_title', 'Secondary Title')}</label>
+                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t('admin.hero.secondary_title')}</label>
                 <input 
                   type="text"
                   name="title2"
@@ -204,7 +204,7 @@ export function AdminHeroSection({
             </div>
 
             <div className="space-y-4 text-left border-l border-white/5 pl-8">
-               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('admin.fields.about_photo', 'About Us Photo')}</label>
+               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest">{t('admin.hero.about_photo')}</label>
                <div className="relative group aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-zinc-900">
                   {heroContent.aboutImage ? (
                     <img src={heroContent.aboutImage} className="w-full h-full object-cover" referrerPolicy="no-referrer" />

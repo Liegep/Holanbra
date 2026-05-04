@@ -231,6 +231,10 @@ const resources = {
           "save_all": "SAVE ALL CHANGES",
           "uploading": "Uploading..."
         },
+        "gallery": {
+          "title": "Gallery Management",
+          "subtitle": "Manage the atmospheric photos displayed in the main gallery"
+        },
         "tickets": {
           "title": "Support Tickets",
           "subtitle": "Respond to resident inquiries and technical issues",
@@ -734,6 +738,10 @@ const resources = {
           "about_photo": "Foto Sobre Nós",
           "save_all": "SALVAR TODAS AS ALTERAÇÕES",
           "uploading": "Enviando..."
+        },
+        "gallery": {
+          "title": "Gerenciamento de Galeria",
+          "subtitle": "Gerencie as fotos atmosféricas exibidas na galeria principal"
         },
         "tickets": {
           "title": "Tickets de Suporte",

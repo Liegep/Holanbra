@@ -31,8 +31,8 @@ export function AdminGalleryManager({
   return (
     <div className="max-w-5xl space-y-12">
       <div className="text-left">
-        <h3 className="text-2xl font-bold font-display text-white">Gallery Management</h3>
-        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">Manage the atmospheric photos displayed in the main gallery</p>
+        <h3 className="text-2xl font-bold font-display text-white">{t('admin.gallery.title')}</h3>
+        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">{t('admin.gallery.subtitle')}</p>
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
