@@ -84,9 +84,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>
               <MessageSquare size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>Open Support Tickets</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.openTickets > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.stats.open_tickets')}</p>
             <div className={cn("text-5xl font-black leading-none", stats.openTickets > 0 ? "text-amber-500" : "text-white")}>{stats.openTickets}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} Total tickets in database</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.openTickets > 0 ? "text-amber-500/40" : "text-white/20")}>{stats.totalTickets} {t('admin.stats.total_tickets', 'Total tickets in database')}</p>
           </motion.div>
 
           <motion.div 
@@ -118,9 +118,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.critical > 0 ? "text-red-500" : "text-white")}>
               <AlertCircle size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>Critical Expirations</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.critical > 0 ? "text-red-500" : "text-white/40")}>{t('admin.stats.critical')}</p>
             <div className={cn("text-5xl font-black leading-none", stats.critical > 0 ? "text-red-500" : "text-white")}>{stats.critical}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>Expiring within 72 hours</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.critical > 0 ? "text-red-500/40" : "text-white/20")}>{t('admin.stats.expiring_72')}</p>
           </motion.div>
 
           <motion.div 
@@ -135,9 +135,9 @@ export function AdminPropertyListings({
             <div className={cn("absolute top-0 right-0 p-8 opacity-10", stats.attention > 0 ? "text-amber-500" : "text-white")}>
               <Clock size={48} />
             </div>
-            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>Priority Renewals</p>
+            <p className={cn("text-[10px] uppercase font-black tracking-widest mb-4", stats.attention > 0 ? "text-amber-500" : "text-white/40")}>{t('admin.stats.priority')}</p>
             <div className={cn("text-5xl font-black leading-none", stats.attention > 0 ? "text-amber-500" : "text-white")}>{stats.attention}</div>
-            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>Expiring within 7 days</p>
+            <p className={cn("text-[9px] uppercase mt-4 tracking-tighter", stats.attention > 0 ? "text-amber-500/40" : "text-white/20")}>{t('admin.stats.expiring_7')}</p>
           </motion.div>
         </div>
       </div>
@@ -243,7 +243,7 @@ export function AdminPropertyListings({
                         "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
                         prop.status === 'available' ? "bg-amber-500/20 text-amber-400" : "bg-white/5 text-white/40"
                       )}>
-                        {prop.status}
+                        {t(`admin.property.status.${prop.status}`, prop.status)}
                      </div>
                    </div>
                   <div className="flex items-center gap-1">

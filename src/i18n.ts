@@ -1243,6 +1243,32 @@ const resources = {
         "logged_out": "Sesión cerrada con éxito"
       },
       "admin": {
+        "dashboard": "Terminal Ejecutiva",
+        "operational_overview": "Visión general operativa",
+        "sync": "Sincronizar",
+        "stats": {
+          "total_portfolio": "Portafolio Total",
+          "units_across": "Unidades en todos los Sims",
+          "open_tickets": "Tickets de soporte abiertos",
+          "total_tickets": "Total de tickets en la base de datos",
+          "occupancy": "Ocupación Total",
+          "available": "Disponible",
+          "critical": "Vencimientos Criticos",
+          "expiring_72": "Expirando en 72 horas",
+          "priority": "Renovacíones",
+          "expiring_7": "Expirando en 7 días"
+        },
+        "filters": {
+          "all": "todos los immuebles",
+          "expiring": "Expirando Pronto"
+        },
+        "property": {
+          "status": {
+            "available": "Disponible",
+            "rented": "alquilado",
+            "maintenance": "Mantenimiento"
+          }
+        },
         "navigation": {
           "title": "Terminal Ejecutiva",
           "listings": "Inmuebles",
