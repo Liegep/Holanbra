@@ -50,7 +50,7 @@ export default function AdminArea() {
   }, [i18n]);
 
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -985,7 +985,6 @@ export default function AdminArea() {
             { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'add', name: editingId ? t('admin.navigation.edit_property') : t('admin.navigation.add_property'), icon: Plus },
             { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
-            { id: 'settings', name: t('admin.navigation.settings'), icon: Settings },
           ].map((item) => (
             <button
               key={item.id}
