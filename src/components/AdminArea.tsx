@@ -108,7 +108,8 @@ export default function AdminArea() {
     tenant_name: '',
     tenant_id: '',
     property_type: [] as string[],
-    videoUrl: ''
+    videoUrl: '',
+    prims_allowed: ''
   });
 
   const [renterFormData, setRenterFormData] = useState({
@@ -601,7 +602,8 @@ export default function AdminArea() {
         tenant_name: formData.tenant_name?.trim() || null,
         tenant_id: formData.tenant_id?.trim() || null,
         expiry_date: formData.expiry_date || null,
-        property_type: formData.property_type || []
+        property_type: formData.property_type || [],
+        prims_allowed: parseInt(formData.prims_allowed) || 0
       };
 
       console.log("Saving property to 'properties':", dataToSave);
@@ -669,7 +671,8 @@ export default function AdminArea() {
       expiry_date: prop.expiry_date || '',
       tenant_name: prop.tenant_name || '',
       tenant_id: prop.tenant_id || '',
-      property_type: prop.property_type || []
+      property_type: prop.property_type || [],
+      prims_allowed: prop.prims_allowed?.toString() || ''
     });
     setEditingId(prop.id);
     setActiveTab('add');
@@ -974,6 +977,7 @@ export default function AdminArea() {
 
           <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.navigation.title')}</h2>
           {[
+            { id: 'add', name: editingId ? t('admin.navigation.edit_property') : t('admin.navigation.add_property'), icon: Plus },
             { id: 'listings', name: t('admin.navigation.listings'), icon: BarChart3 },
             { id: 'renters', name: t('admin.navigation.renters'), icon: UserIcon },
             { id: 'portfolio', name: t('admin.navigation.portfolio'), icon: ImageIcon },
@@ -983,7 +987,6 @@ export default function AdminArea() {
             { id: 'team', name: t('admin.navigation.team'), icon: UserIcon },
             { id: 'inbox', name: t('admin.navigation.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
             { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
-            { id: 'add', name: editingId ? t('admin.navigation.edit_property') : t('admin.navigation.add_property'), icon: Plus },
             { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
           ].map((item) => (
             <button
