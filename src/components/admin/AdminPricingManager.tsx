@@ -198,7 +198,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.package_name', 'Package Name')} *</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.pricing.package_name', 'Package Name')} *</label>
                     <input 
                         type="text" 
                         value={formData.name}
