@@ -87,7 +87,7 @@ export function AdminGalleryManager({
                 disabled={!galleryFormData.imageUrl || !!isUploadingSlot}
                 className="w-full py-4 rounded-xl bg-amber-500 text-black font-black flex items-center justify-center gap-3 hover:bg-amber-400 transition-all uppercase tracking-widest text-[10px] disabled:opacity-30"
               >
-                <Save size={16} /> Add to Collection
+                <Save size={16} /> {t('admin.buttons.add_to_collection', 'Add to Collection')}
               </button>
            </div>
         </div>

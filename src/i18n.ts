@@ -1332,12 +1332,14 @@ const resources = {
           "expertise": "Experiencia",
           "portrait": "Retrato Ejecutivo",
           "price_week": "Precio (L$ / Semana)",
-          "language": "Versión de Idioma"
+          "language": "Versión de Idioma",
+          "current_gallery": "galería actual"
         },
         "buttons": {
           "add_photo": "Agregar Nueva Foto",
           "update": "Actualizar Perfil",
           "add": "Agregar al Directorio",
+          "add_to_collection": "Añadir a colección",
           "save": "Guardar Cambios",
           "cancel": "Cancelar",
           "resolve": "Responder y Resolver"
