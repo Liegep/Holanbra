@@ -1303,6 +1303,20 @@ const resources = {
           "confirm_delete": "¿Estás seguro de que quieres eliminar este paquete de precios?",
           "success_deleted": "Paquete eliminado exitosamente"
         },
+        "tickets": {
+          "title": "Tickets de Soporte",
+          "subtitle": "Responder a las consultas de los residentes y problemas técnicos",
+          "status_open": "Abierto",
+          "status_resolved": "Resuelto",
+          "reply_cancel": "Cancelar",
+          "reply_resolve": "Responder y Resolver",
+          "official_response": "Respuesta Oficial",
+          "placeholder_reply": "Escribe tu respuesta oficial aquí...",
+          "resolve_only": "Resolver sin responder",
+          "send_resolve": "Enviar respuesta y resolver",
+          "none_found": "No se encontraron tickets de soporte",
+          "delete_title": "Eliminar Ticket"
+        },
         "hero": {
           "title": "Sección principal",
           "subtitle": "Gestiona la imagen de marca de tu sitio web y los elementos visuales principales",
