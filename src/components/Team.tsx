@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MessageSquare, ShieldCheck, Paintbrush, Briefcase, Scale, Users, X, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -22,6 +24,8 @@ const ICON_MAP: Record<string, any> = {
 };
 
 export default function Team() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
 
   const DEFAULT_TEAM: TeamMember[] = [
     {
@@ -65,11 +69,22 @@ export default function Team() {
         .order('display_order', { ascending: true });
       
       if (data) {
-        setTeam(data.map(m => ({ 
-          ...m, 
-          image: m.photo_url || m.image, // Fallback to image if photo_url is empty during transition
-          slProfile: m.sl_url || m.sl_profile || '#'
-        })));
+        setTeam(data.map(m => {
+          const getLocalized = (baseKey: string) => {
+            if (lang && lang !== 'en') {
+              return m[`${baseKey}_${lang}`] || m[baseKey];
+            }
+            return m[baseKey];
+          };
+
+          return { 
+            ...m, 
+            role: getLocalized('role') || m.role,
+            bio: getLocalized('bio') || m.bio,
+            image: m.photo_url || m.image, // Fallback to image if photo_url is empty during transition
+            slProfile: m.sl_url || m.sl_profile || '#'
+          };
+        }));
       }
       setLoading(false);
     };
@@ -84,7 +99,7 @@ export default function Team() {
     return () => {
       supabase.removeChannel(teamSubscription);
     };
-  }, []);
+  }, [lang]);
 
   const [notice, setNotice] = useState<string | null>(null);
   const [activeMessageTarget, setActiveMessageTarget] = useState<any>(null);
@@ -97,7 +112,6 @@ export default function Team() {
 
     setIsSending(true);
     try {
-      // Sending ONLY the requested columns
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
         message: visitorData.message,
@@ -106,7 +120,7 @@ export default function Team() {
 
       if (supabaseError) throw supabaseError;
 
-      setNotice("Message Sent Successfully");
+      setNotice(t('team.message_sent'));
       setActiveMessageTarget(null);
       setVisitorData({ name: '', message: '' });
       setTimeout(() => setNotice(null), 5000);
@@ -124,10 +138,6 @@ export default function Team() {
   };
 
   const displayTeam = team.length > 0 ? team : DEFAULT_TEAM;
-
-  const translateRole = (role: string) => {
-    return role;
-  };
 
   return (
     <section id="team" className="py-32 px-6 bg-background-light relative overflow-hidden">
@@ -151,7 +161,7 @@ export default function Team() {
                className="flex items-center gap-3 text-amber-600"
             >
               <div className="w-12 h-[1px] bg-amber-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{'OUR TEAM'}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('team.label')}</span>
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -159,7 +169,7 @@ export default function Team() {
               viewport={{ once: true }}
               className="text-6xl md:text-8xl font-display font-bold tracking-tighter text-black"
             >
-              OUR TEAM
+              {t('team.title')}
             </motion.h2>
           </div>
           <motion.p 
@@ -168,7 +178,7 @@ export default function Team() {
             viewport={{ once: true }}
             className="text-black/40 max-w-sm text-sm uppercase tracking-widest leading-relaxed"
           >
-            Meet the creative minds behind Holanbra. Our diverse team of architects and designers is dedicated to crafting extraordinary virtual spaces.
+            {t('team.subtitle')}
           </motion.p>
         </div>
 
@@ -202,14 +212,14 @@ export default function Team() {
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      Send Message
+                      {t('team.send_message')}
                     </a>
                   </div>
 
                   <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/80 backdrop-blur-xl border border-white/20 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 rounded-3xl shadow-lg">
                      <div className="flex items-center gap-2 text-amber-600 mb-2">
                         <IconComponent size={14} />
-                        <span className="text-[8px] font-black uppercase tracking-widest">{translateRole(member.role)}</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest">{member.role}</span>
                      </div>
                      <h3 className="text-xl font-bold text-black tracking-tight">{member.name}</h3>
                   </div>
@@ -232,7 +242,7 @@ export default function Team() {
                         )}
                         {languages.length > 0 && (
                           <div className="flex items-center gap-3">
-                            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-amber-500">Speaks</span>
+                            <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-amber-500">{t('team.speaks')}</span>
                             <div className="flex gap-1.5">
                               {languages.map((flag, idx) => (
                                 <span 
@@ -273,9 +283,9 @@ export default function Team() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
               <div className="absolute bottom-6 left-8 right-8">
-                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">Direct Message</p>
+                <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.2em] mb-1">{t('team.direct_message')}</p>
                 <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMessageTarget.name}</h4>
-                <p className="text-[10px] text-white/40 font-mono mt-1">{translateRole(activeMessageTarget.role)}</p>
+                <p className="text-[10px] text-white/40 font-mono mt-1">{activeMessageTarget.role}</p>
               </div>
               <button 
                 onClick={() => setActiveMessageTarget(null)}
@@ -289,24 +299,24 @@ export default function Team() {
             <form onSubmit={handleSubmitMessage} className="p-8 pt-2 space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Your Second Life Name</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('team.sl_name')}</label>
                   <input 
                     required
                     type="text"
                     value={visitorData.name}
                     onChange={(e) => setVisitorData({ ...visitorData, name: e.target.value })}
-                    placeholder="Ex: Resident Name"
+                    placeholder={t('team.placeholder_name')}
                     className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">Your Message</label>
+                  <label className="text-[10px] font-black text-white/30 uppercase tracking-widest ml-1">{t('team.your_message')}</label>
                   <textarea 
                     required
                     rows={4}
                     value={visitorData.message}
                     onChange={(e) => setVisitorData({ ...visitorData, message: e.target.value })}
-                    placeholder="Write your message here..."
+                    placeholder={t('team.placeholder_message')}
                     className="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/10 focus:border-amber-500 outline-none transition-all shadow-inner resize-none"
                   />
                 </div>
@@ -319,11 +329,11 @@ export default function Team() {
               >
                 {isSending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> SENDING...
+                    <Loader2 size={16} className="animate-spin" /> {t('team.sending')}
                   </>
                 ) : (
                   <>
-                    SEND MESSAGE <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    {t('team.btn_send')} <Send size={14} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </>
                 )}
               </button>

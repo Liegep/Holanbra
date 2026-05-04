@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { supabase } from '../lib/supabase';
+import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, ArrowLeft, Loader2, Printer } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 const Covenant: React.FC = () => {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -13,12 +16,18 @@ const Covenant: React.FC = () => {
       try {
         const { data } = await supabase
           .from('land_covenants')
-          .select('content_en')
+          .select('*')
           .limit(1)
           .maybeSingle();
         
         if (data) {
-          setContent(data.content_en || 'Terms are currently unavailable.');
+          const getLocalized = (baseKey: string) => {
+            if (lang && lang !== 'en') {
+              return data[`${baseKey}_${lang}`] || data[baseKey];
+            }
+            return data[baseKey];
+          };
+          setContent(getLocalized('content') || 'Terms are currently unavailable.');
         }
       } catch (error) {
         console.error("Error fetching covenant:", error);
@@ -27,7 +36,7 @@ const Covenant: React.FC = () => {
       }
     };
     fetchCovenant();
-  }, []);
+  }, [lang]);
 
   if (loading) {
     return (
@@ -40,16 +49,16 @@ const Covenant: React.FC = () => {
   return (
     <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
       <div className="max-w-4xl mx-auto">
-        <Link to="/" className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-[0.3em] text-[10px] font-black mb-12">
-          <ArrowLeft size={14} /> Back to Home
+        <Link to={`/${lang}/`} className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-[0.3em] text-[10px] font-black mb-12">
+          <ArrowLeft size={14} /> {t('common.back_home')}
         </Link>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-amber-500">
               <FileText size={24} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Resident Terms</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('covenant.label')}</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase">Covenant</h1>
+            <h1 className="text-5xl md:text-7xl font-display font-bold tracking-tighter uppercase">{t('nav.covenant')}</h1>
           </div>
         </div>
 
@@ -81,7 +90,7 @@ const Covenant: React.FC = () => {
                className="px-8 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-colors shadow-xl shadow-white/5 flex items-center gap-2"
              >
                 <Printer size={14} />
-                Print Document
+                {t('covenant.print')}
              </button>
           </div>
         </motion.div>

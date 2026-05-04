@@ -1,6 +1,8 @@
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 export default function QuoteSection() {
+  const { t } = useTranslation();
 
   return (
     <section className="py-60 bg-black text-center px-6 overflow-hidden relative">
@@ -10,11 +12,11 @@ export default function QuoteSection() {
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-5xl mx-auto relative z-10"
       >
-        <span className="text-[10px] font-black uppercase tracking-[0.6em] text-amber-500/30 mb-12 block">Philosophy</span>
+        <span className="text-[10px] font-black uppercase tracking-[0.6em] text-amber-500/30 mb-12 block">{t('quote.philosophy')}</span>
         <h2 className="text-4xl md:text-7xl font-display font-bold text-white leading-tight tracking-tight max-w-4xl mx-auto">
-          "Redefining the boundaries <br className="hidden md:block" /> 
-          <span className="italic text-amber-400 font-light">of virtual luxury living</span> <br className="hidden md:block" />
-          beyond expectation."
+          {t('quote.main')} <br className="hidden md:block" /> 
+          <span className="italic text-amber-400 font-light">{t('quote.italic')}</span> <br className="hidden md:block" />
+          {t('quote.end')}
         </h2>
         <motion.p 
           initial={{ opacity: 0 }}
@@ -22,7 +24,7 @@ export default function QuoteSection() {
           transition={{ delay: 0.5, duration: 1 }}
           className="mt-12 text-white/20 text-xs font-bold uppercase tracking-[0.4em]"
         >
-          Exclusive Environments for the Discerning Resident
+          {t('quote.subtitle')}
         </motion.p>
       </motion.div>
       

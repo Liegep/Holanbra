@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Check, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
@@ -13,36 +15,38 @@ interface PricingPackage {
   order_idx: number;
 }
 
-const DEFAULT_PACKAGES: PricingPackage[] = [
-  {
-    id: '1',
-    name: 'Basic Room',
-    price: 'L$ 2,500',
-    features: ['1 Room Decoration', 'Up to 50 prims', 'Color Palette Selection', 'Basic Lighting Setup', '1 Revision'],
-    is_popular: false,
-    order_idx: 1
-  },
-  {
-    id: '2',
-    name: 'Standard Home',
-    price: 'L$ 7,500',
-    features: ['Full House Decoration (Up to 3 rooms)', 'Up to 150 prims', 'Custom Furniture Placement', 'Advanced Lighting', 'Landscaping Layout', '2 Revisions'],
-    is_popular: true,
-    order_idx: 2
-  },
-  {
-    id: '3',
-    name: 'Premium Estate',
-    price: 'L$ 15,000+',
-    features: ['Unlimited Rooms & Landscaping', 'Priority Support', 'Full Custom Sims', 'Interactive Scripts & Decor', 'Premium Texture Matching', 'Unlimited Revisions'],
-    is_popular: false,
-    order_idx: 3
-  }
-];
-
 export default function Pricing() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const DEFAULT_PACKAGES: PricingPackage[] = [
+    {
+      id: '1',
+      name: 'Basic Room',
+      price: 'L$ 2,500',
+      features: ['1 Room Decoration', 'Up to 50 prims', 'Color Palette Selection', 'Basic Lighting Setup', '1 Revision'],
+      is_popular: false,
+      order_idx: 1
+    },
+    {
+      id: '2',
+      name: 'Standard Home',
+      price: 'L$ 7,500',
+      features: ['Full House Decoration (Up to 3 rooms)', 'Up to 150 prims', 'Custom Furniture Placement', 'Advanced Lighting', 'Landscaping Layout', '2 Revisions'],
+      is_popular: true,
+      order_idx: 2
+    },
+    {
+      id: '3',
+      name: 'Premium Estate',
+      price: 'L$ 15,000+',
+      features: ['Unlimited Rooms & Landscaping', 'Priority Support', 'Full Custom Sims', 'Interactive Scripts & Decor', 'Premium Texture Matching', 'Unlimited Revisions'],
+      is_popular: false,
+      order_idx: 3
+    }
+  ];
 
   useEffect(() => {
     const fetchPricing = async () => {
@@ -56,10 +60,15 @@ export default function Pricing() {
           console.warn('Could not fetch pricing table:', error);
           setPackages(DEFAULT_PACKAGES);
         } else if (!data || data.length === 0) {
-          // Table exists but is empty
           setPackages(DEFAULT_PACKAGES);
         } else {
-          setPackages(data);
+          // Localize data
+          const localizedData = data.map(item => ({
+            ...item,
+            name: (lang && lang !== 'en' && item[`name_${lang}`]) ? item[`name_${lang}`] : item.name,
+            features: (lang && lang !== 'en' && item[`features_${lang}`]) ? item[`features_${lang}`] : item.features,
+          }));
+          setPackages(localizedData);
         }
       } catch (err) {
         console.error('Error fetching pricing:', err);
@@ -70,14 +79,13 @@ export default function Pricing() {
     };
 
     fetchPricing();
-  }, []);
+  }, [lang]);
 
   const handleOrder = (packageName: string) => {
     // @ts-ignore
     if (window.Tawk_API) {
       // @ts-ignore
       window.Tawk_API.maximize();
-      // Wait for chat to open then prefill if method exists
       setTimeout(() => {
         // @ts-ignore
         if (window.Tawk_API.addEvent) {
@@ -85,12 +93,8 @@ export default function Pricing() {
           window.Tawk_API.addEvent('package_selected', { package: packageName });
         }
       }, 500);
-      console.log(`User wants to order: ${packageName}`);
-      // Alternatively, user can type it in manually since Tawk.to doesn't have a direct "pre-fill input field" API without custom forms
-      alert(`Chat opening! Please tell us you're interested in the ${packageName} package.`);
     } else {
       console.warn("Tawk_API not found. Chat not loaded.");
-      alert(`We would love to help you with the ${packageName} package. Please contact us in-world!`);
     }
   };
 
@@ -103,10 +107,10 @@ export default function Pricing() {
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl md:text-5xl font-display font-black text-white">
-            Decoration Packages
+            {t('pricing.title')}
           </h2>
           <p className="text-white/50 max-w-2xl mx-auto text-sm">
-            Choose the perfect plan for your virtual space. We handle everything from a single room makeover to a complete estate build.
+            {t('pricing.subtitle')}
           </p>
         </div>
 
@@ -134,7 +138,7 @@ export default function Pricing() {
               >
                 {pkg.is_popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-amber-500 text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-500/20">
-                    Most Popular
+                    {t('pricing.popular')}
                   </div>
                 )}
                 
@@ -166,7 +170,7 @@ export default function Pricing() {
                   )}
                 >
                   <MessageSquare size={14} />
-                  Order Now
+                  {t('pricing.order')}
                 </button>
               </motion.div>
             ))}

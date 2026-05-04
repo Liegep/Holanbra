@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   BarChart3, 
   Settings, 
@@ -38,12 +39,13 @@ import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
 
 export default function AdminArea() {
+  const { t } = useTranslation();
   // UI State
   const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
-  const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
-    visible: false
+    isVisible: false
   });
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -119,7 +121,7 @@ export default function AdminArea() {
   });
 
   const showToast = (message: string, type: ToastType = 'success') => {
-    setToast({ message, type, visible: true });
+    setToast({ message, type, isVisible: true });
   };
 
   // Auth Handling
@@ -914,21 +916,23 @@ export default function AdminArea() {
       <div className="pt-32 pb-24 px-6 bg-black min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md">
           {!user ? <AdminAuthForm /> : (
-            <div className="glass-card p-12 text-center space-y-8">
-              <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                <AlertCircle className="text-red-500 w-10 h-10" />
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-3xl font-display font-bold text-white">ACCESS DENIED</h2>
-                <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account does not have administrative privileges</p>
-              </div>
-              <div className="space-y-4 text-white">
-                <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
-                <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
-                  Sign out & switch account
-                </button>
-              </div>
-            </div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8 space-y-12">
+        <div className="text-center space-y-6 max-w-md">
+          <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
+            <AlertCircle className="text-red-500 w-10 h-10" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-display font-bold text-white tracking-tight uppercase">ACCESS DENIED</h1>
+            <p className="text-white/40 uppercase tracking-widest text-[10px]">Your account does not have administrative privileges</p>
+          </div>
+          <div className="space-y-4 text-white">
+            <p className="text-red-400 text-[10px] font-bold uppercase tracking-widest">{user.email}</p>
+            <button onClick={() => signOut()} className="w-full py-4 rounded-xl border border-white/10 text-white font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-all uppercase tracking-widest text-[10px]">
+              {t('resident.logout')}
+            </button>
+          </div>
+        </div>
+      </div>
           )}
         </div>
       </div>
@@ -956,24 +960,24 @@ export default function AdminArea() {
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
-              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">Log out</button>
+              <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">{t('resident.logout')}</button>
             </div>
           </div>
 
-          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">Executive Terminal</h2>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500 px-4 mb-4">{t('admin.navigation')}</h2>
           {[
-            { id: 'listings', name: "Properties", icon: BarChart3 },
-            { id: 'renters', name: "Residents", icon: UserIcon },
-            { id: 'portfolio', name: "Portfolio", icon: ImageIcon },
-            { id: 'pricing', name: "Pricing", icon: DollarSign },
-            { id: 'gallery', name: "Gallery", icon: ImageIcon },
-            { id: 'hero', name: 'Hero', icon: ImageIcon },
-            { id: 'team', name: "Organization", icon: UserIcon },
-            { id: 'inbox', name: "Inbox", icon: Mail, hasNotification: unreadInboxCount > 0 },
-            { id: 'tickets', name: "Support Tickets", icon: MessageSquare, hasNotification: openTicketsCount > 0 },
-            { id: 'add', name: editingId ? "Edit Property" : "Add New Property", icon: Plus },
-            { id: 'covenant', name: "Covenants", icon: FileText },
-            { id: 'settings', name: "Portal Settings", icon: Settings },
+            { id: 'listings', name: t('admin.listings'), icon: BarChart3 },
+            { id: 'renters', name: t('admin.renters'), icon: UserIcon },
+            { id: 'portfolio', name: t('admin.portfolio'), icon: ImageIcon },
+            { id: 'pricing', name: t('admin.pricing'), icon: DollarSign },
+            { id: 'gallery', name: t('admin.gallery'), icon: ImageIcon },
+            { id: 'hero', name: t('admin.hero_section'), icon: ImageIcon },
+            { id: 'team', name: t('admin.team'), icon: UserIcon },
+            { id: 'inbox', name: t('admin.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
+            { id: 'tickets', name: t('admin.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
+            { id: 'add', name: editingId ? t('admin.edit_property') : t('admin.add_property'), icon: Plus },
+            { id: 'covenant', name: t('admin.covenant'), icon: FileText },
+            { id: 'settings', name: t('admin.settings'), icon: Settings },
           ].map((item) => (
             <button
               key={item.id}
@@ -1127,8 +1131,8 @@ export default function AdminArea() {
       <Toast 
         message={toast.message} 
         type={toast.type} 
-        isVisible={toast.visible} 
-        onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
       />
     </div>
   );

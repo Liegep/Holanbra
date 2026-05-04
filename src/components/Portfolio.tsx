@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Pricing from './Pricing';
@@ -14,23 +15,35 @@ interface PortfolioItem {
 }
 
 export default function Portfolio() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       try {
+        // Handle localized fields
+        const titleField = lang && lang !== 'en' ? `title_${lang}` : 'title';
+        const descField = lang && lang !== 'en' ? `description_${lang}` : 'description';
+        
         const { data, error } = await supabase
           .from('portfolio')
-          .select('*')
+          .select(`id, ${titleField}, ${descField}, image_url, created_at`)
           .order('created_at', { ascending: false });
 
         if (error) {
-          // Ignore error gracefully if table not yet created
           console.warn('Could not fetch portfolio items:', error);
           setItems([]);
         } else {
-          setItems(data || []);
+          // Normalize the data to use standard title/description keys
+          const normalizedData = (data || []).map((item: any) => ({
+            id: item.id,
+            title: item[titleField] || item.title || '',
+            description: item[descField] || item.description || '',
+            image_url: item.image_url
+          }));
+          setItems(normalizedData);
         }
       } catch (err) {
         console.error('Error fetching portfolio:', err);
@@ -40,7 +53,9 @@ export default function Portfolio() {
     };
 
     fetchPortfolio();
-  }, []);
+  }, [lang]);
+
+  const baseUrl = lang ? `/${lang}` : '';
 
   return (
     <div className="min-h-screen pt-32 pb-24 px-6 md:px-12 bg-background-dark">
@@ -48,14 +63,14 @@ export default function Portfolio() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/10">
           <div className="text-left space-y-4">
             <Link 
-              to="/" 
+              to={`${baseUrl}/`} 
               className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-500 hover:text-white transition-colors"
             >
               <ArrowLeft size={14} />
-              Back to Home
+              {t('common.back_home')}
             </Link>
-            <h1 className="text-5xl font-display font-black text-white">Decoration Portfolio</h1>
-            <p className="text-white/50 text-sm max-w-xl">Take a look at our past projects and let us inspire your next virtual home makeover.</p>
+            <h1 className="text-5xl font-display font-black text-white">{t('portfolio.title')}</h1>
+            <p className="text-white/50 text-sm max-w-xl">{t('portfolio.subtitle')}</p>
           </div>
           <button 
             onClick={() => {
@@ -66,18 +81,18 @@ export default function Portfolio() {
             }}
             className="px-8 py-4 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-white transition-all w-full md:w-auto text-center"
           >
-            Start Your Project
+            {t('portfolio.start')}
           </button>
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 text-white/50 space-y-4">
             <Loader2 className="animate-spin text-amber-500" size={32} />
-            <p className="uppercase tracking-widest text-[10px] font-bold">Loading Portfolio...</p>
+            <p className="uppercase tracking-widest text-[10px] font-bold">{t('portfolio.loading')}</p>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-24 bg-white/5 rounded-3xl border border-white/10">
-            <p className="text-white/50 uppercase tracking-widest text-xs font-bold">No projects uploaded yet.</p>
+            <p className="text-white/50 uppercase tracking-widest text-xs font-bold">{t('portfolio.none')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

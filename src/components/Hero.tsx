@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Play, MapPin, X } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowRight, Play, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
 export default function Hero() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
@@ -30,11 +33,18 @@ export default function Hero() {
         .maybeSingle();
       
       if (data) {
+        const getLocalized = (baseKey: string) => {
+          if (lang && lang !== 'en') {
+            return data[`${baseKey}_${lang}`] || data[baseKey];
+          }
+          return data[baseKey];
+        };
+
         setContent({
           backgroundImage: data.background_url || content.backgroundImage,
-          badgeText: data.badge_text || content.badgeText,
-          title1: data.title_main || content.title1,
-          title2: data.title_italic || content.title2,
+          badgeText: getLocalized('badge_text') || content.badgeText,
+          title1: getLocalized('title_main') || content.title1,
+          title2: getLocalized('title_italic') || content.title2,
           virtualTourUrl: data.virtual_tour_url || content.virtualTourUrl,
           gridImages: [
             data.grid_photo_1 || content.gridImages[0],
@@ -58,10 +68,10 @@ export default function Hero() {
     return () => {
       supabase.removeChannel(heroSubscription);
     };
-  }, []);
+  }, [lang]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">
+    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">
       {/* Background Video/Image Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/40 to-black z-10"></div>
@@ -93,23 +103,23 @@ export default function Hero() {
           className="max-w-6xl mx-auto px-4 space-y-12"
         >
           <div className="flex flex-col items-center gap-8 mb-4">
-             <div className="flex flex-col items-center">
-                <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">Welcome</span>
-                <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
-                  <span className="text-amber-500">{content.title1}</span>
-                  <span className="italic font-light flex items-center gap-4">
-                    {content.title2} <ArrowRight size={48} className="text-white/20" />
-                  </span>
-                </h2>
-             </div>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] font-mono tracking-[0.6em] text-white/40 uppercase mb-4">{t('nav.home')}</span>
+              <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
+                <span className="text-amber-500">{content.title1}</span>
+                <span className="italic font-light flex items-center gap-4">
+                  {content.title2} <ArrowRight size={48} className="text-white/20" />
+                </span>
+              </h2>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[400px] md:h-[500px]">
-             {content.gridImages.map((url: string, idx: number) => (
-                <div key={idx} className={cn("rounded-2xl overflow-hidden shadow-2xl", idx % 2 !== 0 && "translate-y-8")}>
-                   <img src={url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt={`Hero grid ${idx}`} referrerPolicy="no-referrer" />
-                </div>
-             ))}
+            {content.gridImages.map((url: string, idx: number) => (
+              <div key={idx} className={cn("rounded-2xl overflow-hidden shadow-2xl", idx % 2 !== 0 && "translate-y-8")}>
+                <img src={url} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" alt={`Hero grid ${idx}`} referrerPolicy="no-referrer" />
+              </div>
+            ))}
           </div>
         </motion.div>
 
@@ -120,10 +130,10 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
           <Link 
-            to="/#properties"
+            to={`/${lang}/#properties`}
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
-            View Properties <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+            {t('properties.view_all')} <ArrowRight className="group-hover:translate-x-1 transition-transform" />
           </Link>
           
           <button 
@@ -133,7 +143,7 @@ export default function Hero() {
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
               <Play size={10} fill="white" />
             </div>
-            Virtual Tour
+            {t('hero.tour')}
           </button>
         </motion.div>
       </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
@@ -29,6 +31,8 @@ interface Property {
 }
 
 export default function Properties() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -56,13 +60,11 @@ export default function Properties() {
         const propertyList = (data || []).map(p => {
           const galleryList = [];
           
-          // Construct gallery from explicit columns
           if (p.image_url) galleryList.push({ type: 'image', url: p.image_url });
           if (p.gallery_image_1) galleryList.push({ type: 'image', url: p.gallery_image_1 });
           if (p.gallery_image_2) galleryList.push({ type: 'image', url: p.gallery_image_2 });
           if (p.video_url) galleryList.push({ type: 'video', url: p.video_url });
           
-          // Legacy support
           if (galleryList.length === 0 && p.image) {
             galleryList.push({ type: 'image', url: p.image });
           }
@@ -73,7 +75,7 @@ export default function Properties() {
             image: p.image_url,
             price: p.rental_price || p.price || 0,
             gallery: galleryList,
-            teleport_url: p.teleport_url || p.slurl // Fallback
+            teleport_url: p.teleport_url || p.slurl 
           };
         });
         setProperties(propertyList);
@@ -92,6 +94,13 @@ export default function Properties() {
       supabase.removeChannel(propertiesSubscription);
     };
   }, []);
+
+  const getLocalizedDescription = (p: any) => {
+    if (lang && lang !== 'en') {
+      return p[`description_${lang}`] || p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
+    }
+    return p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
+  };
 
   const sortedAndFilteredProperties = [...properties]
     .filter(p => {
@@ -134,19 +143,15 @@ export default function Properties() {
     setCurrentImgIdx((prev) => (prev - 1 + selectedProperty.gallery.length) % selectedProperty.gallery.length);
   };
 
-  const getLocalizedDescription = (p: any) => {
-    return p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
-  };
-
   return (
     <section id="properties" className="py-32 px-6 md:px-12 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
           <div className="space-y-4 text-left">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">Available Properties</h2>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-black">{t('properties.title')}</h2>
             <div className="space-y-2">
               <p className="text-amber-600/60 max-w-lg text-sm uppercase tracking-widest font-medium">
-                Find your next virtual home.
+                {t('properties.subtitle')}
               </p>
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">
                 {properties.filter(p => p.status === 'available').length} {properties.filter(p => p.status === 'available').length === 1 ? 'Property' : 'Properties'} ready for occupancy
@@ -267,7 +272,7 @@ export default function Properties() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
                   >
                     <ExternalLink size={12} />
-                    Learn More
+                    {t('hero.tour')}
                   </button>
                 </div>
               </div>
@@ -276,7 +281,7 @@ export default function Properties() {
           
           {sortedAndFilteredProperties.length === 0 && (
             <div className="col-span-full py-20 text-center bg-black/5 rounded-[2rem] border-2 border-dashed border-black/10">
-              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">No properties found</p>
+              <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">{t('properties.no_found')}</p>
             </div>
           )}
         </div>
@@ -287,7 +292,7 @@ export default function Properties() {
               onClick={() => setVisibleCount(sortedAndFilteredProperties.length)}
               className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5"
             >
-              View All Properties <ExternalLink size={16} className="text-amber-500" />
+              {t('properties.view_all')} <ExternalLink size={16} className="text-amber-500" />
             </button>
           </div>
         )}
@@ -300,7 +305,7 @@ export default function Properties() {
               }}
               className="px-12 py-5 rounded-full border border-black/10 hover:border-amber-500/50 bg-black/5 text-[10px] font-bold uppercase tracking-[0.2em] text-black flex items-center gap-3 transition-all hover:bg-amber-500/5"
             >
-              Show Less
+              {t('properties.show_less')}
             </button>
           </div>
         )}
@@ -324,7 +329,6 @@ export default function Properties() {
             >
               {/* Media Section */}
               <div className="w-full md:w-[60%] h-[40%] md:h-full relative bg-zinc-100">
-                {/* Main Media with smooth transition */}
                 <div className="w-full h-full relative group">
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -371,7 +375,6 @@ export default function Properties() {
                     </>
                   )}
                   
-                  {/* Gallery Thumbnails positioned at the bottom of the image area */}
                   {selectedProperty.gallery.length > 1 && (
                     <div className="absolute bottom-6 inset-x-0 flex justify-center gap-2 z-40">
                       {selectedProperty.gallery.map((img: any, i: number) => (

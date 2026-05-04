@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Activity, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 
 interface SLStatus {
@@ -12,6 +13,7 @@ interface SLStatus {
 }
 
 export const GridStatus: React.FC = () => {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<SLStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,13 +41,13 @@ export const GridStatus: React.FC = () => {
     return (
       <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10 opacity-50">
         <Clock size={12} className="animate-pulse" />
-        <span className="text-[10px] font-bold uppercase tracking-widest">Checking Grid...</span>
+        <span className="text-[10px] font-bold uppercase tracking-widest">{t('grid.checking')}</span>
       </div>
     );
   }
 
   const indicator = status?.status.indicator || 'none';
-  const description = status?.status.description || 'Operational';
+  const description = status?.status.description === 'Operational' ? t('grid.operational') : (status?.status.description || t('grid.operational'));
 
   const config = {
     none: { color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20', icon: CheckCircle2 },
@@ -66,7 +68,7 @@ export const GridStatus: React.FC = () => {
     >
       <Icon size={12} className={color} />
       <span className={`text-[10px] font-black uppercase tracking-widest ${color}`}>
-        Grid: {description}
+        {t('grid.label')}: {description}
       </span>
     </a>
   );

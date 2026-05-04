@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MessageSquare, MapPin, Facebook, Mail, X, Loader2, Send } from 'lucide-react';
 import { GridStatus } from './GridStatus';
 import { supabase } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 
 export default function Footer() {
+  const { lang } = useParams();
+  const { t } = useTranslation();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messageForm, setMessageForm] = useState({
     visitor_name: '',
     message: ''
   });
-  const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
-    visible: false
+    isVisible: false
   });
 
   const showToast = (message: string, type: ToastType = 'success') => {
-    setToast({ message, type, visible: true });
-    setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+    setToast({ message, type, isVisible: true });
+    setTimeout(() => setToast(prev => ({ ...prev, isVisible: false })), 3000);
   };
 
   const openLiveChat = () => {
@@ -37,7 +40,7 @@ export default function Footer() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageForm.visitor_name || !messageForm.message) {
-      showToast('Please fill all fields', 'error');
+      showToast(t('footer.fill_fields'), 'error');
       return;
     }
     
@@ -52,7 +55,7 @@ export default function Footer() {
 
       if (error) throw error;
       
-      showToast('Message sent successfully!');
+      showToast(t('footer.msg_sent'));
       setMessageForm({ visitor_name: '', message: '' });
       setIsMessageModalOpen(false);
     } catch (err: any) {
@@ -62,6 +65,8 @@ export default function Footer() {
       setIsSubmitting(false);
     }
   };
+
+  const baseUrl = lang ? `/${lang}` : '';
   
   return (
     <>
@@ -70,39 +75,39 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-2xl font-display font-bold tracking-tighter uppercase">HOLANBRA<span className="text-amber-500"> SL</span></h3>
             <p className="text-amber-100/40 text-xs leading-relaxed uppercase tracking-widest">
-              Experts in luxury real estate in Second Life.
+              {t('footer.desc')}
             </p>
           </div>
           
           <div className="space-y-6">
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">Navigation</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">{t('footer.nav')}</h4>
             <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
-              <li><Link to="/" className="hover:text-amber-400 transition-colors">Home</Link></li>
-              <li><Link to="/#properties" className="hover:text-amber-400 transition-colors">Properties</Link></li>
-              <li><Link to="/covenant" className="hover:text-amber-400 transition-colors">Covenant</Link></li>
-              <li><Link to="/resident" className="hover:text-amber-400 transition-colors">Resident Portal</Link></li>
+              <li><Link to={`${baseUrl}/`} className="hover:text-amber-400 transition-colors">{t('nav.home')}</Link></li>
+              <li><Link to={`${baseUrl}/#properties`} className="hover:text-amber-400 transition-colors">{t('nav.properties')}</Link></li>
+              <li><Link to={`${baseUrl}/covenant`} className="hover:text-amber-400 transition-colors">{t('nav.covenant')}</Link></li>
+              <li><Link to={`${baseUrl}/resident`} className="hover:text-amber-400 transition-colors">Resident Portal</Link></li>
               <li><Link to="/admin" className="hover:text-amber-400 transition-colors">Admin</Link></li>
             </ul>
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">Contact</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">{t('footer.contact')}</h4>
             <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
               <li>
-                <button onClick={openLiveChat} className="flex items-center gap-3 hover:text-amber-400 transition-colors">
-                  <MessageSquare size={12} className="text-amber-500" /> Live Chat
+                <button onClick={openLiveChat} className="flex items-center gap-3 hover:text-amber-400 transition-colors text-left">
+                  <MessageSquare size={12} className="text-amber-500 shrink-0" /> {t('footer.live_chat')}
                 </button>
               </li>
               <li>
-                <button onClick={() => setIsMessageModalOpen(true)} className="flex items-center gap-3 hover:text-amber-400 transition-colors">
-                  <Mail size={12} className="text-amber-500" /> Send Message
+                <button onClick={() => setIsMessageModalOpen(true)} className="flex items-center gap-3 hover:text-amber-400 transition-colors text-left">
+                  <Mail size={12} className="text-amber-500 shrink-0" /> {t('footer.send_msg_btn')}
                 </button>
               </li>
             </ul>
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">Follow Us</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">{t('footer.follow')}</h4>
             <div className="flex gap-4">
               <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
                 <Facebook size={16} />
@@ -115,7 +120,7 @@ export default function Footer() {
         </div>
         
         <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] font-mono text-amber-500/30 uppercase tracking-[0.2em]">
-          <p>&copy; 2026 Holanbra Real Estate SL. All rights reserved.</p>
+          <p>&copy; 2026 Holanbra Real Estate SL. {t('footer.all_rights')}</p>
           <div className="flex items-center gap-8">
             <p>COORD: 128.00 / 45.22 / 2001</p>
             <GridStatus />
@@ -147,14 +152,14 @@ export default function Footer() {
                 <X size={24} />
               </button>
 
-              <h3 className="text-2xl font-display font-bold uppercase italic tracking-widest mb-2">Send Message</h3>
+              <h3 className="text-2xl font-display font-bold uppercase italic tracking-widest mb-2">{t('footer.msg_modal_title')}</h3>
               <p className="text-[10px] tracking-widest uppercase font-bold text-white/40 mb-8">
-                Send a direct message to administration
+                {t('footer.msg_modal_desc')}
               </p>
 
               <form onSubmit={handleSendMessage} className="space-y-6 relative z-10">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Your Name (SL Resident or Guest)</label>
+                  <label className="text-[10px] uppercase font-bold tracking-widest text-amber-500">{t('footer.your_name_label')}</label>
                   <input 
                     type="text" 
                     required
@@ -166,13 +171,13 @@ export default function Footer() {
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase font-bold tracking-widest text-amber-500">Message</label>
+                  <label className="text-[10px] uppercase font-bold tracking-widest text-amber-500">{t('footer.msg_label')}</label>
                   <textarea 
                     required
                     value={messageForm.message}
                     onChange={(e) => setMessageForm({ ...messageForm, message: e.target.value })}
                     className="w-full h-32 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-amber-500/50 transition-colors resize-none"
-                    placeholder="How can we help you?"
+                    placeholder={t('footer.msg_placeholder')}
                   />
                 </div>
 
@@ -187,7 +192,7 @@ export default function Footer() {
                     ) : (
                       <>
                         <Send size={16} /> 
-                        Send Message
+                        {t('footer.send_msg_btn')}
                       </>
                     )}
                   </button>
@@ -201,8 +206,8 @@ export default function Footer() {
       <Toast 
         message={toast.message} 
         type={toast.type} 
-        visible={toast.visible} 
-        onClose={() => setToast(prev => ({ ...prev, visible: false }))} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
       />
     </>
   );

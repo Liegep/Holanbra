@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation, Trans } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 export default function AboutUs() {
+  const { t } = useTranslation();
   const [aboutImage, setAboutImage] = useState('https://images.unsplash.com/photo-1600585154340-be6199f3e009?w=1200&q=80');
 
   useEffect(() => {
@@ -36,27 +38,29 @@ export default function AboutUs() {
             className="space-y-8"
           >
             <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">History</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('about.history')}</span>
               <h2 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tighter text-left">
-                ABOUT <span className="italic font-light text-amber-400">US</span>
+                {t('about.title1')} <span className="italic font-light text-amber-400">{t('about.title2')}</span>
               </h2>
             </div>
             
             <div className="space-y-6 text-amber-100/60 leading-relaxed font-light text-lg text-left">
               <p>
-                In 2010, <span className="text-white font-medium">Ymir Coronet</span>, from the Netherlands, and <span className="text-white font-medium">Marie Whitfield</span>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.
+                <Trans i18nKey="about.p1">
+                  In 2010, <span className="text-white font-medium">Ymir Coronet</span>, from the Netherlands, and <span className="text-white font-medium">Marie Whitfield</span>, originally from Brazil, joined forces to create exquisitely designed virtual worlds. At that time, the concept of sims with streets reminiscent of real cities was a rarity, granting a distinct charm to their creations.
+                </Trans>
               </p>
               
               <p>
-                As years passed and technology evolved, we expanded our vision, bringing elegance and sophistication to every project.
+                {t('about.p2')}
               </p>
               
               <p className="border-l-2 border-amber-500/30 pl-8 py-2 italic font-normal">
-                Today, we are a benchmark in luxury real estate within Second Life, creating unique experiences for our residents.
+                {t('about.quote')}
               </p>
               
               <p>
-                We are unwavering in our dedication to providing the best spaces, always focusing on comfort and beauty.
+                {t('about.p4')}
               </p>
             </div>
           </motion.div>

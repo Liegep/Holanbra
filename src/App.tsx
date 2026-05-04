@@ -17,7 +17,8 @@ import {
   X,
   Plus
 } from 'lucide-react';
-import { Link, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Link, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Properties from './components/Properties';
@@ -35,25 +36,51 @@ import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
 
-export default function App() {
-  const [isAdmin, setIsAdmin] = useState(false);
+const SUPPORTED_LANGS = ['en', 'pt', 'es', 'nl'];
+
+function LanguageRedirect() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const savedLang = localStorage.getItem('i18nextLng');
+    const browserLang = navigator.language.split('-')[0];
+    const defaultLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+    
+    navigate(`/${defaultLang}`, { replace: true });
+  }, [navigate]);
+
+  return null;
+}
+
+function LanguageWrapper() {
+  const { lang } = useParams();
+  const { i18n } = useTranslation();
+  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    if (lang && SUPPORTED_LANGS.includes(lang)) {
+      if (i18n.language !== lang) {
+        i18n.changeLanguage(lang);
+        localStorage.setItem('i18nextLng', lang);
       }
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // If lang is not supported or missing, redirect to home with detection
+      const savedLang = localStorage.getItem('i18nextLng');
+      const browserLang = navigator.language.split('-')[0];
+      const targetLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+      
+      // Keep the rest of the path if possible, but for simplicity we often just go home
+      // or we prepend the lang to the current path if it's not present.
+      if (!lang) {
+        navigate(`/${targetLang}${location.pathname}`, { replace: true });
+      }
     }
-  }, [location]);
+  }, [lang, i18n, navigate, location]);
 
   return (
-    <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+    <>
       <Navbar />
-      
       <main>
         <Routes>
           <Route path="/" element={
@@ -79,9 +106,35 @@ export default function App() {
           <Route path="/portfolio" element={<Portfolio />} />
         </Routes>
       </main>
-
       <TeleportCTA />
       <Footer />
+    </>
+  );
+}
+
+export default function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.getElementById(location.hash.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname, location.hash]); // Only scroll to top on path change
+
+  return (
+    <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+      <Routes>
+        <Route path="/" element={<LanguageRedirect />} />
+        <Route path="/:lang/*" element={<LanguageWrapper />} />
+        {/* Fallback for static assets or other routes if needed */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
       <TawkChat />
     </div>
   );
