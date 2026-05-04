@@ -28,6 +28,7 @@ interface Property {
   description_nl?: string;
   bedrooms?: number;
   bathrooms?: number;
+  prims_allowed?: number;
 }
 
 export default function Properties() {
@@ -254,6 +255,9 @@ export default function Properties() {
                 <div className="flex items-center gap-4 pt-2">
                   <div className="text-2xl font-light text-white decoration-amber-500/50">
                     L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">{t('properties.per_week')}</span>
+                    {property.prims_allowed && (
+                      <span className="ml-2 text-[10px] uppercase font-bold text-amber-500">{property.prims_allowed} Prims</span>
+                    )}
                   </div>
                 </div>
 
@@ -439,6 +443,11 @@ export default function Properties() {
                   <div className="space-y-4">
                     <div className="text-3xl font-display font-medium text-black">
                       L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">{t('properties.per_week')}</span>
+                      {selectedProperty.prims_allowed && (
+                        <div className="text-xs text-black/60 font-medium">
+                          {selectedProperty.prims_allowed} Prims Allowed
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex gap-4">

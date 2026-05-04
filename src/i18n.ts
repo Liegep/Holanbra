@@ -149,6 +149,7 @@ const resources = {
           "price_week": "Price (L$ / Week)",
           "teleport_slurl": "Teleport Link (SLURL)",
           "description": "Property Description",
+          "prims_allowed": "Prims Allowed",
           "availability": "Availability Status",
           "main_image": "Main Image (Cover)",
           "gallery_photo": "Gallery Photo",
@@ -656,6 +657,7 @@ const resources = {
           "price_week": "Preço (L$ / Semana)",
           "teleport_slurl": "Link de Teleporte (SLURL)",
           "description": "Descrição da Propriedade",
+          "prims_allowed": "Prims Permitidos",
           "availability": "Status de Disponibilidade",
           "main_image": "Imagem Principal (Capa)",
           "gallery_photo_1": "Foto de Galeria 01",
@@ -1282,6 +1284,7 @@ const resources = {
           "price_week": "Precio (L$ / Semana)",
           "teleport_slurl": "Enlace de Teletransporte (SLURL)",
           "description": "Descripción de la propiedad",
+          "prims_allowed": "Prims Permitidos",
           "availability": "Estado de disponibilidad",
           "main_image": "Imagen principal (portada)",
           "gallery_photo_01": "Foto de galería 01",
@@ -1927,6 +1930,9 @@ const resources = {
           "add_property": "Nieuwe Woning Toevoegen",
           "covenant": "Voorschriften",
           "settings": "Instellingen"
+        },
+        "property": {
+          "prims_allowed": "Toegestane Prims"
         },
         "fields": {
           "price": "Prijs",

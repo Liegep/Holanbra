@@ -137,18 +137,32 @@ export function AdminPropertyForm({
             />
           </div>
           <div className="space-y-2 text-left">
-            <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.teleport_slurl')}</label>
-            <div className="relative">
-              <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
-              <input 
-                type="text" 
-                name="teleport_url"
-                value={formData.teleport_url}
-                onChange={handleInputChange}
-                className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
-                placeholder={t('admin.property.placeholder_slurl')} 
-              />
-            </div>
+            <label className="text-xs font-bold text-amber-500/70 uppercase">
+              {t('admin.property.prims_allowed')}
+            </label>
+            <input 
+              type="number" 
+              name="prims_allowed"
+              value={formData.prims_allowed}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2 text-left">
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.teleport_slurl')}</label>
+          <div className="relative">
+            <LinkIcon size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+            <input 
+              type="text" 
+              name="teleport_url"
+              value={formData.teleport_url}
+              onChange={handleInputChange}
+              className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
+              placeholder={t('admin.property.placeholder_slurl')} 
+            />
           </div>
         </div>
 
