@@ -86,6 +86,23 @@ export function AdminPropertyForm({
           </button>
         )}
       </div>
+
+      <div className="flex gap-2">
+        {(['pt', 'en', 'es', 'nl'] as const).map((lang) => (
+          <button
+            key={lang}
+            onClick={() => setFormLang(lang)}
+            className={cn(
+              "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
+              formLang === lang 
+                ? "bg-amber-500 text-black" 
+                : "bg-white/5 text-white/40 hover:text-white"
+            )}
+          >
+            {lang}
+          </button>
+        ))}
+      </div>
       
       <div className="space-y-6">
         <div className="space-y-2 text-left">
