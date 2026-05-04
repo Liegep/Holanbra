@@ -43,7 +43,7 @@ export function AdminHeroSection({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 < ImageIcon size={14} /> {t('admin.fields.background_photo', 'Background Photo')}
+                 < ImageIcon size={14} /> {t('hero.background_photo')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.backgroundImage ? (
@@ -63,7 +63,7 @@ export function AdminHeroSection({
                        onChange={(e) => handleFileUpload(e, 'backgroundImage')}
                        disabled={isUploadingSlot === 'backgroundImage'}
                      />
-                     {isUploadingSlot === 'backgroundImage' ? "Uploading..." : t('admin.buttons.change_background', 'Change Background')}
+                     {isUploadingSlot === 'backgroundImage' ? t('hero.uploading') : t('hero.change_background')}
                   </label>
                 </div>
 
@@ -77,7 +77,7 @@ export function AdminHeroSection({
 
             <div className="space-y-4 text-left">
               <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-                 <Video size={14} /> {t('admin.fields.tour_video', 'Global Tour Video')}
+                 <Video size={14} /> {t('hero.tour_video')}
               </label>
               <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
                 {heroContent.virtualTourUrl ? (
@@ -97,7 +97,7 @@ export function AdminHeroSection({
                        onChange={(e) => handleFileUpload(e, 'virtualTourUrl')}
                        disabled={isUploadingSlot === 'virtualTourUrl'}
                      />
-                     {isUploadingSlot === 'virtualTourUrl' ? "Uploading..." : heroContent.virtualTourUrl ? t('admin.buttons.change_video', 'Change Video') : t('admin.buttons.upload_video', 'Upload Video')}
+                     {isUploadingSlot === 'virtualTourUrl' ? t('hero.uploading') : heroContent.virtualTourUrl ? t('hero.change_video') : t('hero.upload_video')}
                   </label>
                   {heroContent.virtualTourUrl && (
                     <button 
@@ -126,7 +126,7 @@ export function AdminHeroSection({
 
           <div className="space-y-4 text-left">
             <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-               < ImageIcon size={14} /> {t('admin.fields.featured_photos', 'Featured Photos Grid')}
+               < ImageIcon size={14} /> {t('hero.featured_photos')}
             </label>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[0, 1, 2, 3].map((idx) => (
