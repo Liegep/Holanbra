@@ -29,7 +29,6 @@ import { AdminSupportTickets } from './admin/AdminSupportTickets';
 import { AdminResidents } from './admin/AdminResidents';
 import { AdminHeroSection } from './admin/AdminHeroSection';
 import { AdminGalleryManager } from './admin/AdminGalleryManager';
-import { AdminVideoManager } from './admin/AdminVideoManager';
 import { AdminInbox } from './admin/AdminInbox';
 import { AdminTeamManager } from './admin/AdminTeamManager';
 import { AdminLandCovenant } from './admin/AdminLandCovenant';
@@ -40,7 +39,7 @@ import { AdminPricingManager } from './admin/AdminPricingManager';
 
 export default function AdminArea() {
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'videos' | 'tickets' | 'portfolio' | 'pricing'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'settings' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, visible: boolean }>({
     message: '',
     type: 'success',
@@ -59,7 +58,6 @@ export default function AdminArea() {
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [inboxMessages, setInboxMessages] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
-  const [videos, setVideos] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [heroContent, setHeroContent] = useState<any>({
     backgroundImage: '',
@@ -245,16 +243,6 @@ export default function AdminArea() {
     }
   };
 
-  const fetchVideos = async () => {
-    try {
-      const { data, error } = await supabase.from('videos').select('*').order('created_at', { ascending: false });
-      if (error) throw error;
-      setVideos(data || []);
-    } catch (err) {
-      console.error("Fetch videos error:", err);
-    }
-  };
-
   const fetchTeam = async () => {
     try {
       const { data, error } = await supabase.from('team').select('*').order('display_order', { ascending: true });
@@ -302,7 +290,6 @@ export default function AdminArea() {
     fetchRenters();
     fetchGallery();
     fetchInboxMessages();
-    fetchVideos();
     fetchTeam();
     fetchTickets();
   };
@@ -496,47 +483,6 @@ export default function AdminArea() {
     }
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsUploading(true);
-    setIsUploadingSlot('videos');
-    try {
-      const fileName = `video_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-      const filePath = `videos/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
-      
-      const { error: dbError } = await supabase.from('videos').insert({ name: file.name || 'Video Asset', url: publicUrl });
-      if (dbError) {
-        console.error("DB Insert Error", dbError);
-        throw dbError;
-      }
-      
-      showToast("Saved successfully");
-      fetchVideos();
-    } catch (err: any) {
-      console.error(err);
-      showToast("Save error: " + (err.message || 'Unknown error'), "error");
-    } finally {
-      setIsUploading(false);
-      setIsUploadingSlot(null);
-    }
-  };
-
-  const handleDeleteVideo = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this?")) return;
-    try {
-      const { error } = await supabase.from('videos').delete().eq('id', id);
-      if (error) throw error;
-      showToast("Deleted successfully");
-      fetchVideos();
-    } catch (err: any) {
-      showToast("Delete error", "error");
-    }
-  };
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, targetField: string, gridIdx?: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -575,7 +521,7 @@ export default function AdminArea() {
       else if (targetField === 'videoUrl') setFormData(prev => ({ ...prev, videoUrl: publicUrl }));
       else if (targetField === 'image') setTeamFormData(prev => ({ ...prev, image: publicUrl }));
       else if (targetField === 'gallery') setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
-      else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
+      else if (targetField === 'backgroundImage' || targetField === 'aboutImage' || targetField === 'virtualTourUrl') {
         const updatedHero = { ...heroContent, [targetField]: publicUrl };
         setHeroContent(updatedHero);
         await supabase.from('site_settings').upsert({ 
@@ -585,6 +531,7 @@ export default function AdminArea() {
           title_italic: updatedHero.title2,
           background_url: updatedHero.backgroundImage,
           about_image_url: updatedHero.aboutImage,
+          virtual_tour_url: updatedHero.virtualTourUrl,
           grid_photo_1: updatedHero.gridImages[0] || '',
           grid_photo_2: updatedHero.gridImages[1] || '',
           grid_photo_3: updatedHero.gridImages[2] || '',
@@ -1023,7 +970,6 @@ export default function AdminArea() {
             { id: 'hero', name: 'Hero', icon: ImageIcon },
             { id: 'team', name: "Organization", icon: UserIcon },
             { id: 'inbox', name: "Inbox", icon: Mail, hasNotification: unreadInboxCount > 0 },
-            { id: 'videos', name: "Video Assets", icon: Video },
             { id: 'tickets', name: "Support Tickets", icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'add', name: editingId ? "Edit Property" : "Add New Property", icon: Plus },
             { id: 'covenant', name: "Covenants", icon: FileText },
@@ -1095,20 +1041,9 @@ export default function AdminArea() {
             <AdminHeroSection 
               heroContent={heroContent}
               setHeroContent={setHeroContent}
-              videos={videos}
               isUploadingSlot={isUploadingSlot}
               handleFileUpload={handleFileUpload}
               handleSaveHero={handleSaveHero}
-            />
-          )}
-
-          {activeTab === 'videos' && (
-            <AdminVideoManager 
-              videos={videos}
-              isUploading={isUploading}
-              isUploadingSlot={isUploadingSlot}
-              handleVideoUpload={handleVideoUpload}
-              handleDeleteVideo={handleDeleteVideo}
             />
           )}
 

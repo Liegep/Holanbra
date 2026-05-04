@@ -10,7 +10,6 @@ import { cn } from '../../lib/utils';
 interface AdminHeroSectionProps {
   heroContent: any;
   setHeroContent: (val: any | ((prev: any) => any)) => void;
-  videos: any[];
   isUploadingSlot: string | null;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, target: any, idx?: number) => void;
   handleSaveHero: () => void;
@@ -19,7 +18,6 @@ interface AdminHeroSectionProps {
 export function AdminHeroSection({
   heroContent,
   setHeroContent,
-  videos,
   isUploadingSlot,
   handleFileUpload,
   handleSaveHero
@@ -38,37 +36,87 @@ export function AdminHeroSection({
 
       <div className="space-y-12">
         <div className="space-y-8">
-          <div className="space-y-4 text-left">
-            <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
-               < ImageIcon size={14} /> Background Photo
-            </label>
-            <div className="relative group aspect-video rounded-[32px] overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
-              {heroContent.backgroundImage ? (
-                <img src={heroContent.backgroundImage} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" referrerPolicy="no-referrer" />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/10">
-                  <ImageIcon size={48} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4 text-left">
+              <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                 < ImageIcon size={14} /> Background Photo
+              </label>
+              <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
+                {heroContent.backgroundImage ? (
+                  <img src={heroContent.backgroundImage} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                    <ImageIcon size={48} />
+                  </div>
+                )}
+                
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                  <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
+                     <input 
+                       type="file" 
+                       className="hidden" 
+                       accept="image/*"
+                       onChange={(e) => handleFileUpload(e, 'backgroundImage')}
+                       disabled={isUploadingSlot === 'backgroundImage'}
+                     />
+                     {isUploadingSlot === 'backgroundImage' ? "Uploading..." : "Change Background"}
+                  </label>
                 </div>
-              )}
-              
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
-                   <input 
-                     type="file" 
-                     className="hidden" 
-                     accept="image/*"
-                     onChange={(e) => handleFileUpload(e, 'backgroundImage')}
-                     disabled={isUploadingSlot === 'backgroundImage'}
-                   />
-                   {isUploadingSlot === 'backgroundImage' ? "Uploading..." : "Change Background"}
-                </label>
-              </div>
 
-              {isUploadingSlot === 'backgroundImage' && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                   <Loader2 className="text-amber-500 animate-spin" size={32} />
+                {isUploadingSlot === 'backgroundImage' && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                     <Loader2 className="text-amber-500 animate-spin" size={32} />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4 text-left">
+              <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+                 <Video size={14} /> Global Tour Video
+              </label>
+              <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
+                {heroContent.virtualTourUrl ? (
+                  <video src={heroContent.virtualTourUrl} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                    <Video size={48} />
+                  </div>
+                )}
+                
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all gap-3">
+                  <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
+                     <input 
+                       type="file" 
+                       className="hidden" 
+                       accept="video/mp4"
+                       onChange={(e) => handleFileUpload(e, 'virtualTourUrl')}
+                       disabled={isUploadingSlot === 'virtualTourUrl'}
+                     />
+                     {isUploadingSlot === 'virtualTourUrl' ? "Uploading..." : heroContent.virtualTourUrl ? "Change Video" : "Upload Video"}
+                  </label>
+                  {heroContent.virtualTourUrl && (
+                    <button 
+                      onClick={() => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: '' }))}
+                      className="p-3 bg-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg backdrop-blur-md"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
                 </div>
-              )}
+
+                {isUploadingSlot === 'virtualTourUrl' && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                     <Loader2 className="text-amber-500 animate-spin" size={32} />
+                  </div>
+                )}
+                
+                <div className="absolute bottom-4 left-4">
+                  <div className="px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-md border border-white/5 text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                    MAX 10MB • MP4
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -148,24 +196,6 @@ export function AdminHeroSection({
                   onChange={handleHeroInputChange}
                   className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all shadow-inner"
                 />
-              </div>
-
-              <div className="space-y-2 text-left">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hero Video Selection</label>
-                <select 
-                  name="virtualTourUrl"
-                  value={heroContent.virtualTourUrl}
-                  onChange={(e) => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 p-4 rounded-xl text-sm focus:border-amber-500 outline-none text-white transition-all appearance-none cursor-pointer"
-                >
-                  <option value="" className="bg-zinc-900 text-white/40">Select a video</option>
-                  {videos.map(v => (
-                    <option key={v.id} value={v.url} className="bg-zinc-900 text-white">{v.name}</option>
-                  ))}
-                </select>
-                <p className="text-[8px] text-white/20 uppercase tracking-widest mt-1">
-                  The selected video will play in the background of your hero section.
-                </p>
               </div>
             </div>
 
