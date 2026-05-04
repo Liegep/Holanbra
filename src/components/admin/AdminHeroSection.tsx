@@ -3,7 +3,9 @@ import {
   Image as ImageIcon, 
   Plus, 
   Loader2, 
-  Save 
+  Save,
+  Video,
+  X
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
