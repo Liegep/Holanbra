@@ -1400,7 +1400,16 @@ const resources = {
             "legal": "Legal",
             "community": "Comunidad"
           }
+        },
+        "inbox": {
+          "title": "Comunicaciones de Visitantes",
+          "subtitle": "Consultas directas desde el portal público",
+          "none_found": "La bandeja de entrada está completamente en silencio",
+          "mark_unread": "Marcar como no leído",
+          "mark_read": "Marcar como leído",
+          "new_badge": "NUEVO"
         }
+
 
       }
     }
