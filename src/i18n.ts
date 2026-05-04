@@ -1267,7 +1267,17 @@ const resources = {
             "available": "Disponible",
             "rented": "alquilado",
             "maintenance": "Mantenimiento"
-          }
+          },
+          "description": "Descrición del proyecto"
+        },
+        "portfolio": {
+          "title": "Portafolio de Decoración",
+          "subtitle": "Gestionar proyectos de decoración e imágenes de referencia",
+          "project_title": "Título del Proyecto",
+          "project_photo": "Foto del Proyecto",
+          "add_button": "Añadir al portafolio",
+          "upload_image": "Subir imagen",
+          "placeholder_url": "URL de la Imagen"
         },
         "navigation": {
           "title": "Terminal Ejecutiva",
