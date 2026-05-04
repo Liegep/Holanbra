@@ -5,7 +5,7 @@ import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
-const SUPPORTED_LANGS = ['en', 'pt', 'es', 'nl'];
+import { SUPPORTED_LANGS } from '../i18n';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,7 +55,8 @@ export default function Navbar() {
   }, []);
 
   const changeLanguage = (newLang: string) => {
-    // If we are on admin or resident portal, don't change the URL prefix
+    // If we are on admin or resident portal, don't change the URL prefix in the address bar
+    // but do update the i18n state
     if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/resident')) {
       i18n.changeLanguage(newLang);
       localStorage.setItem('i18nextLng', newLang);
@@ -64,13 +65,26 @@ export default function Navbar() {
 
     // Replace the language part of the current path
     const pathParts = location.pathname.split('/');
+    
+    // pathParts[0] is always empty string for paths starting with /
     if (SUPPORTED_LANGS.includes(pathParts[1])) {
       pathParts[1] = newLang;
     } else {
-      // If there's no lang prefix, prepend it
+      // If there's no supported lang prefix at the start, prepend it
       pathParts.splice(1, 0, newLang);
     }
-    const newPath = pathParts.join('/') + location.search + location.hash;
+    
+    // Reconstruct path, ensuring we don't have double slashes from empty parts if unnecessary
+    // but preserving the structure. .join('/') usually handles this fine.
+    let newPathname = pathParts.join('/');
+    if (newPathname === '') newPathname = '/';
+
+    const newPath = newPathname + location.search + location.hash;
+    
+    // Update i18n before navigation to ensure UI reacts immediately
+    i18n.changeLanguage(newLang);
+    localStorage.setItem('i18nextLng', newLang);
+    
     navigate(newPath);
   };
 

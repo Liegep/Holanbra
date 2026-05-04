@@ -35,8 +35,7 @@ import Portfolio from './components/Portfolio';
 import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
-
-const SUPPORTED_LANGS = ['en', 'pt', 'es', 'nl'];
+import { SUPPORTED_LANGS } from './i18n';
 
 function LanguageRedirect() {
   const navigate = useNavigate();
@@ -59,6 +58,10 @@ function LanguageWrapper() {
   const location = useLocation();
 
   useEffect(() => {
+    const savedLang = localStorage.getItem('i18nextLng');
+    const browserLang = navigator.language.split('-')[0];
+    const targetLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+
     if (lang && SUPPORTED_LANGS.includes(lang)) {
       // Check if we are trying to access admin or resident via localized path
       const subPath = location.pathname.split('/').slice(2).join('/');
@@ -72,16 +75,24 @@ function LanguageWrapper() {
         localStorage.setItem('i18nextLng', lang);
       }
     } else {
-      // If lang is not supported or missing, redirect to home with detection
-      const savedLang = localStorage.getItem('i18nextLng');
-      const browserLang = navigator.language.split('-')[0];
-      const targetLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
+      // Case: No lang prefix (/portfolio) or invalid lang prefix (/abc/portfolio)
+      // We should prepend or replace with the targetLang
       
-      // Keep the rest of the path if possible, but for simplicity we often just go home
-      // or we prepend the lang to the current path if it's not present.
-      if (!lang) {
-        navigate(`/${targetLang}${location.pathname}`, { replace: true });
+      const pathParts = location.pathname.split('/');
+      // If the first part is a known route name but not a lang, or just an unknown word
+      // we'll assume it's part of the path and prefix it.
+      // If it looks like a 2-char string that isn't supported, we replace it.
+      
+      if (lang && lang.length === 2 && !SUPPORTED_LANGS.includes(lang)) {
+        // Looks like a language code but not one we support (e.g. /fr/...)
+        pathParts[1] = targetLang;
+      } else {
+        // Not a lang code (e.g. /portfolio or /)
+        pathParts.splice(1, 0, targetLang);
       }
+      
+      const newPath = pathParts.join('/') || `/${targetLang}`;
+      navigate(newPath + location.search + location.hash, { replace: true });
     }
   }, [lang, i18n, navigate, location]);
 

@@ -1,6 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+export const SUPPORTED_LANGS = ['en', 'pt', 'es', 'nl'];
+
 const resources = {
   en: {
     translation: {
@@ -82,7 +84,41 @@ const resources = {
         "title": "Decoration Packages",
         "subtitle": "Choose the perfect plan for your virtual space. We handle everything from a single room makeover to a complete estate build.",
         "popular": "Most Popular",
-        "order": "Order Now"
+        "order": "Order Now",
+        "packages": {
+          "basic": {
+            "name": "Basic Room",
+            "features": [
+              "1 Room Decoration",
+              "Up to 50 prims",
+              "Color Palette Selection",
+              "Basic Lighting Setup",
+              "1 Revision"
+            ]
+          },
+          "standard": {
+            "name": "Standard Home",
+            "features": [
+              "Full House Decoration (Up to 3 rooms)",
+              "Up to 150 prims",
+              "Custom Furniture Placement",
+              "Advanced Lighting",
+              "Landscaping Layout",
+              "2 Revisions"
+            ]
+          },
+          "premium": {
+            "name": "Premium Estate",
+            "features": [
+              "Unlimited Rooms & Landscaping",
+              "Priority Support",
+              "Full Custom Sims",
+              "Interactive Scripts & Decor",
+              "Premium Texture Matching",
+              "Unlimited Revisions"
+            ]
+          }
+        }
       },
       "team": {
         "label": "OUR TEAM",
@@ -298,7 +334,41 @@ const resources = {
         "title": "Pacotes de Decoração",
         "subtitle": "Escolha o plano perfeito para seu espaço virtual. Cuidamos de tudo, desde a renovação de um único cômodo até a construção completa de uma propriedade.",
         "popular": "Mais Popular",
-        "order": "Peça Agora"
+        "order": "Peça Agora",
+        "packages": {
+          "basic": {
+            "name": "Cômodo Básico",
+            "features": [
+              "Decoração de 1 Cômodo",
+              "Até 50 prims",
+              "Seleção de Paleta de Cores",
+              "Iluminação Básica",
+              "1 Revisão"
+            ]
+          },
+          "standard": {
+            "name": "Casa Padrão",
+            "features": [
+              "Decoração Completa (Até 3 cômodos)",
+              "Até 150 prims",
+              "Posicionamento de Móveis Customizados",
+              "Iluminação Avançada",
+              "Paisagismo",
+              "2 Revisões"
+            ]
+          },
+          "premium": {
+            "name": "Mansão Premium",
+            "features": [
+              "Cômodos e Paisagismo Ilimitados",
+              "Suporte Prioritário",
+              "Sims Completamente Customizadas",
+              "Scripts e Decoração Interativos",
+              "Combinação de Texturas Premium",
+              "Revisões Ilimitadas"
+            ]
+          }
+        }
       },
       "team": {
         "label": "NOSSA EQUIPE",
@@ -514,7 +584,41 @@ const resources = {
         "title": "Paquetes de Decoración",
         "subtitle": "Elija el plan perfecto para su espacio virtual. Nos encargamos de todo, desde el cambio de imagen de una sola habitación hasta la construcción de una finca completa.",
         "popular": "Más Popular",
-        "order": "Ordenar Ahora"
+        "order": "Ordenar Ahora",
+        "packages": {
+          "basic": {
+            "name": "Habitación Básica",
+            "features": [
+              "Decoración de 1 Habitación",
+              "Hasta 50 prims",
+              "Selección de Paleta de Colores",
+              "Iluminación Básica",
+              "1 Revisión"
+            ]
+          },
+          "standard": {
+            "name": "Hogar Estándar",
+            "features": [
+              "Decoración de Casa Completa (Hasta 3 habitaciones)",
+              "Hasta 150 prims",
+              "Colocación de Muebles Personalizados",
+              "Iluminación Avanzada",
+              "Diseño de Paisajismo",
+              "2 Revisiones"
+            ]
+          },
+          "premium": {
+            "name": "Finca Premium",
+            "features": [
+              "Habitaciones y Paisajismo Ilimitados",
+              "Soporte Prioritario",
+              "Sims Totalmente Personalizados",
+              "Scripts y Decoración Interactivos",
+              "Combinación de Texturas Premium",
+              "Revisiones Ilimitadas"
+            ]
+          }
+        }
       },
       "team": {
         "label": "NUESTRO EQUIPO",
@@ -730,7 +834,41 @@ const resources = {
         "title": "Decoratiepakketten",
         "subtitle": "Kies het perfecte plan voor uw virtuele ruimte. We regelen alles, van de make-over van een enkele kamer tot een complete landgoedbouw.",
         "popular": "Meest Populair",
-        "order": "Nu Bestellen"
+        "order": "Nu Bestellen",
+        "packages": {
+          "basic": {
+            "name": "Basis Kamer",
+            "features": [
+              "1 Kamer Decoratie",
+              "Tot 50 prims",
+              "Kleurpalet Selectie",
+              "Basis Verlichtingsinstelling",
+              "1 Revisie"
+            ]
+          },
+          "standard": {
+            "name": "Standaard Woning",
+            "features": [
+              "Volledige Huisdecoratie (Tot 3 kamers)",
+              "Tot 150 prims",
+              "Aangepaste Meubelplaatsing",
+              "Geavanceerde Verlichting",
+              "Landschapsontwerp",
+              "2 Revisies"
+            ]
+          },
+          "premium": {
+            "name": "Premium Landgoed",
+            "features": [
+              "Onbeperkt Kamers & Landschapsarchitectuur",
+              "Priority Support",
+              "Volledig Aangepaste Sims",
+              "Interactieve Scripts & Decor",
+              "Premium Textuur Matching",
+              "Onbeperkte Revisies"
+            ]
+          }
+        }
       },
       "team": {
         "label": "ONS TEAM",

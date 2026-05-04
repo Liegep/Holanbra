@@ -24,25 +24,25 @@ export default function Pricing() {
   const DEFAULT_PACKAGES: PricingPackage[] = [
     {
       id: '1',
-      name: 'Basic Room',
+      name: t('pricing.packages.basic.name'),
       price: 'L$ 2,500',
-      features: ['1 Room Decoration', 'Up to 50 prims', 'Color Palette Selection', 'Basic Lighting Setup', '1 Revision'],
+      features: t('pricing.packages.basic.features', { returnObjects: true }) as string[],
       is_popular: false,
       order_idx: 1
     },
     {
       id: '2',
-      name: 'Standard Home',
+      name: t('pricing.packages.standard.name'),
       price: 'L$ 7,500',
-      features: ['Full House Decoration (Up to 3 rooms)', 'Up to 150 prims', 'Custom Furniture Placement', 'Advanced Lighting', 'Landscaping Layout', '2 Revisions'],
+      features: t('pricing.packages.standard.features', { returnObjects: true }) as string[],
       is_popular: true,
       order_idx: 2
     },
     {
       id: '3',
-      name: 'Premium Estate',
+      name: t('pricing.packages.premium.name'),
       price: 'L$ 15,000+',
-      features: ['Unlimited Rooms & Landscaping', 'Priority Support', 'Full Custom Sims', 'Interactive Scripts & Decor', 'Premium Texture Matching', 'Unlimited Revisions'],
+      features: t('pricing.packages.premium.features', { returnObjects: true }) as string[],
       is_popular: false,
       order_idx: 3
     }
