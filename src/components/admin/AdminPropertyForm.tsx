@@ -63,7 +63,10 @@ export function AdminPropertyForm({
             onClick={() => {
               setEditingId(null);
               setFormData({
-                name: '',
+                name_pt: '',
+                name_en: '',
+                name_es: '',
+                name_nl: '',
                 casperletId: '',
                 price: '',
                 rental_price: '',
@@ -80,7 +83,8 @@ export function AdminPropertyForm({
                 expiry_date: '',
                 tenant_name: '',
                 tenant_id: '',
-                property_type: []
+                property_type: [],
+                prims_allowed: ''
               });
             }}
             className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
@@ -94,12 +98,12 @@ export function AdminPropertyForm({
       <div className="space-y-6">
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
-            {t('admin.property.display_name')} <span className="text-red-500 text-lg">*</span>
+            {t('admin.property.display_name')} ({formLang.toUpperCase()}) <span className="text-red-500 text-lg">*</span>
           </label>
           <input 
             type="text" 
-            name="name"
-            value={formData.name}
+            name={`name_${formLang}`}
+            value={formData[`name_${formLang}`] || ''}
             onChange={handleInputChange}
             className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
             placeholder={t('admin.property.placeholder_name')} 
@@ -189,10 +193,10 @@ export function AdminPropertyForm({
         </div>
 
         <div className="space-y-2 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')} ({formLang.toUpperCase()})</label>
           <textarea 
             name={`description_${formLang}`}
-            value={formData[`description_${formLang}`]}
+            value={formData[`description_${formLang}`] || ''}
             onChange={handleInputChange}
             rows={6}
             className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all resize-none" 

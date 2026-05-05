@@ -92,7 +92,6 @@ export default function Navbar() {
     { name: 'About', path: `/${lang}/#about`, icon: Users, label: t('nav.about') },
     { name: 'Properties', path: `/${lang}/#properties`, icon: Layers, highlight: true, label: t('nav.properties') },
     { name: 'Gallery', path: `/${lang}/#gallery`, icon: ImageIcon, label: t('nav.gallery') },
-    { name: 'Portfolio', path: `/${lang}/portfolio`, icon: Briefcase, label: t('nav.portfolio') },
     { name: 'Decoration', path: `/${lang}/#services`, icon: Paintbrush, label: t('nav.decoration') },
     { name: 'Team', path: `/${lang}/#team`, icon: Users, label: t('nav.team') },
     { name: 'Covenant', path: `/${lang}/covenant`, icon: FileText, label: t('nav.covenant') },

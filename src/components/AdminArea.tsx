@@ -94,7 +94,10 @@ export default function AdminArea() {
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
-    name: '',
+    name_pt: '',
+    name_en: '',
+    name_es: '',
+    name_nl: '',
     casperletId: '',
     price: '',
     rental_price: '',
@@ -591,7 +594,10 @@ export default function AdminArea() {
     setIsUploading(true);
     try {
       const dataToSave = {
-        name: formData.name.trim(),
+        name_pt: formData.name_pt?.trim() || '',
+        name_en: formData.name_en?.trim() || null,
+        name_es: formData.name_es?.trim() || null,
+        name_nl: formData.name_nl?.trim() || null,
         description_pt: formData.description_pt?.trim() || null,
         description_en: formData.description_en?.trim() || null,
         description_es: formData.description_es?.trim() || null,
@@ -630,7 +636,10 @@ export default function AdminArea() {
       showToast(editingId ? "Property updated" : "Property created", "success");
       
       setFormData({ 
-        name: '', 
+        name_pt: '',
+        name_en: '',
+        name_es: '',
+        name_nl: '', 
         casperletId: '', 
         price: '', 
         rental_price: '', 
@@ -647,7 +656,8 @@ export default function AdminArea() {
         expiry_date: '',
         tenant_name: '',
         tenant_id: '',
-        property_type: []
+        property_type: [],
+        prims_allowed: ''
       });
       setEditingId(null);
       setActiveTab('listings');
@@ -662,13 +672,15 @@ export default function AdminArea() {
 
   const handleEditProperty = (prop: any) => {
     setFormData({
-      name: prop.name || '',
+      name_pt: prop.name_pt || prop.name || '',
+      name_en: prop.name_en || '',
+      name_es: prop.name_es || '',
+      name_nl: prop.name_nl || '',
       casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
       rental_price: prop.rental_price?.toString() || '',
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
-      description: prop.description || '',
       description_pt: prop.description_pt || prop.description || '',
       description_en: prop.description_en || '',
       description_es: prop.description_es || '',
