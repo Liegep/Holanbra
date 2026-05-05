@@ -96,10 +96,6 @@ async function startServer() {
     if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
 
     res.setHeader('Content-Type', 'text/plain');
-    
-    if (req.method === 'GET') {
-      return res.status(200).send('OK');
-    }
 
     try {
       // 1. Extract values exactly as requested
@@ -122,34 +118,32 @@ async function startServer() {
       }
 
       // 2. Build update payload according to rules
-      // Use exactly the status that comes from the request
       let updateData = {
-        status: statusFromReq,
         updated_at: new Date().toISOString()
       };
 
       if (statusFromReq === 'available') {
-        // Rule: If available, force fields to null as requested
+        // REGRA DE OURO: Se o status for available, limpa TUDO do inquilino.
+        updateData.status = 'available';
         updateData.tenant_id = null;
         updateData.tenant_name = null;
         updateData.expiry_date = null;
-        console.log(`[SL-Update] 🧹 FORCING CLEANUP: status is 'available'. Clearing tenant data (NULL) for ID: ${id}`);
+        console.log(`[SL-Update] 🧹 LÓGICA VAGA: limpando campos (NULL) para ID: ${id}`);
       } else {
-        // SET fields if occupied
+        // REGRA: Se ocupado, grava o status e dados recebidos.
+        updateData.status = statusFromReq || 'rented';
         updateData.tenant_name = tenant || 'Ocupado';
         updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
         
         if (duration && !isNaN(Number(duration))) {
           const val = Number(duration);
-          // If duration > 1B, it's a timestamp; otherwise it's remaining seconds
+          // Se duration > 1 bilhão, assumimos timestamp Unix (segundos); caso contrário, segundos restantes.
           const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
           updateData.expiry_date = dateObj.toISOString();
         }
       }
 
-      console.log(`[SL-Update] 🛠️ DATABASE OPERATION:`);
-      console.log(` - Filter: .eq('casperlet_id', '${id}')`);
-      console.log(` - Changes: ${JSON.stringify(updateData)}`);
+      console.log(`[SL-Update] 🛠️ DB_UPDATE executando .eq('casperlet_id', '${id}') com dados: ${JSON.stringify(updateData)}`);
 
       // 3. Update Supabase with explicit result logging
       const { data, error } = await supabase
@@ -159,22 +153,26 @@ async function startServer() {
         .select();
       
       if (error) {
-        console.error(`[SL-Update] ❌ SUPABASE ERROR:`, error.message, `(Code: ${error.code})`);
+        console.error(`[SL-Update] ❌ SUPABASE ERROR:`, error.message);
         logEntry.db_status = "Error: " + error.message;
-      } else if (data && data.length > 0) {
+        return res.status(500).send(`ERROR: ${error.message}`);
+      } 
+      
+      if (data && data.length > 0) {
         const propName = data[0].name || id;
-        console.log(`[SL-Update] ✅ SUCCESS: Updated property "${propName}" to status "${statusFromReq}"`);
+        console.log(`[SL-Update] ✅ SUCESSO: "${propName}" atualizada para "${statusFromReq}"`);
         logEntry.db_status = "Success: Updated " + propName;
+        return res.send("OK");
       } else {
-        console.warn(`[SL-Update] ⚠️ NOT FOUND: No property row with casperlet_id "${id}" was matched.`);
-        logEntry.db_status = "NotFound: Row not matched";
+        console.warn(`[SL-Update] ⚠️ NÃO ENCONTRADO: Nenhum imóvel corresponde ao casperlet_id "${id}".`);
+        logEntry.db_status = "NotFound: ID not matched";
+        return res.status(404).send("ERROR: ID NOT FOUND");
       }
     } catch (err) {
-      console.error(`[SL-Update] ❌ CRITICAL FAILURE:`, err.message);
-      logEntry.db_status = "Critical: " + err.message;
+      console.error(`[SL-Update] ❌ FALHA CRÍTICA:`, err.message);
+      logEntry.db_status = "Critical logic error";
+      return res.status(500).send("INTERNAL SERVER ERROR");
     }
-
-    res.send('OK');
   });
 
   // API Webhook - ALSO SIMPLIFIED TO RESPOND WITH OK
