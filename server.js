@@ -68,16 +68,20 @@ async function startServer() {
 
   // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
   app.all('/sl-update', async (req, res) => {
-    const rawData = req.body;
+    // Combine body and query to catch LSL data regardless of how it's sent
+    const payload = { ...req.query, ...req.body };
     
-    // Create log entry for debug dashboard
+    // Diagnostic log entry
     const logEntry = {
       timestamp: new Date().toISOString(),
-      rawBody: rawData,
       method: req.method,
-      path: '/sl-update',
-      message: "Chegou algo no sl-update!"
+      headers: req.headers,
+      query: req.query,
+      body: req.body,
+      combinedPayload: payload,
+      message: "Hit on /sl-update"
     };
+    
     lastWebhookLogs.unshift(logEntry);
     if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
 
@@ -88,67 +92,48 @@ async function startServer() {
     }
 
     try {
-      let payload = {};
-      
-      // 1. If body is already an object (parsed by express.json/urlencoded)
-      if (typeof rawData === 'object' && rawData !== null) {
-        payload = rawData;
-      } 
-      // 2. If body is a string, try manual parsing (covers JSON and key=value)
-      else if (typeof rawData === 'string') {
-        try {
-          payload = JSON.parse(rawData);
-        } catch (e) {
-          // Manual extraction for key=value or key:value
-          const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"&',\s}]+)["']?/g;
-          let match;
-          while ((match = regex.exec(rawData)) !== null) {
-            payload[match[1]] = match[2];
-          }
-        }
-      }
-
-      // Aliases: Support casperlet_id/id, api_key/token/apikey, Status/status
-      const targetId = payload.casperlet_id || payload.id;
-      const newStatus = (payload.status || '').toLowerCase().trim();
-      const token = payload.api_key || payload.token || payload.apikey;
-      const tenantKey = payload.tenant_key || payload.tenant_id;
-      const tenantName = payload.tenant_name || payload.name;
-      const seconds = payload.remaining_seconds || payload.expires || payload.remaining;
-
-      logEntry.processedPayload = payload;
+      // Support common field names used by CasperLet and LSL scripts
+      const targetId = payload.casperlet_id || payload.id || payload.casperlet;
+      const statusRaw = payload.status || payload.state;
+      const token = payload.api_key || payload.token || payload.apikey || payload.secret;
+      const tenantKey = payload.tenant_key || payload.tenant_id || payload.tenant;
+      const tenantName = payload.tenant_name || payload.name || payload.resident;
+      const seconds = payload.remaining_seconds || payload.expires || payload.remaining || payload.duration;
 
       if (token === 'holanbra_secret_token' && targetId) {
+        const newStatus = (statusRaw || '').toLowerCase().trim();
         let expiresAt = null;
+        
         if (seconds && !isNaN(Number(seconds))) {
            const val = Number(seconds);
            expiresAt = val > 1000000000 ? new Date(val * 1000).toISOString() : new Date(Date.now() + val * 1000).toISOString();
         }
 
-        const { data, error } = await supabase.from('properties').update({
-          status: newStatus,
-          tenant_id: tenantKey || null,
-          tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
-          expiry_date: expiresAt,
-          updated_at: new Date().toISOString()
-        }).eq('casperlet_id', targetId.trim()).select();
+        const { data, error } = await supabase
+          .from('properties')
+          .update({
+            status: newStatus,
+            tenant_id: tenantKey || null,
+            tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
+            expiry_date: expiresAt,
+            updated_at: new Date().toISOString()
+          })
+          .eq('casperlet_id', String(targetId).trim())
+          .select();
         
         if (error) {
-          console.error('[SL-Update] DB Error:', error.message);
           logEntry.db_status = "Error: " + error.message;
         } else if (data && data.length > 0) {
-          console.log(`[SL-Update] Success: ${targetId} -> ${newStatus}`);
-          logEntry.db_status = "Success Update";
+          logEntry.db_status = "Success: Updated " + (data[0].name_en || targetId);
+          console.log(`[SL-Update] Updated ${targetId} to ${newStatus}`);
         } else {
-          console.warn(`[SL-Update] Not Found: ${targetId}`);
-          logEntry.db_status = "NotFound in properties table";
+          logEntry.db_status = "NotFound: Property not found with that casperlet_id";
         }
       } else {
-        logEntry.db_status = "Skipped: Invalid token or missing ID";
+        logEntry.db_status = !targetId ? "Skipped: Missing ID" : "Skipped: Invalid Token";
       }
     } catch (err) {
-      console.error('[SL-Update] background error:', err.message);
-      logEntry.db_status = "Critical Error: " + err.message;
+      logEntry.db_status = "Critical: " + err.message;
     }
 
     res.send('OK');
