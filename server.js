@@ -73,87 +73,108 @@ async function startServer() {
 
   const app = express();
 
-  // 1. DATA PARSERS FIRST (So we can read the POST data)
+  // 1. DATA PARSERS (Handles standard formats)
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use(express.text({ type: '*/*' }));
+  // Text allows us to catch raw text payloads from LSL if Content-Type is missing or plain
+  app.use(express.text({ type: ['text/plain', 'application/x-www-form-urlencoded'] }));
 
   // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
   app.all('/sl-update', async (req, res) => {
-    // Combine body and query for maximum flexibility
-    const payload = { ...req.query, ...req.body };
+    // Prepare Response Header - MUST be strictly plain text for Second Life
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    // 1. Robust Payload Extraction
+    let payload = { ...req.query };
+    
+    // If express parsed it as an object (json or urlencoded)
+    if (typeof req.body === 'object' && req.body !== null) {
+      payload = { ...payload, ...req.body };
+    } 
+    // If express parsed it as a string (from express.text)
+    else if (typeof req.body === 'string' && req.body.trim().length > 0) {
+      const bodyStr = req.body.trim();
+      if (bodyStr.startsWith('{')) {
+        try { 
+          const parsed = JSON.parse(bodyStr);
+          payload = { ...payload, ...parsed };
+        } catch (e) {
+          console.warn('[SL-Update] Failed to parse JSON body string');
+        }
+      } else {
+        // Handle key=value formats
+        const params = new URLSearchParams(bodyStr);
+        params.forEach((val, key) => { payload[key] = val; });
+      }
+    }
     
     // Diagnostic log entry
     const logEntry = {
       timestamp: new Date().toISOString(),
       method: req.method,
       combinedPayload: payload,
-      message: "Hit on /sl-update"
+      message: "Incoming request"
     };
     
-    // Force log reset if requested
+    // Reset/Clear logs if requested
     if (payload.clear === 'true' || payload.clear_logs === 'true') {
       lastWebhookLogs = [];
-      console.log('[SL-Update] 🧹 Logs cleared by request parameter.');
+      console.log('[SL-Update] 🧹 Logs cleared.');
     }
 
     lastWebhookLogs.unshift(logEntry);
     if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
 
-    res.setHeader('Content-Type', 'text/plain');
-
     try {
-      // 1. Extract values exactly as requested
+      // 2. Extract values strictly
       const id = (payload.id || payload.casperlet_id || payload.casperlet || '').toString().trim();
       const statusFromReq = (payload.status || payload.state || '').toString().toLowerCase().trim();
       const token = (payload.api_key || payload.token || payload.apikey || payload.secret || '').toString().trim();
-      
-      // Strict rule: No default strings like 'Ocupado'
-      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
+      const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
       const duration = payload.duration || payload.remaining_seconds || payload.expires || null;
 
       if (!id) {
-        console.warn('[SL-Update] ⚠️ Request rejected: Missing ID parameter.');
         logEntry.db_status = "Skipped: Missing ID";
-        return res.status(400).send("ERROR: Missing ID");
+        console.warn(`[SL-Update] Webhook received without ID.`);
+        return res.status(200).send("ERROR - Missing ID");
       }
 
       if (token !== 'holanbra_secret_token') {
-        console.warn(`[SL-Update] ⚠️ Unauthorized access attempt with token: ${token}`);
         logEntry.db_status = "Skipped: Invalid Token";
-        return res.status(401).send("ERROR: Invalid Token");
+        console.warn(`[SL-Update] Unauthorized token: "${token}"`);
+        return res.status(200).send("ERROR - Invalid Token");
       }
 
-      // 2. Build update payload according to rules
+      // 3. Build update payload according to rules
       let updateData = {
         updated_at: new Date().toISOString()
       };
 
       if (statusFromReq === 'available') {
-        // REGRA DE OURO: Se o status for available, limpa TUDO do inquilino.
+        // CLEAR fields if available
         updateData.status = 'available';
         updateData.tenant_id = null;
         updateData.tenant_name = null;
         updateData.expiry_date = null;
-        console.log(`[SL-Update] 🧹 LÓGICA VAGA: limpando campos (NULL) para ID: ${id}`);
+        console.log(`[SL-Update] 🧹 CLEANUP for available status (ID: ${id})`);
       } else {
-        // REGRA: Se ocupado, grava o status e dados recebidos. NUNCA força 'Ocupado'.
+        // SET fields if occupied
         updateData.status = statusFromReq || 'rented';
-        updateData.tenant_name = tenant || null;
+        updateData.tenant_name = tenantName || null;
         updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
         
         if (duration && !isNaN(Number(duration))) {
           const val = Number(duration);
-          // Se duration > 1 bilhão, assumimos timestamp Unix (segundos); caso contrário, segundos restantes.
+          // If duration > 1B, it's a timestamp; otherwise it's remaining seconds
           const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
           updateData.expiry_date = dateObj.toISOString();
         }
+        console.log(`[SL-Update] 🏠 OCCUPIED status update (ID: ${id})`);
       }
 
-      console.log(`[SL-Update] 🛠️ DB_UPDATE executando .eq('casperlet_id', '${id}') com dados: ${JSON.stringify(updateData)}`);
-
-      // 3. Update Supabase with explicit result logging
+      // 4. Update Supabase
       const { data, error } = await supabase
         .from('properties')
         .update(updateData)
@@ -163,23 +184,24 @@ async function startServer() {
       if (error) {
         console.error(`[SL-Update] ❌ SUPABASE ERROR:`, error.message);
         logEntry.db_status = "Error: " + error.message;
-        return res.status(500).send(`ERROR: ${error.message}`);
+        return res.status(200).send("ERROR - DB Failure");
       } 
       
       if (data && data.length > 0) {
         const propName = data[0].name || id;
-        console.log(`[SL-Update] ✅ SUCESSO: "${propName}" atualizada para "${statusFromReq}", Tenant: ${updateData.tenant_name}`);
+        console.log(`[SL-Update] ✅ SUCCESS: Updated "${propName}" to "${statusFromReq}"`);
         logEntry.db_status = "Success: Updated " + propName;
-        return res.send("OK");
+        // Strictly return the success message requested
+        return res.send("OK - Atualizado");
       } else {
-        console.warn(`[SL-Update] ⚠️ NÃO ENCONTRADO: Nenhum imóvel corresponde ao casperlet_id "${id}".`);
-        logEntry.db_status = "NotFound: ID not matched";
-        return res.status(404).send("ERROR: ID NOT FOUND");
+        console.warn(`[SL-Update] ⚠️ ID not matched in DB: "${id}"`);
+        logEntry.db_status = "NotFound: ID not found";
+        return res.status(200).send("ERROR - ID Not Found");
       }
     } catch (err) {
-      console.error(`[SL-Update] ❌ FALHA CRÍTICA:`, err.message);
-      logEntry.db_status = "Critical logic error";
-      return res.status(500).send("INTERNAL SERVER ERROR");
+      console.error(`[SL-Update] ❌ CRITICAL FAILURE:`, err.message);
+      logEntry.db_status = "Critical failure";
+      return res.status(200).send("ERROR - Logic Error");
     }
   });
 
