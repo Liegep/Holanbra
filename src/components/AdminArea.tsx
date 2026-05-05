@@ -588,9 +588,9 @@ export default function AdminArea() {
   const handleSaveProperty = async () => {
     console.log("Dados ao salvar:", formData);
     
-    // Required fields: name_pt (at least Portuguese), price and image
+    // Validação obrigatória
     if (!formData.name_pt || !formData.price || !formData.imageUrl) {
-      showToast("Name (PT), Price and Image URL are mandatory", "info");
+      showToast("Nome (PT), Preço e URL da Imagem são obrigatórios", "info");
       return;
     }
 
@@ -608,7 +608,7 @@ export default function AdminArea() {
         price: parseFloat(formData.price) || 0,
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
-        image_url: formData.imageUrl?.trim() || null,
+        image_url: formData.imageUrl?.trim() || null, // A coluna correta é image_url
         gallery_image_1: formData.gallery_image_1?.trim() || null,
         gallery_image_2: formData.gallery_image_2?.trim() || null,
         video_url: formData.videoUrl?.trim() || null,
@@ -616,7 +616,7 @@ export default function AdminArea() {
         status: formData.status || 'available',
         tenant_name: formData.tenant_name?.trim() || null,
         tenant_id: formData.tenant_id?.trim() || null,
-        expiry_date: formData.expiry_date || null,
+        expiry_date: formData.expiry_date ? new Date(formData.expiry_date).toISOString() : null,
         property_type: formData.property_type || [],
         prims_allowed: parseInt(formData.prims_allowed) || 0,
         perks: formData.perks || []

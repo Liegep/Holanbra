@@ -413,7 +413,27 @@ const ResidentDashboard:FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {properties.map((prop) => {
                     const expiresAt = prop.expiry_date || prop.expiry || prop.expires_at || prop.next_payment;
-                    const daysLeft = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - new Date().getTime()) / (1000 * 3600 * 24)) : 0;
+                    let timeRemainingLabel = t('resident.expired');
+                    let isExpired = true;
+
+                    if (expiresAt) {
+                      const expiry = new Date(expiresAt);
+                      const now = new Date();
+                      const diffInMs = expiry.getTime() - now.getTime();
+                      
+                      if (diffInMs > 0) {
+                        isExpired = false;
+                        const totalDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+                        const weeks = Math.floor(totalDays / 7);
+                        const days = totalDays % 7;
+                        
+                        if (weeks > 0) {
+                          timeRemainingLabel = `${weeks} ${t('common.weeks', 'sem')} ${days} ${t('resident.days')}`;
+                        } else {
+                          timeRemainingLabel = `${days} ${t('resident.days')}`;
+                        }
+                      }
+                    }
                     
                     return (
                       <motion.div 
@@ -442,8 +462,8 @@ const ResidentDashboard:FC = () => {
                               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.status')}</span>
                             </div>
                             <div>
-                              <p className={`text-4xl font-display font-black ${daysLeft <= 0 ? 'text-red-500' : 'text-white'}`}>
-                                  {daysLeft <= 0 ? t('resident.expired') : `${daysLeft} ${t('resident.days')}`}
+                              <p className={`text-3xl font-display font-black ${isExpired ? 'text-red-500' : 'text-white'}`}>
+                                  {timeRemainingLabel}
                               </p>
                               <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('resident.remaining')}</p>
                             </div>

@@ -97,13 +97,27 @@ async function startServer() {
       const newStatus = (status || '').toLowerCase().trim();
       
       // Calculate expires_at if 'expires' (seconds) or 'remaining_seconds' is provided
+      // CasperLet might send 'expires' as a timestamp or 'remaining_seconds' as a duration.
       const seconds = remaining_seconds || expires;
       let expiresAt = null;
+      
       if (seconds && !isNaN(Number(seconds))) {
-        expiresAt = new Date(Date.now() + Number(seconds) * 1000).toISOString();
+        const val = Number(seconds);
+        console.log(`[Webhook] Calculando expiração com valor: ${val}`);
+        
+        // Se o valor for maior que 1 bilhão, provavelmente é um timestamp Unix (segundos desde 1970)
+        // Caso contrário, é uma duração em segundos a partir de agora.
+        if (val > 1000000000) {
+          expiresAt = new Date(val * 1000).toISOString();
+          console.log(`[Webhook] Tratado como TIMESTAMP: ${expiresAt}`);
+        } else {
+          // Garantimos que somamos o tempo atual (Date.now()) com os segundos recebidos
+          expiresAt = new Date(Date.now() + val * 1000).toISOString();
+          console.log(`[Webhook] Tratado como DURAÇÃO: ${expiresAt}`);
+        }
       }
 
-      console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}"`);
+      console.log(`Tentando update: Tabela "properties" | Coluna "casperlet_id" = "${targetId}" | Novo Status = "${newStatus}" | Expira em = "${expiresAt}"`);
 
       // Realiza o update na tabela 'properties' filtrando pela coluna 'casperlet_id'
       const updateData = { 

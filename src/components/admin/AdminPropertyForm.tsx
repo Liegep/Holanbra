@@ -95,7 +95,8 @@ export function AdminPropertyForm({
                 tenant_name: '',
                 tenant_id: '',
                 property_type: [],
-                prims_allowed: ''
+                prims_allowed: '',
+                perks: []
               });
             }}
             className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
@@ -283,8 +284,8 @@ export function AdminPropertyForm({
                   type="text"
                   name="imageUrl"
                   value={formData.imageUrl}
-                  readOnly
-                  className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm opacity-50 cursor-not-allowed outline-none text-white shadow-inner"
+                  onChange={handleInputChange}
+                  className="flex-1 glass-card bg-transparent border-white/10 p-4 text-sm outline-none text-white shadow-inner focus:border-amber-500"
                   placeholder={t('admin.portfolio.placeholder_url')}
                 />
                 <label className="shrink-0 flex items-center justify-center px-4 bg-amber-500 border border-amber-400 rounded-xl cursor-pointer hover:bg-amber-400 transition-all group">
@@ -442,12 +443,52 @@ export function AdminPropertyForm({
                 <input 
                   type="date" 
                   name="expiry_date"
-                  value={formData.expiry_date}
+                  value={formData.expiry_date ? formData.expiry_date.split('T')[0] : ''}
                   onChange={handleInputChange}
                   className="w-full glass-card bg-transparent border-white/10 p-4 pl-12 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
                 />
               </div>
             </div>
+            
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-bold text-amber-500/50 uppercase">🕒 {t('admin.property.calc_time', 'Cálculo Rápido (Semanas + Dias)')}</label>
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <input 
+                    type="number" 
+                    placeholder="W"
+                    className="w-full glass-card bg-white/5 border-white/10 p-4 text-xs focus:border-amber-500 outline-none text-white shadow-inner"
+                    onChange={(e) => {
+                      const weeks = parseInt(e.target.value) || 0;
+                      const daysInput = (document.getElementById('manual-days') as HTMLInputElement)?.value || "0";
+                      const days = parseInt(daysInput) || 0;
+                      const totalTime = (weeks * 7 * 24 * 60 * 60 * 1000) + (days * 24 * 60 * 60 * 1000);
+                      const newDate = new Date(Date.now() + totalTime).toISOString().split('T')[0];
+                      setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                    }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-white/20 uppercase pointer-events-none">Wks</span>
+                </div>
+                <div className="flex-1 relative">
+                  <input 
+                    id="manual-days"
+                    type="number" 
+                    placeholder="D"
+                    className="w-full glass-card bg-white/5 border-white/10 p-4 text-xs focus:border-amber-500 outline-none text-white shadow-inner"
+                    onChange={(e) => {
+                      const days = parseInt(e.target.value) || 0;
+                      const weeksInput = (document.querySelector('input[placeholder="W"]') as HTMLInputElement)?.value || "0";
+                      const weeks = parseInt(weeksInput) || 0;
+                      const totalTime = (weeks * 7 * 24 * 60 * 60 * 1000) + (days * 24 * 60 * 60 * 1000);
+                      const newDate = new Date(Date.now() + totalTime).toISOString().split('T')[0];
+                      setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                    }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-white/20 uppercase pointer-events-none">Days</span>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2 text-left">
               <label className="text-xs font-bold text-gray-500 uppercase">{t('admin.property.casperlet_id')}</label>
               <input 
