@@ -92,6 +92,12 @@ async function startServer() {
       message: "Hit on /sl-update"
     };
     
+    // Force log reset if requested
+    if (payload.clear === 'true' || payload.clear_logs === 'true') {
+      lastWebhookLogs = [];
+      console.log('[SL-Update] 🧹 Logs cleared by request parameter.');
+    }
+
     lastWebhookLogs.unshift(logEntry);
     if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
 
@@ -102,7 +108,9 @@ async function startServer() {
       const id = (payload.id || payload.casperlet_id || payload.casperlet || '').toString().trim();
       const statusFromReq = (payload.status || payload.state || '').toString().toLowerCase().trim();
       const token = (payload.api_key || payload.token || payload.apikey || payload.secret || '').toString().trim();
-      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || payload.tenant_id || null;
+      
+      // Strict rule: No default strings like 'Ocupado'
+      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
       const duration = payload.duration || payload.remaining_seconds || payload.expires || null;
 
       if (!id) {
@@ -130,9 +138,9 @@ async function startServer() {
         updateData.expiry_date = null;
         console.log(`[SL-Update] 🧹 LÓGICA VAGA: limpando campos (NULL) para ID: ${id}`);
       } else {
-        // REGRA: Se ocupado, grava o status e dados recebidos.
+        // REGRA: Se ocupado, grava o status e dados recebidos. NUNCA força 'Ocupado'.
         updateData.status = statusFromReq || 'rented';
-        updateData.tenant_name = tenant || 'Ocupado';
+        updateData.tenant_name = tenant || null;
         updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
         
         if (duration && !isNaN(Number(duration))) {
@@ -160,7 +168,7 @@ async function startServer() {
       
       if (data && data.length > 0) {
         const propName = data[0].name || id;
-        console.log(`[SL-Update] ✅ SUCESSO: "${propName}" atualizada para "${statusFromReq}"`);
+        console.log(`[SL-Update] ✅ SUCESSO: "${propName}" atualizada para "${statusFromReq}", Tenant: ${updateData.tenant_name}`);
         logEntry.db_status = "Success: Updated " + propName;
         return res.send("OK");
       } else {
