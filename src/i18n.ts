@@ -45,6 +45,14 @@ const resources = {
         "bedrooms": "BEDROOMS",
         "bathrooms": "BATHROOMS",
         "prims_allowed": "Prims Allowed",
+        "perks": {
+          "title": "Perks & Features",
+          "radio": "Radio",
+          "beach_front": "Beach Front",
+          "tv": "TV",
+          "security_orb": "Security Orb",
+          "full_owner_rights": "Full Owner Rights"
+        },
         "description_label": "Description",
         "contact_agent_btn": "CONTACT AGENT",
         "ready_msg_singular": "Property ready for occupancy",
@@ -554,6 +562,14 @@ const resources = {
         "bedrooms": "QUARTOS",
         "bathrooms": "BANHEIROS",
         "prims_allowed": "Prims Permitidos",
+        "perks": {
+          "title": "Vantagens e Facilidades",
+          "radio": "Rádio",
+          "beach_front": "Beira Mar",
+          "tv": "TV",
+          "security_orb": "Orb de Segurança",
+          "full_owner_rights": "Direitos de Proprietário Total"
+        },
         "description_label": "Descrição",
         "contact_agent_btn": "CONTATAR AGENTE",
         "ready_msg_singular": "Propriedade pronta para morar",
@@ -1066,6 +1082,14 @@ const resources = {
         "bedrooms": "HABITACIONES",
         "bathrooms": "BAÑOS",
         "prims_allowed": "Prims Permitidos",
+        "perks": {
+          "title": "Ventajas y Características",
+          "radio": "Radio",
+          "beach_front": "Frente al Mar",
+          "tv": "TV",
+          "security_orb": "Orb de Seguridad",
+          "full_owner_rights": "Derechos Totales de Propietario"
+        },
         "description_label": "Descripción",
         "contact_agent_btn": "CONTACTAR AGENTE",
         "ready_msg_singular": "Propiedad lista para ocupar",
@@ -1726,6 +1750,14 @@ const resources = {
         "bedrooms": "SLAAPKAMERS",
         "bathrooms": "BADKAMERS",
         "prims_allowed": "Toegestane Prims",
+        "perks": {
+          "title": "Extra's & Kenmerken",
+          "radio": "Radio",
+          "beach_front": "Aan het Strand",
+          "tv": "TV",
+          "security_orb": "Beveiligings Orb",
+          "full_owner_rights": "Volledige Eigenaarsrechten"
+        },
         "description_label": "Beschrijving",
         "contact_agent_btn": "CONTACTEER AGENT",
         "ready_msg_singular": "Woning klaar voor bewoning",

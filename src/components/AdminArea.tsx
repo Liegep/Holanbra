@@ -115,7 +115,8 @@ export default function AdminArea() {
     tenant_id: '',
     property_type: [] as string[],
     videoUrl: '',
-    prims_allowed: ''
+    prims_allowed: '',
+    perks: [] as string[]
   });
 
   const [renterFormData, setRenterFormData] = useState({
@@ -615,7 +616,8 @@ export default function AdminArea() {
         tenant_id: formData.tenant_id?.trim() || null,
         expiry_date: formData.expiry_date || null,
         property_type: formData.property_type || [],
-        prims_allowed: parseInt(formData.prims_allowed) || 0
+        prims_allowed: parseInt(formData.prims_allowed) || 0,
+        perks: formData.perks || []
       };
 
       console.log("Saving property to 'properties':", dataToSave);
@@ -657,7 +659,8 @@ export default function AdminArea() {
         tenant_name: '',
         tenant_id: '',
         property_type: [],
-        prims_allowed: ''
+        prims_allowed: '',
+        perks: []
       });
       setEditingId(null);
       setActiveTab('listings');
@@ -693,7 +696,8 @@ export default function AdminArea() {
       tenant_name: prop.tenant_name || '',
       tenant_id: prop.tenant_id || '',
       property_type: prop.property_type || [],
-      prims_allowed: prop.prims_allowed?.toString() || ''
+      prims_allowed: prop.prims_allowed?.toString() || '',
+      perks: prop.perks || []
     });
     setEditingId(prop.id);
     setActiveTab('add');

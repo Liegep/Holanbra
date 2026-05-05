@@ -43,6 +43,7 @@ export function AdminPropertyForm({
 }: AdminPropertyFormProps) {
   const { t } = useTranslation();
   const propertyTypeOptions = ['Land', 'Furnished', 'Not Furnished', 'Skybox', 'Shop', 'House'];
+  const perkOptions = ['radio', 'beach_front', 'tv', 'security_orb', 'full_owner_rights'] as const;
 
   const togglePropertyType = (type: string) => {
     const currentTypes = formData.property_type || [];
@@ -51,6 +52,15 @@ export function AdminPropertyForm({
       : [...currentTypes, type];
     
     setFormData((prev: any) => ({ ...prev, property_type: newTypes }));
+  };
+
+  const togglePerk = (perk: string) => {
+    const currentPerks = formData.perks || [];
+    const newPerks = currentPerks.includes(perk)
+      ? currentPerks.filter((p: string) => p !== perk)
+      : [...currentPerks, perk];
+    
+    setFormData((prev: any) => ({ ...prev, perks: newPerks }));
   };
 
   return (
@@ -117,6 +127,7 @@ export function AdminPropertyForm({
             {propertyTypeOptions.map(type => (
               <button
                 key={type}
+                type="button"
                 onClick={() => togglePropertyType(type)}
                 className={cn(
                   "px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all",
@@ -126,6 +137,27 @@ export function AdminPropertyForm({
                 )}
               >
                 {t(`admin.property.types.${type.toLowerCase().replace(' ', '_')}`, type)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-4 text-left">
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.perks', 'House perks')} ({t('common.multi_select', 'Multi-select')})</label>
+          <div className="flex flex-wrap gap-2">
+            {perkOptions.map(perk => (
+              <button
+                key={perk}
+                type="button"
+                onClick={() => togglePerk(perk)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all",
+                  formData.perks?.includes(perk)
+                    ? "bg-amber-500/20 border-amber-500 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                    : "bg-white/5 border-white/10 text-white/40 hover:border-white/30"
+                )}
+              >
+                {t(`perks.${perk}`, perk.replace('_', ' '))}
               </button>
             ))}
           </div>

@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key, Layers } from 'lucide-react';
+import { 
+  MapPin, 
+  ArrowUpRight, 
+  DollarSign, 
+  Heart, 
+  ExternalLink, 
+  X, 
+  ChevronLeft, 
+  ChevronRight, 
+  Loader2, 
+  Key, 
+  Layers,
+  Radio,
+  Sun,
+  Tv,
+  Shield,
+  UserCheck
+} from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
@@ -485,6 +502,35 @@ export default function Properties() {
                         </div>
                       )}
                     </div>
+
+                    {/* Perks Section */}
+                    {selectedProperty.perks && selectedProperty.perks.length > 0 && (
+                      <div className="pt-2">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">{t('properties.perks.title')}</h3>
+                        <div className="grid grid-cols-2 gap-2">
+                          {selectedProperty.perks.map((perk: string) => {
+                            const perkIcons: Record<string, any> = {
+                              radio: Radio,
+                              beach_front: Sun,
+                              tv: Tv,
+                              security_orb: Shield,
+                              full_owner_rights: UserCheck
+                            };
+                            const Icon = perkIcons[perk] || Key;
+                            return (
+                              <div key={perk} className="flex items-center gap-2 p-2 bg-zinc-100/50 rounded-xl border border-zinc-200/50 group hover:border-amber-500/30 transition-all">
+                                <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center text-zinc-400 group-hover:text-amber-500 shadow-sm transition-all">
+                                  <Icon size={14} />
+                                </div>
+                                <span className="text-[10px] font-bold text-zinc-600 group-hover:text-black uppercase tracking-tight">
+                                  {t(`properties.perks.${perk}`)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="pt-4 border-t border-zinc-100">
                       <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">{t('properties.description_label')}</h3>
