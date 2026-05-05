@@ -93,11 +93,11 @@ async function startServer() {
 
     try {
       // Support common field names used by CasperLet and LSL scripts
-      const targetId = payload.casperlet_id || payload.id || payload.casperlet;
+      const targetId = payload.id || payload.casperlet_id || payload.casperlet;
       const statusRaw = payload.status || payload.state;
       const token = payload.api_key || payload.token || payload.apikey || payload.secret;
-      const tenantKey = payload.tenant_key || payload.tenant_id || payload.tenant;
-      const tenantName = payload.tenant_name || payload.name || payload.resident;
+      const tenantKey = payload.tenant_key || payload.tenant_id;
+      const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident;
       const seconds = payload.remaining_seconds || payload.expires || payload.remaining || payload.duration;
 
       if (token === 'holanbra_secret_token' && targetId) {
