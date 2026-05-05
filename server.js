@@ -80,61 +80,59 @@ async function startServer() {
   // Text allows us to catch raw text payloads from LSL if Content-Type is missing or plain
   app.use(express.text({ type: ['text/plain', 'application/x-www-form-urlencoded'] }));
 
-  // 2. SL UPDATE ROUTE (DIRECT LSL BRIDGE)
+  // 2. SL UPDATE ROUTE (DIRECT DB SAVER)
   app.all('/sl-update', async (req, res) => {
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    // Pegamos os dados da query (URL) ou do body (POST)
     const payload = { ...req.query, ...req.body };
-    const logEntry = { timestamp: new Date().toISOString(), payload, db_status: "Processing" };
-    lastWebhookLogs.unshift(logEntry);
-    if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
+    const { id, status, tenant, token } = payload;
+
+    // Log para ver o que chegou
+    console.log(`[SL-Update] Requisição recebida: ID=${id}, Status=${status}, Tenant=${tenant}`);
+
+    // Validação básica do token de segurança
+    if (token !== 'holanbra_secret_token') {
+      console.warn('[SL-Update] Token inválido recebido.');
+      return res.status(200).send('ERROR - Invalid Token');
+    }
+
+    if (!id) {
+       return res.status(200).send('ERROR - Missing ID');
+    }
 
     try {
-      const id = (payload.id || payload.casperlet_id || '').toString().trim();
-      const status = (payload.status || '').toString().toLowerCase().trim();
-      const token = (payload.api_key || payload.token || '').toString().trim();
-      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
-      const duration = payload.duration || payload.remaining_seconds || payload.expires || null;
+      // Definimos o que será gravado
+      const updateData = {
+        status: (status || '').toLowerCase().trim(),
+        tenant_name: (status === 'available') ? null : (tenant || null),
+        tenant_id: (status === 'available') ? null : (payload.tenant_id || null),
+        expiry_date: (status === 'available') ? null : (payload.expiry_date || null),
+        updated_at: new Date().toISOString()
+      };
 
-      if (token !== 'holanbra_secret_token') {
-        logEntry.db_status = "Error: Invalid Token";
-        return res.send("ERROR - Invalid Token");
-      }
-      if (!id) {
-        logEntry.db_status = "Error: Missing ID";
-        return res.send("ERROR - Missing ID");
-      }
+      // Executa o UPDATE no Supabase
+      const { data, error } = await supabase
+        .from('properties')
+        .update(updateData)
+        .eq('casperlet_id', String(id).trim())
+        .select();
 
-      let updateData = { status, updated_at: new Date().toISOString() };
-      if (status === 'available') {
-        updateData.tenant_id = null;
-        updateData.tenant_name = null;
-        updateData.expiry_date = null;
-      } else {
-        updateData.tenant_name = tenant;
-        updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
-        if (duration && !isNaN(Number(duration))) {
-          const val = Number(duration);
-          const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
-          updateData.expiry_date = dateObj.toISOString();
-        }
-      }
-
-      const { data, error } = await supabase.from('properties').update(updateData).eq('casperlet_id', id).select();
-
+      // LOG DE ERRO EXPLICÍTO PARA O SUPABASE
       if (error) {
-        logEntry.db_status = "DB Error: " + error.message;
-        return res.send("ERROR - DB Failure");
+        console.error('❌ ERRO NO SUPABASE:', error.message);
+        console.error('Detalhes:', error);
+        return res.status(200).send(`ERROR - DB: ${error.message}`);
       }
+
       if (data && data.length > 0) {
-        logEntry.db_status = "Success: Updated " + (data[0].name || id);
-        return res.send("OK - Atualizado");
+        console.log(`✅ SUCESSO: Imóvel ${data[0].name || id} atualizado para ${status}`);
+        return res.status(200).send('OK - Gravado');
       } else {
-        logEntry.db_status = "Error: ID Not Found";
-        return res.send("ERROR - ID Not Found");
+        console.warn(`⚠️ AVISO: Nenhum imóvel encontrado com casperlet_id: ${id}`);
+        return res.status(200).send('ERROR - ID Not Found');
       }
     } catch (err) {
-      logEntry.db_status = "Exception: " + err.message;
-      return res.send("ERROR - Server Error");
+      console.error('❌ FALHA CRÍTICA NO SERVIDOR:', err.message);
+      return res.status(200).send('ERROR - Server Failure');
     }
   });
 
