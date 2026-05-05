@@ -62,10 +62,11 @@ export default function Properties() {
 
   useEffect(() => {
     const fetchProperties = async () => {
-      // Fetch all properties to allow filtering in the UI (including rented ones)
+      // Public view: only show AVAILABLE properties
       const { data, error } = await supabase
         .from('properties')
-        .select('*');
+        .select('*')
+        .eq('status', 'available');
       
       if (error) {
         console.error(error);
@@ -199,7 +200,6 @@ export default function Properties() {
               >
                 <option value="all">{t('properties.status_all')}</option>
                 <option value="available">{t('properties.status_available')}</option>
-                <option value="rented">{t('properties.status_rented')}</option>
               </select>
 
               <select 

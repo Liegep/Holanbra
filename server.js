@@ -110,10 +110,13 @@ async function startServer() {
       const statusRaw = payload.status || payload.state;
       const token = payload.api_key || payload.token || payload.apikey || payload.secret;
       const tenantKey = payload.tenant_key || payload.tenant_id;
+      // The user specifically mentioned updating tenant_name with the 'tenant' value from payload
       const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident;
       
       // Prioritize 'duration' as requested, then fall back to others
       const rawDuration = payload.duration || payload.remaining_seconds || payload.expires || payload.remaining;
+
+      console.log(`[SL-Update] Incoming Webhook: ID=${targetId}, Status=${statusRaw}, Tenant=${tenantName}, Duration=${rawDuration}`);
 
       if (token === 'holanbra_secret_token' && targetId) {
         const newStatus = (statusRaw || '').toLowerCase().trim();
@@ -127,36 +130,45 @@ async function startServer() {
              // Otherwise, assume it's remaining seconds and add to current time
              const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
              expiresAt = dateObj.toISOString();
-             console.log(`[SL-Update] Duration received: ${val}s. Calculated Expiry: ${expiresAt}`);
+             console.log(`[SL-Update] Calculated Expiry: ${expiresAt}`);
            }
         }
 
+        const cleanTargetId = String(targetId).trim();
+        const updatePayload = {
+          status: newStatus,
+          tenant_id: tenantKey || null,
+          tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
+          expiry_date: expiresAt,
+          updated_at: new Date().toISOString()
+        };
+
+        console.log(`[SL-Update] Attempting DB update for casperlet_id: ${cleanTargetId}`, updatePayload);
+
         const { data, error } = await supabase
           .from('properties')
-          .update({
-            status: newStatus,
-            tenant_id: tenantKey || null,
-            tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
-            expiry_date: expiresAt,
-            updated_at: new Date().toISOString()
-          })
-          .eq('casperlet_id', String(targetId).trim())
+          .update(updatePayload)
+          .eq('casperlet_id', cleanTargetId)
           .select();
         
         if (error) {
+          console.error(`[SL-Update] Supabase Error: ${error.message} (Code: ${error.code})`);
           logEntry.db_status = "Error: " + error.message;
         } else if (data && data.length > 0) {
-          // Use name or id as fallback for the log
           const propName = data[0].name || targetId;
           logEntry.db_status = "Success: Updated " + propName;
-          console.log(`[SL-Update] Updated ${targetId} to ${newStatus}`);
+          console.log(`[SL-Update] ✅ SUCCESS: Updated ${propName} (${cleanTargetId}) to ${newStatus}`);
         } else {
+          console.warn(`[SL-Update] ⚠️ WARNING: No property found with casperlet_id: ${cleanTargetId}`);
           logEntry.db_status = "NotFound: Property not found with that casperlet_id";
         }
       } else {
-        logEntry.db_status = !targetId ? "Skipped: Missing ID" : "Skipped: Invalid Token";
+        const skipReason = !targetId ? "Missing ID" : "Invalid Token";
+        console.warn(`[SL-Update] ⚠️ Skipped: ${skipReason}`);
+        logEntry.db_status = "Skipped: " + skipReason;
       }
     } catch (err) {
+      console.error(`[SL-Update] ❌ Critical Exception:`, err);
       logEntry.db_status = "Critical: " + err.message;
     }
 
