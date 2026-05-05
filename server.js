@@ -60,72 +60,70 @@ async function startServer() {
 
   const app = express();
 
-  // Basic Middlewares FIRST to ensure bodies are parsed for the Webhook
+  // 1. DATA PARSERS FIRST (So we can read the POST data)
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.text({ type: '*/*' }));
 
-  // --- LSL / SL UPDATE ROUTE (Short & Direct) ---
+  // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
+  // This MUST be before any Vite or SPA fallback
   app.all('/sl-update', async (req, res) => {
-    // 1. Log the hit immediately
-    console.log(`[SL-Update] Hit: ${req.method}`);
+    // Immediate response for SL (Force Text/Plain and word OK)
+    res.setHeader('Content-Type', 'text/plain');
     
-    // 2. Immediate OK for GET (Health Check)
     if (req.method === 'GET') {
       return res.status(200).send('OK');
     }
 
-    // 3. Process POST
+    // Process in background to keep response fast
     try {
       let payload = req.body;
-      if (typeof payload === 'string') {
-        try { payload = JSON.parse(payload); } catch (e) {
+      // If it's plain text from LSL, try to parse
+      if (typeof payload === 'string' && (payload.includes(':') || payload.includes('{'))) {
+        try {
+          payload = JSON.parse(payload);
+        } catch (e) {
           const extracted = {};
           const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/g;
           let match;
-          while ((match = regex.exec(payload)) !== null) { extracted[match[1]] = match[2]; }
-          if (Object.keys(extracted).length > 0) payload = extracted;
+          while ((match = regex.exec(payload)) !== null) {
+            extracted[match[1]] = match[2];
+          }
+          payload = extracted;
         }
       }
 
-      const { casperlet_id, status, tenant_key, tenant_name, api_key, expires, remaining_seconds, rental_price } = payload || {};
+      const { casperlet_id, status, api_key, tenant_key, tenant_name, remaining_seconds, expires, rental_price } = payload || {};
       
-      // Token check
-      if (api_key !== 'holanbra_secret_token') {
-        console.warn('[SL-Update] Invalid Token');
-        return res.status(200).send('OK'); // Always send OK to SL to avoid error 46/9
-      }
-
-      if (casperlet_id) {
+      if (api_key === 'holanbra_secret_token' && casperlet_id) {
         const targetId = String(casperlet_id).trim();
         const newStatus = (status || '').toLowerCase().trim();
         const seconds = remaining_seconds || expires;
         let expiresAt = null;
+
         if (seconds && !isNaN(Number(seconds))) {
            const val = Number(seconds);
            expiresAt = val > 1000000000 ? new Date(val * 1000).toISOString() : new Date(Date.now() + val * 1000).toISOString();
         }
 
-        const updateData = { 
+        await supabase.from('properties').update({
           status: newStatus,
           tenant_id: tenant_key || null,
           tenant_name: tenant_name || (newStatus === 'rented' ? (tenant_key || 'Ocupado') : 'Disponível'),
+          expiry_date: expiresAt,
+          rental_price: rental_price ? Number(rental_price) : undefined,
           updated_at: new Date().toISOString()
-        };
-        if (expiresAt) updateData.expiry_date = expiresAt;
-        if (rental_price) updateData.rental_price = Number(rental_price);
-
-        await supabase.from('properties').update(updateData).eq('casperlet_id', targetId);
-        console.log(`[SL-Update] Processed: ${targetId} -> ${newStatus}`);
+        }).eq('casperlet_id', targetId);
+        
+        console.log(`[SL-Update] Success: ${targetId} -> ${newStatus}`);
       }
     } catch (err) {
-      console.error('[SL-Update] Error:', err.message);
+      console.error('[SL-Update] background error:', err.message);
     }
 
-    // 4. THE ONLY VALID RESPONSE FOR SL: Just "OK"
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send('OK');
+    // Always send OK to SL
+    res.send('OK');
   });
 
   // API Webhook - ALSO SIMPLIFIED TO RESPOND WITH OK
