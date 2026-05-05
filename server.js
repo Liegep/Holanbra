@@ -80,275 +80,67 @@ async function startServer() {
   // Text allows us to catch raw text payloads from LSL if Content-Type is missing or plain
   app.use(express.text({ type: ['text/plain', 'application/x-www-form-urlencoded'] }));
 
-  // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
+  // 2. SL UPDATE ROUTE (DIRECT LSL BRIDGE)
   app.all('/sl-update', async (req, res) => {
-    // Prepare Response Header - MUST be strictly plain text for Second Life
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-
-    // 1. Robust Payload Extraction
-    let payload = { ...req.query };
-    
-    // If express parsed it as an object (json or urlencoded)
-    if (typeof req.body === 'object' && req.body !== null) {
-      payload = { ...payload, ...req.body };
-    } 
-    // If express parsed it as a string (from express.text)
-    else if (typeof req.body === 'string' && req.body.trim().length > 0) {
-      const bodyStr = req.body.trim();
-      if (bodyStr.startsWith('{')) {
-        try { 
-          const parsed = JSON.parse(bodyStr);
-          payload = { ...payload, ...parsed };
-        } catch (e) {
-          console.warn('[SL-Update] Failed to parse JSON body string');
-        }
-      } else {
-        // Handle key=value formats
-        const params = new URLSearchParams(bodyStr);
-        params.forEach((val, key) => { payload[key] = val; });
-      }
-    }
-    
-    // Diagnostic log entry
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      method: req.method,
-      combinedPayload: payload,
-      message: "Incoming request"
-    };
-    
-    // Reset/Clear logs if requested
-    if (payload.clear === 'true' || payload.clear_logs === 'true') {
-      lastWebhookLogs = [];
-      console.log('[SL-Update] 🧹 Logs cleared.');
-    }
-
+    const payload = { ...req.query, ...req.body };
+    const logEntry = { timestamp: new Date().toISOString(), payload, db_status: "Processing" };
     lastWebhookLogs.unshift(logEntry);
     if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
 
     try {
-      // 2. Extract values strictly
-      const id = (payload.id || payload.casperlet_id || payload.casperlet || '').toString().trim();
-      const statusFromReq = (payload.status || payload.state || '').toString().toLowerCase().trim();
-      const token = (payload.api_key || payload.token || payload.apikey || payload.secret || '').toString().trim();
-      const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
+      const id = (payload.id || payload.casperlet_id || '').toString().trim();
+      const status = (payload.status || '').toString().toLowerCase().trim();
+      const token = (payload.api_key || payload.token || '').toString().trim();
+      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || null;
       const duration = payload.duration || payload.remaining_seconds || payload.expires || null;
 
-      if (!id) {
-        logEntry.db_status = "Skipped: Missing ID";
-        console.warn(`[SL-Update] Webhook received without ID.`);
-        return res.status(200).send("ERROR - Missing ID");
-      }
-
       if (token !== 'holanbra_secret_token') {
-        logEntry.db_status = "Skipped: Invalid Token";
-        console.warn(`[SL-Update] Unauthorized token: "${token}"`);
-        return res.status(200).send("ERROR - Invalid Token");
+        logEntry.db_status = "Error: Invalid Token";
+        return res.send("ERROR - Invalid Token");
+      }
+      if (!id) {
+        logEntry.db_status = "Error: Missing ID";
+        return res.send("ERROR - Missing ID");
       }
 
-      // 3. Build update payload according to rules
-      let updateData = {
-        updated_at: new Date().toISOString()
-      };
-
-      if (statusFromReq === 'available') {
-        // CLEAR fields if available
-        updateData.status = 'available';
+      let updateData = { status, updated_at: new Date().toISOString() };
+      if (status === 'available') {
         updateData.tenant_id = null;
         updateData.tenant_name = null;
         updateData.expiry_date = null;
-        console.log(`[SL-Update] 🧹 CLEANUP for available status (ID: ${id})`);
       } else {
-        // SET fields if occupied
-        updateData.status = statusFromReq || 'rented';
-        updateData.tenant_name = tenantName || null;
+        updateData.tenant_name = tenant;
         updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
-        
         if (duration && !isNaN(Number(duration))) {
           const val = Number(duration);
-          // If duration > 1B, it's a timestamp; otherwise it's remaining seconds
           const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
           updateData.expiry_date = dateObj.toISOString();
         }
-        console.log(`[SL-Update] 🏠 OCCUPIED status update (ID: ${id})`);
       }
 
-      // 4. Update Supabase
-      const { data, error } = await supabase
-        .from('properties')
-        .update(updateData)
-        .eq('casperlet_id', id)
-        .select();
-      
+      const { data, error } = await supabase.from('properties').update(updateData).eq('casperlet_id', id).select();
+
       if (error) {
-        console.error(`[SL-Update] ❌ SUPABASE ERROR:`, error.message);
-        logEntry.db_status = "Error: " + error.message;
-        return res.status(200).send("ERROR - DB Failure");
-      } 
-      
+        logEntry.db_status = "DB Error: " + error.message;
+        return res.send("ERROR - DB Failure");
+      }
       if (data && data.length > 0) {
-        const propName = data[0].name || id;
-        console.log(`[SL-Update] ✅ SUCCESS: Updated "${propName}" to "${statusFromReq}"`);
-        logEntry.db_status = "Success: Updated " + propName;
-        // Strictly return the success message requested
+        logEntry.db_status = "Success: Updated " + (data[0].name || id);
         return res.send("OK - Atualizado");
       } else {
-        console.warn(`[SL-Update] ⚠️ ID not matched in DB: "${id}"`);
-        logEntry.db_status = "NotFound: ID not found";
-        return res.status(200).send("ERROR - ID Not Found");
+        logEntry.db_status = "Error: ID Not Found";
+        return res.send("ERROR - ID Not Found");
       }
     } catch (err) {
-      console.error(`[SL-Update] ❌ CRITICAL FAILURE:`, err.message);
-      logEntry.db_status = "Critical failure";
-      return res.status(200).send("ERROR - Logic Error");
+      logEntry.db_status = "Exception: " + err.message;
+      return res.send("ERROR - Server Error");
     }
   });
 
-  // API Webhook - ALSO SIMPLIFIED TO RESPOND WITH OK
-  app.all('/api/webhooks/casperlet', async (req, res) => {
-    if (req.method === 'GET') return res.send('OK');
+  // 3. DEPRECATED ROUTE
+  app.all('/api/webhooks/casperlet', (req, res) => res.send("OK - Use /sl-update"));
 
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method Not Allowed', message: 'This endpoint accepts only POST requests.' });
-    }
-
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      rawBody: req.body,
-      result: null
-    };
-
-    console.log('--- CasperLet Webhook Received (POST) ---');
-    
-    // Attempt to parse body if it's a string (LSL often sends raw text)
-    let payload = req.body;
-    if (typeof payload === 'string') {
-      try {
-        payload = JSON.parse(payload);
-        console.log('[Webhook] Raw body string parsed as JSON');
-      } catch (e) {
-        console.log('[Webhook] Could not parse body as JSON, attempting regex extraction');
-        // Fallback: try to extract key-value pairs from text like "casperlet_id: ... status: ..."
-        const extracted = {};
-        // Match key-value pairs like "key":"value" or key:value
-        const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/g;
-        let match;
-        while ((match = regex.exec(payload)) !== null) {
-          extracted[match[1]] = match[2];
-        }
-        
-        if (Object.keys(extracted).length > 0) {
-          payload = extracted;
-          console.log('[Webhook] Extracted fields via regex:', payload);
-        }
-      }
-    }
-    
-    // Mantém apenas os últimos 10 logs
-    logEntry.body = payload;
-    lastWebhookLogs.unshift(logEntry);
-    if (lastWebhookLogs.length > 10) lastWebhookLogs.pop();
-
-    console.log('Dados processados:', payload);
-    
-    const { 
-      casperlet_id, 
-      status, 
-      tenant_key, 
-      tenant_name, 
-      api_key, 
-      expires, 
-      remaining_seconds, 
-      rental_price 
-    } = payload || {};
-
-    // Fallback for missing body properties if payload is null or not an object
-    if (!payload || typeof payload !== 'object') {
-       console.error('[Webhook] Invalid Payload Format');
-       return res.status(400).json({ error: 'Invalid Payload Format' });
-    }
-
-    const headerKey = req.headers['x-api-key'];
-    const token = api_key || headerKey;
-
-    if (token !== 'holanbra_secret_token') {
-      console.warn(`[Webhook] Unauthorized attempt from IP: ${req.ip}`);
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    if (!casperlet_id) {
-      console.error('Webhook error: Missing casperlet_id');
-      return res.status(400).json({ error: 'Missing casperlet_id' });
-    }
-
-    const targetId = String(casperlet_id).trim();
-
-    try {
-      const newStatus = (status || '').toLowerCase().trim();
-      const seconds = remaining_seconds || expires;
-      let expiresAt = null;
-      
-      if (seconds && !isNaN(Number(seconds))) {
-        const val = Number(seconds);
-        if (val > 1000000000) {
-          expiresAt = new Date(val * 1000).toISOString();
-        } else {
-          expiresAt = new Date(Date.now() + val * 1000).toISOString();
-        }
-      }
-
-      console.log(`[Webhook] Update Target: casperlet_id="${targetId}" | Status="${newStatus}"`);
-
-      // Diagnostic check...
-      const { data: existingProp, error: checkError } = await supabase
-        .from('properties')
-        .select('id, name, casperlet_id')
-        .eq('casperlet_id', targetId)
-        .single();
-      
-      if (checkError && checkError.code === 'PGRST116') {
-        console.warn(`❌ [Webhook] Property with casperlet_id "${targetId}" WAS NOT FOUND.`);
-      }
-
-      const updateData = { 
-        status: newStatus,
-        tenant_id: tenant_key || null,
-        updated_at: new Date().toISOString()
-      };
-
-      if (tenant_name) {
-        updateData.tenant_name = tenant_name;
-      } else if (newStatus === 'rented') {
-        updateData.tenant_name = tenant_key || 'Ocupado';
-      } else {
-        updateData.tenant_name = 'Disponível';
-      }
-
-      if (expiresAt) updateData.expiry_date = expiresAt;
-      if (rental_price) updateData.rental_price = Number(rental_price);
-
-      const { data, error } = await supabase
-        .from('properties')
-        .update(updateData)
-        .eq('casperlet_id', targetId)
-        .select();
-
-      if (error) {
-        console.error('❌ Supabase Error:', error.message);
-        return res.status(500).json({ error: error.message });
-      }
-
-      const propName = data[0].name || data[0].id;
-      console.log(`✅ Success! Updated: ${propName}`);
-    } catch (err) {
-      console.error('❌ Webhook Critical Error:', err.message);
-    }
-    
-    // Final response
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send('OK');
-  });
 
   // Logging and Health routes
   app.use((req, res, next) => {
