@@ -111,15 +111,24 @@ async function startServer() {
       const token = payload.api_key || payload.token || payload.apikey || payload.secret;
       const tenantKey = payload.tenant_key || payload.tenant_id;
       const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident;
-      const seconds = payload.remaining_seconds || payload.expires || payload.remaining || payload.duration;
+      
+      // Prioritize 'duration' as requested, then fall back to others
+      const rawDuration = payload.duration || payload.remaining_seconds || payload.expires || payload.remaining;
 
       if (token === 'holanbra_secret_token' && targetId) {
         const newStatus = (statusRaw || '').toLowerCase().trim();
         let expiresAt = null;
         
-        if (seconds && !isNaN(Number(seconds))) {
-           const val = Number(seconds);
-           expiresAt = val > 1000000000 ? new Date(val * 1000).toISOString() : new Date(Date.now() + val * 1000).toISOString();
+        // Handle duration to ISO Date conversion
+        if (rawDuration !== undefined && rawDuration !== null && rawDuration !== '') {
+           const val = Number(rawDuration);
+           if (!isNaN(val)) {
+             // If duration is > 1 billion, assume it's already a Unix timestamp (seconds)
+             // Otherwise, assume it's remaining seconds and add to current time
+             const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
+             expiresAt = dateObj.toISOString();
+             console.log(`[SL-Update] Duration received: ${val}s. Calculated Expiry: ${expiresAt}`);
+           }
         }
 
         const { data, error } = await supabase
