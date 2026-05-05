@@ -39,8 +39,12 @@ import { SUPPORTED_LANGS } from './i18n';
 
 function LanguageRedirect() {
   const navigate = useNavigate();
+  const location = useLocation();
   
   useEffect(() => {
+    // Skip API routes
+    if (location.pathname.startsWith('/api')) return;
+
     const savedLang = localStorage.getItem('i18nextLng');
     const browserLang = navigator.language.split('-')[0];
     const defaultLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
@@ -58,6 +62,9 @@ function LanguageWrapper() {
   const location = useLocation();
 
   useEffect(() => {
+    // Skip API routes
+    if (location.pathname.startsWith('/api')) return;
+
     const savedLang = localStorage.getItem('i18nextLng');
     const browserLang = navigator.language.split('-')[0];
     const targetLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');

@@ -428,9 +428,9 @@ const ResidentDashboard:FC = () => {
                         const days = totalDays % 7;
                         
                         if (weeks > 0) {
-                          timeRemainingLabel = `${weeks} ${t('common.weeks', 'sem')} ${days} ${t('resident.days')}`;
+                          timeRemainingLabel = `${weeks} ${t('common.weeks', 'Weeks')} ${days} ${t('common.days', 'Days')}`;
                         } else {
-                          timeRemainingLabel = `${days} ${t('resident.days')}`;
+                          timeRemainingLabel = `${days} ${t('common.days', 'Days')}`;
                         }
                       }
                     }

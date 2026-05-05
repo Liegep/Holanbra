@@ -30,6 +30,27 @@ let lastWebhookLogs = [];
 
 async function startServer() {
   const app = express();
+
+  // Whitelist/Exclusion for Webhooks: Ignore language detection & i18n redirections
+  app.use('/api/webhooks/casperlet', (req, res, next) => {
+    // Explicitly flag as API request to skip any potential site-wide redirections
+    req.url = req.originalUrl; // Ensure URL is pristine
+    
+    // Force neutral headers
+    req.headers['accept-language'] = 'en-US,en;q=0.5';
+    
+    // If any i18n middleware was accidentally active, neutralize it
+    if (req.i18n) {
+      if (typeof req.i18n.changeLanguage === 'function') req.i18n.changeLanguage('en');
+      req.language = 'en';
+      req.languages = ['en'];
+    }
+    
+    // Log the hit for debug
+    console.log(`[Webhook-Whitelist] Hit: ${req.method} ${req.url}`);
+    next();
+  });
+
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -45,25 +66,16 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
-  // API Routes - REGISTERED FIRST to avoid i18n/Vite interference
-  app.all('/api/webhooks/casperlet', async (req, res) => {
-    if (req.method === 'GET') {
-      return res.status(405).json({ 
-        error: 'Method Not Allowed', 
-        message: 'This endpoint requires a POST request.' 
-      });
-    }
-
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method Not Allowed' });
-    }
-
+  // API Routes - REGISTERED FIRST and isolated from any middleware/redirection
+  app.post('/api/webhooks/casperlet', async (req, res) => {
     const logEntry = {
       timestamp: new Date().toISOString(),
       rawBody: req.body,
       result: null
     };
 
+    console.log('--- CasperLet Webhook Received (POST) ---');
+    
     // Attempt to parse body if it's a string (LSL often sends raw text)
     let payload = req.body;
     if (typeof payload === 'string') {
@@ -71,7 +83,20 @@ async function startServer() {
         payload = JSON.parse(payload);
         console.log('[Webhook] Raw body string parsed as JSON');
       } catch (e) {
-        console.log('[Webhook] Could not parse body as JSON, using as is');
+        console.log('[Webhook] Could not parse body as JSON, attempting regex extraction');
+        // Fallback: try to extract key-value pairs from text like "casperlet_id: ... status: ..."
+        const extracted = {};
+        // Match key-value pairs like "key":"value" or key:value
+        const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/g;
+        let match;
+        while ((match = regex.exec(payload)) !== null) {
+          extracted[match[1]] = match[2];
+        }
+        
+        if (Object.keys(extracted).length > 0) {
+          payload = extracted;
+          console.log('[Webhook] Extracted fields via regex:', payload);
+        }
       }
     }
     
@@ -80,7 +105,6 @@ async function startServer() {
     lastWebhookLogs.unshift(logEntry);
     if (lastWebhookLogs.length > 10) lastWebhookLogs.pop();
 
-    console.log('--- CasperLet Webhook Received ---');
     console.log('Dados processados:', payload);
     
     const { 
@@ -93,6 +117,13 @@ async function startServer() {
       remaining_seconds, 
       rental_price 
     } = payload || {};
+
+    // Fallback for missing body properties if payload is null or not an object
+    if (!payload || typeof payload !== 'object') {
+       console.error('[Webhook] Invalid Payload Format');
+       return res.status(400).json({ error: 'Invalid Payload Format' });
+    }
+
     const headerKey = req.headers['x-api-key'];
     
     // Security Validation - Check body or header

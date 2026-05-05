@@ -83,7 +83,9 @@ const resources = {
       "common": {
         "back_home": "Back to Home",
         "contact_agent": "Contact Agent",
-        "teleport": "Teleport Now"
+        "teleport": "Teleport Now",
+        "weeks": "Weeks",
+        "days": "Days"
       },
       "covenant": {
         "label": "Resident Terms",
@@ -600,7 +602,9 @@ const resources = {
       "common": {
         "back_home": "Voltar para Início",
         "contact_agent": "Falar com Agente",
-        "teleport": "Teleportar Agora"
+        "teleport": "Teleportar Agora",
+        "weeks": "Semanas",
+        "days": "Dias"
       },
       "covenant": {
         "label": "Termos do Residente",

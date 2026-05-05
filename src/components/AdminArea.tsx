@@ -588,27 +588,28 @@ export default function AdminArea() {
   const handleSaveProperty = async () => {
     console.log("Dados ao salvar:", formData);
     
-    // Validação obrigatória
-    if (!formData.name_pt || !formData.price || !formData.imageUrl) {
-      showToast("Nome (PT), Preço e URL da Imagem são obrigatórios", "info");
+    // Validation
+    const name = formData.name_en || formData.name_pt || '';
+    if (!name || !formData.price || !formData.imageUrl) {
+      showToast("Name, Price and Image URL are mandatory", "info");
       return;
     }
 
     setIsUploading(true);
     try {
       const dataToSave = {
-        name_pt: formData.name_pt?.trim() || '',
-        name_en: formData.name_en?.trim() || null,
+        name_en: formData.name_en?.trim() || name,
+        name_pt: formData.name_pt?.trim() || name,
         name_es: formData.name_es?.trim() || null,
         name_nl: formData.name_nl?.trim() || null,
-        description_pt: formData.description_pt?.trim() || null,
         description_en: formData.description_en?.trim() || null,
+        description_pt: formData.description_pt?.trim() || null,
         description_es: formData.description_es?.trim() || null,
         description_nl: formData.description_nl?.trim() || null,
         price: parseFloat(formData.price) || 0,
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
-        image_url: formData.imageUrl?.trim() || null, // A coluna correta é image_url
+        image_url: formData.imageUrl?.trim() || null, 
         gallery_image_1: formData.gallery_image_1?.trim() || null,
         gallery_image_2: formData.gallery_image_2?.trim() || null,
         video_url: formData.videoUrl?.trim() || null,

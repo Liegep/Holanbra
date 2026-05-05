@@ -451,37 +451,40 @@ export function AdminPropertyForm({
             </div>
             
             <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-amber-500/50 uppercase">🕒 {t('admin.property.calc_time', 'Cálculo Rápido (Semanas + Dias)')}</label>
+              <label className="text-xs font-bold text-amber-500/50 uppercase">🕒 {t('admin.property.calc_time', 'Quick Time Calc')}</label>
               <div className="flex gap-2">
                 <div className="flex-1 relative">
                   <input 
                     type="number" 
+                    id="calc-weeks"
                     placeholder="W"
                     className="w-full glass-card bg-white/5 border-white/10 p-4 text-xs focus:border-amber-500 outline-none text-white shadow-inner"
-                    onChange={(e) => {
-                      const weeks = parseInt(e.target.value) || 0;
-                      const daysInput = (document.getElementById('manual-days') as HTMLInputElement)?.value || "0";
-                      const days = parseInt(daysInput) || 0;
-                      const totalTime = (weeks * 7 * 24 * 60 * 60 * 1000) + (days * 24 * 60 * 60 * 1000);
-                      const newDate = new Date(Date.now() + totalTime).toISOString().split('T')[0];
-                      setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                    onChange={() => {
+                      const w = parseInt((document.getElementById('calc-weeks') as HTMLInputElement)?.value || "0");
+                      const d = parseInt((document.getElementById('calc-days') as HTMLInputElement)?.value || "0");
+                      const totalMs = (w * 7 * 24 * 60 * 60 * 1000) + (d * 24 * 60 * 60 * 1000);
+                      if (totalMs > 0) {
+                        const newDate = new Date(Date.now() + totalMs).toISOString();
+                        setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                      }
                     }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-white/20 uppercase pointer-events-none">Wks</span>
                 </div>
                 <div className="flex-1 relative">
                   <input 
-                    id="manual-days"
+                    id="calc-days"
                     type="number" 
                     placeholder="D"
                     className="w-full glass-card bg-white/5 border-white/10 p-4 text-xs focus:border-amber-500 outline-none text-white shadow-inner"
-                    onChange={(e) => {
-                      const days = parseInt(e.target.value) || 0;
-                      const weeksInput = (document.querySelector('input[placeholder="W"]') as HTMLInputElement)?.value || "0";
-                      const weeks = parseInt(weeksInput) || 0;
-                      const totalTime = (weeks * 7 * 24 * 60 * 60 * 1000) + (days * 24 * 60 * 60 * 1000);
-                      const newDate = new Date(Date.now() + totalTime).toISOString().split('T')[0];
-                      setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                    onChange={() => {
+                      const w = parseInt((document.getElementById('calc-weeks') as HTMLInputElement)?.value || "0");
+                      const d = parseInt((document.getElementById('calc-days') as HTMLInputElement)?.value || "0");
+                      const totalMs = (w * 7 * 24 * 60 * 60 * 1000) + (d * 24 * 60 * 60 * 1000);
+                      if (totalMs > 0) {
+                        const newDate = new Date(Date.now() + totalMs).toISOString();
+                        setFormData((prev: any) => ({ ...prev, expiry_date: newDate }));
+                      }
                     }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[8px] font-bold text-white/20 uppercase pointer-events-none">Days</span>
