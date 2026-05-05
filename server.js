@@ -67,62 +67,90 @@ async function startServer() {
   app.use(express.text({ type: '*/*' }));
 
   // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
-  // This MUST be before any Vite or SPA fallback
   app.all('/sl-update', async (req, res) => {
-    // Immediate response for SL (Force Text/Plain and word OK)
+    const rawData = req.body;
+    
+    // Create log entry for debug dashboard
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      rawBody: rawData,
+      method: req.method,
+      path: '/sl-update',
+      message: "Chegou algo no sl-update!"
+    };
+    lastWebhookLogs.unshift(logEntry);
+    if (lastWebhookLogs.length > 20) lastWebhookLogs.pop();
+
     res.setHeader('Content-Type', 'text/plain');
     
     if (req.method === 'GET') {
       return res.status(200).send('OK');
     }
 
-    // Process in background to keep response fast
     try {
-      let payload = req.body;
-      // If it's plain text from LSL, try to parse
-      if (typeof payload === 'string' && (payload.includes(':') || payload.includes('{'))) {
+      let payload = {};
+      
+      // 1. If body is already an object (parsed by express.json/urlencoded)
+      if (typeof rawData === 'object' && rawData !== null) {
+        payload = rawData;
+      } 
+      // 2. If body is a string, try manual parsing (covers JSON and key=value)
+      else if (typeof rawData === 'string') {
         try {
-          payload = JSON.parse(payload);
+          payload = JSON.parse(rawData);
         } catch (e) {
-          const extracted = {};
-          const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/g;
+          // Manual extraction for key=value or key:value
+          const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"&',\s}]+)["']?/g;
           let match;
-          while ((match = regex.exec(payload)) !== null) {
-            extracted[match[1]] = match[2];
+          while ((match = regex.exec(rawData)) !== null) {
+            payload[match[1]] = match[2];
           }
-          payload = extracted;
         }
       }
 
-      const { casperlet_id, status, api_key, tenant_key, tenant_name, remaining_seconds, expires, rental_price } = payload || {};
-      
-      if (api_key === 'holanbra_secret_token' && casperlet_id) {
-        const targetId = String(casperlet_id).trim();
-        const newStatus = (status || '').toLowerCase().trim();
-        const seconds = remaining_seconds || expires;
-        let expiresAt = null;
+      // Aliases: Support casperlet_id/id, api_key/token/apikey, Status/status
+      const targetId = payload.casperlet_id || payload.id;
+      const newStatus = (payload.status || '').toLowerCase().trim();
+      const token = payload.api_key || payload.token || payload.apikey;
+      const tenantKey = payload.tenant_key || payload.tenant_id;
+      const tenantName = payload.tenant_name || payload.name;
+      const seconds = payload.remaining_seconds || payload.expires || payload.remaining;
 
+      logEntry.processedPayload = payload;
+
+      if (token === 'holanbra_secret_token' && targetId) {
+        let expiresAt = null;
         if (seconds && !isNaN(Number(seconds))) {
            const val = Number(seconds);
            expiresAt = val > 1000000000 ? new Date(val * 1000).toISOString() : new Date(Date.now() + val * 1000).toISOString();
         }
 
-        await supabase.from('properties').update({
+        const { data, error } = await supabase.from('properties').update({
           status: newStatus,
-          tenant_id: tenant_key || null,
-          tenant_name: tenant_name || (newStatus === 'rented' ? (tenant_key || 'Ocupado') : 'Disponível'),
+          tenant_id: tenantKey || null,
+          tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
           expiry_date: expiresAt,
-          rental_price: rental_price ? Number(rental_price) : undefined,
           updated_at: new Date().toISOString()
-        }).eq('casperlet_id', targetId);
+        }).eq('casperlet_id', targetId.trim()).select();
         
-        console.log(`[SL-Update] Success: ${targetId} -> ${newStatus}`);
+        if (error) {
+          console.error('[SL-Update] DB Error:', error.message);
+          logEntry.db_status = "Error: " + error.message;
+        } else if (data && data.length > 0) {
+          console.log(`[SL-Update] Success: ${targetId} -> ${newStatus}`);
+          logEntry.db_status = "Success Update";
+        } else {
+          console.warn(`[SL-Update] Not Found: ${targetId}`);
+          logEntry.db_status = "NotFound in properties table";
+        }
+      } else {
+        logEntry.db_status = "Skipped: Invalid token or missing ID";
       }
     } catch (err) {
       console.error('[SL-Update] background error:', err.message);
+      logEntry.db_status = "Critical Error: " + err.message;
     }
 
-    // Always send OK to SL
     res.send('OK');
   });
 
