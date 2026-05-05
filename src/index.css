@@ -160,3 +160,29 @@
   margin-top: 2rem !important;
   margin-bottom: 1rem !important;
 }
+
+/* Property Modal Rich Content (Light Background) */
+.property-rich-content {
+  color: #52525b !important; /* zinc-600 */
+}
+
+.property-rich-content p {
+  margin-bottom: 1rem;
+}
+
+.property-rich-content b, 
+.property-rich-content strong {
+  font-weight: 700;
+  color: #18181b; /* zinc-900 */
+}
+
+.property-rich-content ul, 
+.property-rich-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.property-rich-content li {
+  margin-bottom: 0.25rem;
+}

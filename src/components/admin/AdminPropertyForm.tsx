@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, ContentEditable } from 'react-simple-wysiwyg';
 import { cn } from '../../lib/utils';
 
 interface AdminPropertyFormProps {
@@ -194,14 +195,32 @@ export function AdminPropertyForm({
 
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')} ({formLang.toUpperCase()})</label>
-          <textarea 
-            name={`description_${formLang}`}
-            value={formData[`description_${formLang}`] || ''}
-            onChange={handleInputChange}
-            rows={6}
-            className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner transition-all resize-none" 
-            placeholder={t('admin.property.placeholder_desc')}
-          />
+          <div className="glass-card bg-transparent border-white/10 overflow-hidden focus-within:border-amber-500 transition-all">
+            <EditorProvider>
+              <Editor 
+                value={formData[`description_${formLang}`] || ''} 
+                onChange={(e) => {
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    [`description_${formLang}`]: e.target.value
+                  }));
+                }}
+                className="min-h-[200px] text-sm text-white"
+              >
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnStrikeThrough />
+                  <BtnLink />
+                  <BtnBulletList />
+                  <BtnNumberedList />
+                  <BtnClearFormatting />
+                </Toolbar>
+              </Editor>
+            </EditorProvider>
+          </div>
         </div>
 
         {/* STATUS DROPDOWN */}

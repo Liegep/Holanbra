@@ -488,9 +488,10 @@ export default function Properties() {
 
                     <div className="pt-4 border-t border-zinc-100">
                       <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">{t('properties.description_label')}</h3>
-                      <p className="text-sm text-zinc-600 leading-relaxed font-light">
-                        {getLocalizedDescription(selectedProperty)}
-                      </p>
+                      <div 
+                        className="text-sm property-rich-content leading-relaxed font-light max-w-none"
+                        dangerouslySetInnerHTML={{ __html: getLocalizedDescription(selectedProperty) || '' }}
+                      />
                     </div>
                   </div>
                 </div>
