@@ -103,65 +103,74 @@ async function startServer() {
 
     try {
       // 1. Extract values exactly as requested
-      const id = payload.id || payload.casperlet_id || payload.casperlet;
-      const status = (payload.status || payload.state || '').toLowerCase().trim();
-      const token = payload.api_key || payload.token || payload.apikey || payload.secret;
-      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || payload.tenant_id;
-      const duration = payload.duration || payload.remaining_seconds || payload.expires;
+      const id = (payload.id || payload.casperlet_id || payload.casperlet || '').toString().trim();
+      const statusFromReq = (payload.status || payload.state || '').toString().toLowerCase().trim();
+      const token = (payload.api_key || payload.token || payload.apikey || payload.secret || '').toString().trim();
+      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || payload.tenant_id || null;
+      const duration = payload.duration || payload.remaining_seconds || payload.expires || null;
 
-      if (token === 'holanbra_secret_token' && id) {
-        const cleanId = String(id).trim();
-        
-        // 2. Build update payload with cleanup rules
-        let updateData = {
-          status: status,
-          updated_at: new Date().toISOString()
-        };
+      if (!id) {
+        console.warn('[SL-Update] ⚠️ Request rejected: Missing ID parameter.');
+        logEntry.db_status = "Skipped: Missing ID";
+        return res.status(400).send("ERROR: Missing ID");
+      }
 
-        if (status === 'available') {
-          // Rule: If available, clear occupancy fields
-          updateData.tenant_id = null;
-          updateData.tenant_name = 'Disponível';
-          updateData.expiry_date = null;
-          console.log(`[SL-Update] Cleaning fields for available status (ID: ${cleanId})`);
-        } else {
-          // Rule: Use status and tenant from request
-          updateData.tenant_name = tenant || 'Ocupado';
-          updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
-          
-          if (duration && !isNaN(Number(duration))) {
-             const val = Number(duration);
-             const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
-             updateData.expiry_date = dateObj.toISOString();
-          }
-        }
+      if (token !== 'holanbra_secret_token') {
+        console.warn(`[SL-Update] ⚠️ Unauthorized access attempt with token: ${token}`);
+        logEntry.db_status = "Skipped: Invalid Token";
+        return res.status(401).send("ERROR: Invalid Token");
+      }
 
-        console.log(`[SL-Update] Final Query: .update(${JSON.stringify(updateData)}).eq('casperlet_id', '${cleanId}')`);
+      // 2. Build update payload according to rules
+      // Use exactly the status that comes from the request
+      let updateData = {
+        status: statusFromReq,
+        updated_at: new Date().toISOString()
+      };
 
-        // 3. Exact Filter Update with Detailed Logging
-        const { data, error, count } = await supabase
-          .from('properties')
-          .update(updateData)
-          .eq('casperlet_id', cleanId)
-          .select('*');
-        
-        if (error) {
-          console.error(`[SL-Update] ❌ Supabase Error: ${error.message} (Code: ${error.code})`);
-          logEntry.db_status = "Error: " + error.message;
-        } else if (data && data.length > 0) {
-          console.log(`[SL-Update] ✅ SUCCESS! Row updated in Supabase. Name: ${data[0].name}`);
-          logEntry.db_status = "Success: Updated " + (data[0].name || cleanId);
-        } else {
-          console.warn(`[SL-Update] ⚠️ WARNING: Update matched 0 rows. Check if casperlet_id "${cleanId}" exists in DB.`);
-          logEntry.db_status = "NotFound: ID not found";
-        }
+      if (statusFromReq === 'available') {
+        // CLEAR fields if available
+        updateData.tenant_id = null;
+        updateData.tenant_name = 'Disponível';
+        updateData.expiry_date = null;
+        console.log(`[SL-Update] 🧹 FORCING CLEANUP: status is 'available'. Clearing tenant data for ID: ${id}`);
       } else {
-        const reason = !id ? "Missing ID" : "Invalid Token";
-        console.warn(`[SL-Update] ⚠️ Skipping: ${reason}`);
-        logEntry.db_status = "Skipped: " + reason;
+        // SET fields if occupied
+        updateData.tenant_name = tenant || 'Ocupado';
+        updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
+        
+        if (duration && !isNaN(Number(duration))) {
+          const val = Number(duration);
+          // If duration > 1B, it's a timestamp; otherwise it's remaining seconds
+          const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
+          updateData.expiry_date = dateObj.toISOString();
+        }
+      }
+
+      console.log(`[SL-Update] 🛠️ DATABASE OPERATION:`);
+      console.log(` - Filter: .eq('casperlet_id', '${id}')`);
+      console.log(` - Changes: ${JSON.stringify(updateData)}`);
+
+      // 3. Update Supabase with explicit result logging
+      const { data, error } = await supabase
+        .from('properties')
+        .update(updateData)
+        .eq('casperlet_id', id)
+        .select();
+      
+      if (error) {
+        console.error(`[SL-Update] ❌ SUPABASE ERROR:`, error.message, `(Code: ${error.code})`);
+        logEntry.db_status = "Error: " + error.message;
+      } else if (data && data.length > 0) {
+        const propName = data[0].name || id;
+        console.log(`[SL-Update] ✅ SUCCESS: Updated property "${propName}" to status "${statusFromReq}"`);
+        logEntry.db_status = "Success: Updated " + propName;
+      } else {
+        console.warn(`[SL-Update] ⚠️ NOT FOUND: No property row with casperlet_id "${id}" was matched.`);
+        logEntry.db_status = "NotFound: Row not matched";
       }
     } catch (err) {
-      console.error(`[SL-Update] ❌ Exception:`, err.message);
+      console.error(`[SL-Update] ❌ CRITICAL FAILURE:`, err.message);
       logEntry.db_status = "Critical: " + err.message;
     }
 
