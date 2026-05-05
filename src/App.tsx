@@ -42,8 +42,8 @@ function LanguageRedirect() {
   const location = useLocation();
   
   useEffect(() => {
-    // Skip API routes
-    if (location.pathname.startsWith('/api')) return;
+    // Skip SL and API routes
+    if (location.pathname.startsWith('/api') || location.pathname === '/sl-update') return;
 
     const savedLang = localStorage.getItem('i18nextLng');
     const browserLang = navigator.language.split('-')[0];
@@ -62,8 +62,8 @@ function LanguageWrapper() {
   const location = useLocation();
 
   useEffect(() => {
-    // Skip API routes
-    if (location.pathname.startsWith('/api')) return;
+    // Skip SL and API routes
+    if (location.pathname.startsWith('/api') || location.pathname === '/sl-update') return;
 
     const savedLang = localStorage.getItem('i18nextLng');
     const browserLang = navigator.language.split('-')[0];

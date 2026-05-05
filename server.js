@@ -25,49 +25,117 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// STARTUP DIAGNOSTIC
+async function runStartupDiagnostics() {
+  const targetId = "47a35db5-29f0-212b-b891-a3fb69a04833";
+  console.log(`\n--- 🔍 STARTUP DIAGNOSTIC: Checking CasperLet ID: ${targetId} ---`);
+  
+  try {
+    const { data, error } = await supabase
+      .from('properties')
+      .select('id, name_pt, casperlet_id')
+      .eq('casperlet_id', targetId);
+
+    if (error) {
+      console.error(`❌ [DIAGNOSTIC] Supabase Query Error: ${error.message}`);
+      console.error(`Hint: Check if the table "properties" exists and if RLS allows public reading.`);
+    } else if (data && data.length > 0) {
+      console.log(`✅ [DIAGNOSTIC] SUCCESS: Found property "${data[0].name_pt}" with casperlet_id: ${targetId}`);
+    } else {
+      console.warn(`⚠️ [DIAGNOSTIC] WARNING: No property found with casperlet_id: ${targetId}`);
+      console.warn(`Hint: Please go to the Admin Area and ensure one of your properties has this EXACT CasperLet ID.`);
+    }
+  } catch (err) {
+    console.error(`❌ [DIAGNOSTIC] Critical Error during startup check: ${err.message}`);
+  }
+  console.log('--- END DIAGNOSTIC ---\n');
+}
+
 // Global variable for debugging
 let lastWebhookLogs = [];
 
 async function startServer() {
+  // Run diagnostics after client is ready
+  runStartupDiagnostics().catch(console.error);
+
   const app = express();
 
-  // Whitelist/Exclusion for Webhooks: Ignore language detection & i18n redirections
-  app.use('/api/webhooks/casperlet', (req, res, next) => {
-    // Explicitly flag as API request to skip any potential site-wide redirections
-    req.url = req.originalUrl; // Ensure URL is pristine
-    
-    // Force neutral headers
-    req.headers['accept-language'] = 'en-US,en;q=0.5';
-    
-    // If any i18n middleware was accidentally active, neutralize it
-    if (req.i18n) {
-      if (typeof req.i18n.changeLanguage === 'function') req.i18n.changeLanguage('en');
-      req.language = 'en';
-      req.languages = ['en'];
-    }
-    
-    // Log the hit for debug
-    console.log(`[Webhook-Whitelist] Hit: ${req.method} ${req.url}`);
-    next();
-  });
-
+  // Basic Middlewares FIRST to ensure bodies are parsed for the Webhook
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(express.text({ type: '*/*' }));
 
-  // ... (existing logging and health routes)
-  app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
+  // --- LSL / SL UPDATE ROUTE (Short & Direct) ---
+  app.all('/sl-update', async (req, res) => {
+    // 1. Log the hit immediately
+    console.log(`[SL-Update] Hit: ${req.method}`);
+    
+    // 2. Immediate OK for GET (Health Check)
+    if (req.method === 'GET') {
+      return res.status(200).send('OK');
+    }
+
+    // 3. Process POST
+    try {
+      let payload = req.body;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch (e) {
+          const extracted = {};
+          const regex = /["']?(\w+)["']?\s*[:=]\s*["']?([^"',\s}]+)["']?/g;
+          let match;
+          while ((match = regex.exec(payload)) !== null) { extracted[match[1]] = match[2]; }
+          if (Object.keys(extracted).length > 0) payload = extracted;
+        }
+      }
+
+      const { casperlet_id, status, tenant_key, tenant_name, api_key, expires, remaining_seconds, rental_price } = payload || {};
+      
+      // Token check
+      if (api_key !== 'holanbra_secret_token') {
+        console.warn('[SL-Update] Invalid Token');
+        return res.status(200).send('OK'); // Always send OK to SL to avoid error 46/9
+      }
+
+      if (casperlet_id) {
+        const targetId = String(casperlet_id).trim();
+        const newStatus = (status || '').toLowerCase().trim();
+        const seconds = remaining_seconds || expires;
+        let expiresAt = null;
+        if (seconds && !isNaN(Number(seconds))) {
+           const val = Number(seconds);
+           expiresAt = val > 1000000000 ? new Date(val * 1000).toISOString() : new Date(Date.now() + val * 1000).toISOString();
+        }
+
+        const updateData = { 
+          status: newStatus,
+          tenant_id: tenant_key || null,
+          tenant_name: tenant_name || (newStatus === 'rented' ? (tenant_key || 'Ocupado') : 'Disponível'),
+          updated_at: new Date().toISOString()
+        };
+        if (expiresAt) updateData.expiry_date = expiresAt;
+        if (rental_price) updateData.rental_price = Number(rental_price);
+
+        await supabase.from('properties').update(updateData).eq('casperlet_id', targetId);
+        console.log(`[SL-Update] Processed: ${targetId} -> ${newStatus}`);
+      }
+    } catch (err) {
+      console.error('[SL-Update] Error:', err.message);
+    }
+
+    // 4. THE ONLY VALID RESPONSE FOR SL: Just "OK"
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(200).send('OK');
   });
 
-  app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  // API Webhook - ALSO SIMPLIFIED TO RESPOND WITH OK
+  app.all('/api/webhooks/casperlet', async (req, res) => {
+    if (req.method === 'GET') return res.send('OK');
 
-  // API Routes - REGISTERED FIRST and isolated from any middleware/redirection
-  app.post('/api/webhooks/casperlet', async (req, res) => {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method Not Allowed', message: 'This endpoint accepts only POST requests.' });
+    }
+
     const logEntry = {
       timestamp: new Date().toISOString(),
       rawBody: req.body,
@@ -125,16 +193,11 @@ async function startServer() {
     }
 
     const headerKey = req.headers['x-api-key'];
-    
-    // Security Validation - Check body or header
     const token = api_key || headerKey;
 
     if (token !== 'holanbra_secret_token') {
       console.warn(`[Webhook] Unauthorized attempt from IP: ${req.ip}`);
-      return res.status(401).json({ 
-        error: 'Unauthorized', 
-        message: 'Invalid API Key.' 
-      });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     if (!casperlet_id) {
@@ -160,14 +223,23 @@ async function startServer() {
 
       console.log(`[Webhook] Update Target: casperlet_id="${targetId}" | Status="${newStatus}"`);
 
-      // Prepare Update Data
+      // Diagnostic check...
+      const { data: existingProp, error: checkError } = await supabase
+        .from('properties')
+        .select('id, name_pt, casperlet_id')
+        .eq('casperlet_id', targetId)
+        .single();
+      
+      if (checkError && checkError.code === 'PGRST116') {
+        console.warn(`❌ [Webhook] Property with casperlet_id "${targetId}" WAS NOT FOUND.`);
+      }
+
       const updateData = { 
         status: newStatus,
         tenant_id: tenant_key || null,
         updated_at: new Date().toISOString()
       };
 
-      // Handle names: if tenant_name is provided, use it. Otherwise, if rented, use tenant_key or fallback.
       if (tenant_name) {
         updateData.tenant_name = tenant_name;
       } else if (newStatus === 'rented') {
@@ -178,8 +250,6 @@ async function startServer() {
 
       if (expiresAt) updateData.expiry_date = expiresAt;
       if (rental_price) updateData.rental_price = Number(rental_price);
-
-      console.log('[Webhook] Supabase Payload:', updateData);
 
       const { data, error } = await supabase
         .from('properties')
@@ -192,23 +262,26 @@ async function startServer() {
         return res.status(500).json({ error: error.message });
       }
 
-      if (!data || data.length === 0) {
-        console.warn(`⚠️ Property not found for casperlet_id: ${targetId}`);
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Property not found correctly. Check if casperlet_id matches in Admin.',
-          received_id: targetId
-        });
-      }
-
       console.log(`✅ Success! Updated: ${data[0].name_pt || data[0].id}`);
-      res.status(200).json({ success: true, property: data[0] });
     } catch (err) {
-      console.error('❌ Falha crítica no handler:', err.message);
-      logEntry.result = { error: 'Critical Failure', message: err.message };
-      res.status(500).json({ error: err.message });
+      console.error('❌ Webhook Critical Error:', err.message);
     }
+    
+    // Final response
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(200).send('OK');
   });
+
+  // Logging and Health routes
+  app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+  });
+
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
 
   // Debug Route - Pergunta do usuário: "Onde está o log?"
   app.get('/api/webhooks/debug', (req, res) => {
