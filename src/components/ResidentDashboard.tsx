@@ -145,6 +145,11 @@ const ResidentDashboard:FC = () => {
 
       if (propError) throw propError;
 
+      const mappedProperties = (userProperties || []).map(p => ({
+        ...p,
+        name: p.name || `Property ${p.id}`
+      }));
+
       // Step 3: Fetch tickets
       const { data: userTickets } = await supabase
         .from('support_tickets')
@@ -153,7 +158,7 @@ const ResidentDashboard:FC = () => {
         .order('created_at', { ascending: false });
 
       setTickets(userTickets || []);
-      setProperties(userProperties || []);
+      setProperties(mappedProperties);
       setIsLoggedIn(true);
       
       // Persist session

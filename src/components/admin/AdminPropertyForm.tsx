@@ -19,8 +19,6 @@ interface AdminPropertyFormProps {
   setEditingId: (id: string | null) => void;
   formData: any;
   setFormData: (val: any | ((prev: any) => any)) => void;
-  formLang: 'pt' | 'en' | 'es' | 'nl';
-  setFormLang: (lang: 'pt' | 'en' | 'es' | 'nl') => void;
   isUploading: boolean;
   uploadProgress: number;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
@@ -33,8 +31,6 @@ export function AdminPropertyForm({
   setEditingId,
   formData,
   setFormData,
-  formLang,
-  setFormLang,
   isUploading,
   uploadProgress,
   handleInputChange,
@@ -74,19 +70,13 @@ export function AdminPropertyForm({
             onClick={() => {
               setEditingId(null);
               setFormData({
-                name_pt: '',
-                name_en: '',
-                name_es: '',
-                name_nl: '',
+                name: '',
                 casperletId: '',
                 price: '',
                 rental_price: '',
                 teleport_url: '',
                 status: 'available',
-                description_pt: '',
-                description_en: '',
-                description_es: '',
-                description_nl: '',
+                description: '',
                 imageUrl: '',
                 gallery_image_1: '',
                 gallery_image_2: '',
@@ -110,12 +100,12 @@ export function AdminPropertyForm({
       <div className="space-y-6">
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase flex items-center gap-1">
-            {t('admin.property.display_name')} ({formLang.toUpperCase()}) <span className="text-red-500 text-lg">*</span>
+            {t('admin.property.display_name')} <span className="text-red-500 text-lg">*</span>
           </label>
           <input 
             type="text" 
-            name={`name_${formLang}`}
-            value={formData[`name_${formLang}`] || ''}
+            name="name"
+            value={formData.name || ''}
             onChange={handleInputChange}
             className="w-full glass-card bg-transparent border-white/10 p-4 text-sm focus:border-amber-500 outline-none text-white shadow-inner" 
             placeholder={t('admin.property.placeholder_name')} 
@@ -208,34 +198,16 @@ export function AdminPropertyForm({
           </div>
         </div>
       
-        {/* Language Toggles moved here */}
-        <div className="flex gap-2 mb-4">
-          {(['pt', 'en', 'es', 'nl'] as const).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setFormLang(lang)}
-              className={cn(
-                "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all",
-                formLang === lang 
-                  ? "bg-amber-500 text-black" 
-                  : "bg-white/5 text-white/40 hover:text-white"
-              )}
-            >
-              {lang}
-            </button>
-          ))}
-        </div>
-
         <div className="space-y-2 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')} ({formLang.toUpperCase()})</label>
+          <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
           <div className="glass-card bg-transparent border-white/10 overflow-hidden focus-within:border-amber-500 transition-all">
             <EditorProvider>
               <Editor 
-                value={formData[`description_${formLang}`] || ''} 
+                value={formData.description || ''} 
                 onChange={(e) => {
                   setFormData((prev: any) => ({
                     ...prev,
-                    [`description_${formLang}`]: e.target.value
+                    description: e.target.value
                   }));
                 }}
                 className="min-h-[200px] text-sm text-white"

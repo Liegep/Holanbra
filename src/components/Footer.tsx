@@ -8,7 +8,6 @@ import { supabase } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
 
 export default function Footer() {
-  const { lang } = useParams();
   const { t } = useTranslation();
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,8 +64,6 @@ export default function Footer() {
       setIsSubmitting(false);
     }
   };
-
-  const baseUrl = lang ? `/${lang}` : '';
   
   return (
     <>
@@ -82,10 +79,10 @@ export default function Footer() {
           <div className="space-y-6">
             <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">{t('footer.nav')}</h4>
             <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
-              <li><Link to={`${baseUrl}/`} className="hover:text-amber-400 transition-colors">{t('nav.home')}</Link></li>
-              <li><Link to={`${baseUrl}/#properties`} className="hover:text-amber-400 transition-colors">{t('nav.properties')}</Link></li>
-              <li><Link to={`${baseUrl}/covenant`} className="hover:text-amber-400 transition-colors">{t('nav.covenant')}</Link></li>
-              <li><Link to={`${baseUrl}/resident`} className="hover:text-amber-400 transition-colors">Resident Portal</Link></li>
+              <li><Link to="/" className="hover:text-amber-400 transition-colors">{t('nav.home')}</Link></li>
+              <li><Link to="/#properties" className="hover:text-amber-400 transition-colors">{t('nav.properties')}</Link></li>
+              <li><Link to="/covenant" className="hover:text-amber-400 transition-colors">{t('nav.covenant')}</Link></li>
+              <li><Link to="/resident" className="hover:text-amber-400 transition-colors">Resident Portal</Link></li>
               <li><Link to="/admin" className="hover:text-amber-400 transition-colors">Admin</Link></li>
             </ul>
           </div>

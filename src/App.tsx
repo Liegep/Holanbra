@@ -17,7 +17,7 @@ import {
   X,
   Plus
 } from 'lucide-react';
-import { Link, Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
+import { Link, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -35,76 +35,24 @@ import Portfolio from './components/Portfolio';
 import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
-import { SUPPORTED_LANGS } from './i18n';
 
-function LanguageRedirect() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  useEffect(() => {
-    // Skip SL and API routes
-    if (location.pathname.startsWith('/api') || location.pathname === '/sl-update') return;
-
-    const savedLang = localStorage.getItem('i18nextLng');
-    const browserLang = navigator.language.split('-')[0];
-    const defaultLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
-    
-    navigate(`/${defaultLang}`, { replace: true });
-  }, [navigate]);
-
-  return null;
-}
-
-function LanguageWrapper() {
-  const { lang } = useParams();
-  const { i18n } = useTranslation();
-  const navigate = useNavigate();
+export default function App() {
   const location = useLocation();
 
   useEffect(() => {
-    // Skip SL and API routes
-    if (location.pathname.startsWith('/api') || location.pathname === '/sl-update') return;
-
-    const savedLang = localStorage.getItem('i18nextLng');
-    const browserLang = navigator.language.split('-')[0];
-    const targetLang = savedLang || (SUPPORTED_LANGS.includes(browserLang) ? browserLang : 'en');
-
-    if (lang && SUPPORTED_LANGS.includes(lang)) {
-      // Check if we are trying to access admin or resident via localized path
-      const subPath = location.pathname.split('/').slice(2).join('/');
-      if (subPath === 'admin' || subPath.startsWith('admin/') || subPath === 'resident' || subPath.startsWith('resident/')) {
-        navigate(`/${subPath}`, { replace: true });
-        return;
-      }
-
-      if (i18n.language !== lang) {
-        i18n.changeLanguage(lang);
-        localStorage.setItem('i18nextLng', lang);
+    if (location.hash) {
+      const element = document.getElementById(location.hash.substring(1));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     } else {
-      // Case: No lang prefix (/portfolio) or invalid lang prefix (/abc/portfolio)
-      // We should prepend or replace with the targetLang
-      
-      const pathParts = location.pathname.split('/');
-      // If the first part is a known route name but not a lang, or just an unknown word
-      // we'll assume it's part of the path and prefix it.
-      // If it looks like a 2-char string that isn't supported, we replace it.
-      
-      if (lang && lang.length === 2 && !SUPPORTED_LANGS.includes(lang)) {
-        // Looks like a language code but not one we support (e.g. /fr/...)
-        pathParts[1] = targetLang;
-      } else {
-        // Not a lang code (e.g. /portfolio or /)
-        pathParts.splice(1, 0, targetLang);
-      }
-      
-      const newPath = pathParts.join('/') || `/${targetLang}`;
-      navigate(newPath + location.search + location.hash, { replace: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [lang, i18n, navigate, location]);
+  }, [location.pathname, location.hash]);
 
   return (
-    <>
+    <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+      <Navbar />
       <main>
         <Routes>
           <Route path="/" element={
@@ -119,46 +67,19 @@ function LanguageWrapper() {
               <Team />
             </>
           } />
-          <Route path="properties" element={
+          <Route path="/admin/*" element={<AdminArea />} />
+          <Route path="/resident/*" element={<ResidentDashboard />} />
+          <Route path="/properties" element={
             <div className="pt-20">
               <Properties />
             </div>
           } />
-          <Route path="covenant" element={<Covenant />} />
-          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="/covenant" element={<Covenant />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
       <TeleportCTA />
-    </>
-  );
-}
-
-export default function App() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [location.pathname, location.hash]); // Only scroll to top on path change
-
-  return (
-    <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
-      <Navbar />
-      <Routes>
-        <Route path="/admin/*" element={<AdminArea />} />
-        <Route path="/resident/*" element={<ResidentDashboard />} />
-        <Route path="/" element={<LanguageRedirect />} />
-        <Route path="/:lang/*" element={<LanguageWrapper />} />
-        {/* Fallback for static assets or other routes if needed */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
       <TawkChat />
       <Footer />
     </div>

@@ -39,10 +39,6 @@ interface Property {
   expiry_date?: string;
   property_type?: string[];
   description?: string;
-  description_pt?: string;
-  description_en?: string;
-  description_es?: string;
-  description_nl?: string;
   bedrooms?: number;
   bathrooms?: number;
   prims_allowed?: number;
@@ -75,27 +71,28 @@ export default function Properties() {
         console.error(error);
         setLoading(false);
       } else {
-        const propertyList = (data || []).map(p => {
-          const galleryList = [];
-          
-          if (p.image_url) galleryList.push({ type: 'image', url: p.image_url });
-          if (p.gallery_image_1) galleryList.push({ type: 'image', url: p.gallery_image_1 });
-          if (p.gallery_image_2) galleryList.push({ type: 'image', url: p.gallery_image_2 });
-          if (p.video_url) galleryList.push({ type: 'video', url: p.video_url });
-          
-          if (galleryList.length === 0 && p.image) {
-            galleryList.push({ type: 'image', url: p.image });
-          }
+          const propertyList = (data || []).map(p => {
+            const galleryList = [];
+            
+            if (p.image_url) galleryList.push({ type: 'image', url: p.image_url });
+            if (p.gallery_image_1) galleryList.push({ type: 'image', url: p.gallery_image_1 });
+            if (p.gallery_image_2) galleryList.push({ type: 'image', url: p.gallery_image_2 });
+            if (p.video_url) galleryList.push({ type: 'video', url: p.video_url });
+            
+            if (galleryList.length === 0 && p.image) {
+              galleryList.push({ type: 'image', url: p.image });
+            }
 
-          return {
-            ...p,
-            casperletId: p.casperlet_id,
-            image: p.image_url,
-            price: p.rental_price || p.price || 0,
-            gallery: galleryList,
-            teleport_url: p.teleport_url || p.slurl 
-          };
-        });
+            return {
+              ...p,
+              name: p.name || `Property ${p.id}`,
+              casperletId: p.casperlet_id,
+              image: p.image_url,
+              price: p.rental_price || p.price || 0,
+              gallery: galleryList,
+              teleport_url: p.teleport_url || p.slurl 
+            };
+          });
         setProperties(propertyList);
         setLoading(false);
       }
@@ -113,11 +110,8 @@ export default function Properties() {
     };
   }, []);
 
-  const getLocalizedDescription = (p: any) => {
-    if (lang && lang !== 'en') {
-      return p[`description_${lang}`] || p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
-    }
-    return p.description_en || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
+  const getDescription = (p: any) => {
+    return p.description || "Experience unparalleled luxury and comfort in Holanbra.";
   };
 
   const sortedAndFilteredProperties = [...properties]
@@ -536,7 +530,7 @@ export default function Properties() {
                       <h3 className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-3">{t('properties.description_label')}</h3>
                       <div 
                         className="text-sm property-rich-content leading-relaxed font-light max-w-none"
-                        dangerouslySetInnerHTML={{ __html: getLocalizedDescription(selectedProperty) || '' }}
+                        dangerouslySetInnerHTML={{ __html: getDescription(selectedProperty) || '' }}
                       />
                     </div>
                   </div>

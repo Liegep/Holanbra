@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, Image as ImageIcon, LayoutDashboard, Globe, DollarSign, Briefcase } from 'lucide-react';
-import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, ImageIcon, LayoutDashboard, DollarSign, Briefcase } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
-import { SUPPORTED_LANGS } from '../i18n';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Extract lang from pathname since Navbar is outside the parameterized Routes
-  const pathParts = location.pathname.split('/');
-  const lang = SUPPORTED_LANGS.includes(pathParts[1]) ? pathParts[1] : (i18n.language?.split('-')[0] || 'en');
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
@@ -54,60 +49,14 @@ export default function Navbar() {
     };
   }, []);
 
-  const changeLanguage = (newLang: string) => {
-    // If we are on admin or resident portal, don't change the URL prefix in the address bar
-    // but do update the i18n state
-    if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/resident')) {
-      i18n.changeLanguage(newLang);
-      localStorage.setItem('i18nextLng', newLang);
-      return;
-    }
-
-    // Replace the language part of the current path
-    const pathParts = location.pathname.split('/');
-    
-    // pathParts[0] is always empty string for paths starting with /
-    if (SUPPORTED_LANGS.includes(pathParts[1])) {
-      pathParts[1] = newLang;
-    } else {
-      // If there's no supported lang prefix at the start, prepend it
-      pathParts.splice(1, 0, newLang);
-    }
-    
-    // Reconstruct path, ensuring we don't have double slashes from empty parts if unnecessary
-    // but preserving the structure. .join('/') usually handles this fine.
-    let newPathname = pathParts.join('/');
-    if (newPathname === '') newPathname = '/';
-
-    const newPath = newPathname + location.search + location.hash;
-    
-    // Update i18n before navigation to ensure UI reacts immediately
-    i18n.changeLanguage(newLang);
-    localStorage.setItem('i18nextLng', newLang);
-    
-    navigate(newPath);
-  };
-
   const navLinks = [
-    { name: 'About', path: `/${lang}/#about`, icon: Users, label: t('nav.about') },
-    { name: 'Properties', path: `/${lang}/#properties`, icon: Layers, highlight: true, label: t('nav.properties') },
-    { name: 'Gallery', path: `/${lang}/#gallery`, icon: ImageIcon, label: t('nav.gallery') },
-    { name: 'Decoration', path: `/${lang}/#services`, icon: Paintbrush, label: t('nav.decoration') },
-    { name: 'Team', path: `/${lang}/#team`, icon: Users, label: t('nav.team') },
-    { name: 'Covenant', path: `/${lang}/covenant`, icon: FileText, label: t('nav.covenant') },
+    { name: 'About', path: '/#about', icon: Users, label: t('nav.about') },
+    { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, label: t('nav.properties') },
+    { name: 'Gallery', path: '/#gallery', icon: ImageIcon, label: t('nav.gallery') },
+    { name: 'Decoration', path: '/#services', icon: Paintbrush, label: t('nav.decoration') },
+    { name: 'Team', path: '/#team', icon: Users, label: t('nav.team') },
+    { name: 'Covenant', path: '/covenant', icon: FileText, label: t('nav.covenant') },
   ];
-
-  const languages = [
-    { code: 'en', flag: '🇺🇸' },
-    { code: 'pt', flag: '🇧🇷' },
-    { code: 'es', flag: '🇪🇸' },
-    { code: 'nl', flag: '🇳🇱' }
-  ];
-
-  const getLocalizedLink = (path: string) => {
-     if (path.startsWith('/admin') || path.startsWith('/resident')) return path;
-     return `/${lang}${path === '/' ? '' : path}`;
-  };
 
   return (
     <nav className={cn(
@@ -115,7 +64,7 @@ export default function Navbar() {
       isScrolled ? "bg-background-dark/80 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to={`/${lang}`} className="flex items-center gap-3 group">
+        <Link to="/" className="flex items-center gap-3 group">
           <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center -rotate-6 group-hover:rotate-0 transition-transform shadow-[0_0_20px_rgba(247,203,69,0.3)]">
             <span className="text-black font-black text-xl">H</span>
           </div>
@@ -144,25 +93,6 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Language Switcher */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
-              {languages.map((l) => (
-                <button
-                  key={l.code}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    changeLanguage(l.code);
-                  }}
-                  className={cn(
-                    "text-lg transition-all hover:scale-125 cursor-pointer",
-                    lang === l.code ? "grayscale-0 opacity-100" : "grayscale opacity-40 hover:grayscale-0 hover:opacity-100"
-                  )}
-                >
-                  {l.flag}
-                </button>
-              ))}
-            </div>
-
             {isAdmin && (
               <Link 
                 to="/admin" 
@@ -185,20 +115,6 @@ export default function Navbar() {
 
         {/* Mobile Toggle */}
         <div className="flex items-center gap-4 md:hidden">
-          <div className="flex items-center gap-2">
-            {languages.map((l) => (
-              <button
-                key={l.code}
-                onClick={() => changeLanguage(l.code)}
-                className={cn(
-                  "text-base",
-                  lang === l.code ? "border-b-2 border-amber-500 pb-0.5" : "grayscale opacity-50"
-                )}
-              >
-                {l.flag}
-              </button>
-            ))}
-          </div>
           <button 
             className="p-2 text-gray-400"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

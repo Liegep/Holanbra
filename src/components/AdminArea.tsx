@@ -39,16 +39,8 @@ import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
 
 export default function AdminArea() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   
-  // Ensure we have translations loaded
-  useEffect(() => {
-    if (!i18n.language) {
-      const savedLang = localStorage.getItem('i18nextLng') || 'en';
-      i18n.changeLanguage(savedLang);
-    }
-  }, [i18n]);
-
   // UI State
   const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
@@ -86,7 +78,6 @@ export default function AdminArea() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRenterId, setEditingRenterId] = useState<string | null>(null);
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
-  const [formLang, setFormLang] = useState<'pt' | 'en' | 'es' | 'nl'>('pt');
   const [activeFilter, setActiveFilter] = useState<'all' | 'expiring'>('all');
   const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
   const [adminResponse, setAdminResponse] = useState('');
@@ -94,19 +85,13 @@ export default function AdminArea() {
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
-    name_pt: '',
-    name_en: '',
-    name_es: '',
-    name_nl: '',
+    name: '',
     casperletId: '',
     price: '',
     rental_price: '',
     teleport_url: '',
     status: 'available',
-    description_pt: '',
-    description_en: '',
-    description_es: '',
-    description_nl: '',
+    description: '',
     imageUrl: '',
     gallery_image_1: '',
     gallery_image_2: '',
@@ -225,7 +210,13 @@ export default function AdminArea() {
     try {
       const { data, error } = await supabase.from('properties').select('*');
       if (error) throw error;
-      setProperties(data || []);
+      
+      const mapped = (data || []).map(p => ({
+        ...p,
+        name: p.name || `Unit ${p.casperlet_id || p.id}`
+      }));
+      
+      setProperties(mapped);
     } catch (err) {
       console.error("Fetch properties error:", err);
     }
@@ -589,7 +580,7 @@ export default function AdminArea() {
     console.log("Dados ao salvar:", formData);
     
     // Validation
-    const name = formData.name_en || formData.name_pt || '';
+    const name = formData.name || '';
     if (!name || !formData.price || !formData.imageUrl) {
       showToast("Name, Price and Image URL are mandatory", "info");
       return;
@@ -598,14 +589,8 @@ export default function AdminArea() {
     setIsUploading(true);
     try {
       const dataToSave = {
-        name_en: formData.name_en?.trim() || name,
-        name_pt: formData.name_pt?.trim() || name,
-        name_es: formData.name_es?.trim() || null,
-        name_nl: formData.name_nl?.trim() || null,
-        description_en: formData.description_en?.trim() || null,
-        description_pt: formData.description_pt?.trim() || null,
-        description_es: formData.description_es?.trim() || null,
-        description_nl: formData.description_nl?.trim() || null,
+        name: formData.name?.trim() || null,
+        description: formData.description?.trim() || null,
         price: parseFloat(formData.price) || 0,
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
@@ -634,26 +619,24 @@ export default function AdminArea() {
 
       if (response.error) {
         console.error("Supabase Save Error:", response.error);
-        alert(`Erro no banco: ${response.error.message}`);
+        if (response.error.message.includes('column') && response.error.message.includes('does not exist')) {
+          alert(`ERRO DE SCHEMA: A coluna "${response.error.message.match(/"([^"]+)"/)?.[1]}" está faltando na tabela "properties".\n\nPor favor, garanta que a coluna "name" exista.`);
+        } else {
+          alert(`Erro no banco: ${response.error.message}`);
+        }
         throw response.error;
       }
 
       showToast(editingId ? "Property updated" : "Property created", "success");
       
       setFormData({ 
-        name_pt: '',
-        name_en: '',
-        name_es: '',
-        name_nl: '', 
+        name: '',
         casperletId: '', 
         price: '', 
         rental_price: '', 
         teleport_url: '', 
         status: 'available', 
-        description_pt: '', 
-        description_en: '', 
-        description_es: '', 
-        description_nl: '', 
+        description: '', 
         imageUrl: '',
         gallery_image_1: '',
         gallery_image_2: '',
@@ -678,19 +661,13 @@ export default function AdminArea() {
 
   const handleEditProperty = (prop: any) => {
     setFormData({
-      name_pt: prop.name_pt || prop.name || '',
-      name_en: prop.name_en || '',
-      name_es: prop.name_es || '',
-      name_nl: prop.name_nl || '',
+      name: prop.name || '',
       casperletId: prop.casperlet_id || '',
       price: prop.price?.toString() || '',
       rental_price: prop.rental_price?.toString() || '',
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
-      description_pt: prop.description_pt || prop.description || '',
-      description_en: prop.description_en || '',
-      description_es: prop.description_es || '',
-      description_nl: prop.description_nl || '',
+      description: prop.description || '',
       imageUrl: prop.image_url || '',
       gallery_image_1: prop.gallery_image_1 || '',
       gallery_image_2: prop.gallery_image_2 || '',
@@ -1155,8 +1132,6 @@ export default function AdminArea() {
               setEditingId={setEditingId}
               formData={formData}
               setFormData={setFormData}
-              formLang={formLang}
-              setFormLang={setFormLang}
               isUploading={isUploading}
               uploadProgress={uploadProgress}
               handleInputChange={(e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))}

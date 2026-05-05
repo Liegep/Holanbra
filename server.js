@@ -31,19 +31,32 @@ async function runStartupDiagnostics() {
   console.log(`\n--- 🔍 STARTUP DIAGNOSTIC: Checking CasperLet ID: ${targetId} ---`);
   
   try {
+    // Probe for columns
     const { data, error } = await supabase
       .from('properties')
-      .select('id, name_pt, casperlet_id')
-      .eq('casperlet_id', targetId);
+      .select('id, name, casperlet_id')
+      .limit(1);
 
     if (error) {
       console.error(`❌ [DIAGNOSTIC] Supabase Query Error: ${error.message}`);
-      console.error(`Hint: Check if the table "properties" exists and if RLS allows public reading.`);
-    } else if (data && data.length > 0) {
-      console.log(`✅ [DIAGNOSTIC] SUCCESS: Found property "${data[0].name_pt}" with casperlet_id: ${targetId}`);
+      if (error.message.includes('column "name" does not exist')) {
+        console.error('CRITICAL: "name" column is missing! Please create it in Supabase.');
+      }
+    } else {
+      console.log(`✅ [DIAGNOSTIC] Basic structure OK (id, name, casperlet_id)`);
+    }
+
+    const { data: propData, error: propError } = await supabase
+      .from('properties')
+      .select('id, name, casperlet_id')
+      .eq('casperlet_id', targetId);
+
+    if (propError) {
+      console.error(`❌ [DIAGNOSTIC] Supabase Property Query Error: ${propError.message}`);
+    } else if (propData && propData.length > 0) {
+      console.log(`✅ [DIAGNOSTIC] SUCCESS: Found property "${propData[0].name}" with casperlet_id: ${targetId}`);
     } else {
       console.warn(`⚠️ [DIAGNOSTIC] WARNING: No property found with casperlet_id: ${targetId}`);
-      console.warn(`Hint: Please go to the Admin Area and ensure one of your properties has this EXACT CasperLet ID.`);
     }
   } catch (err) {
     console.error(`❌ [DIAGNOSTIC] Critical Error during startup check: ${err.message}`);
@@ -124,7 +137,9 @@ async function startServer() {
         if (error) {
           logEntry.db_status = "Error: " + error.message;
         } else if (data && data.length > 0) {
-          logEntry.db_status = "Success: Updated " + (data[0].name_en || targetId);
+          // Use name or id as fallback for the log
+          const propName = data[0].name || targetId;
+          logEntry.db_status = "Success: Updated " + propName;
           console.log(`[SL-Update] Updated ${targetId} to ${newStatus}`);
         } else {
           logEntry.db_status = "NotFound: Property not found with that casperlet_id";
@@ -237,7 +252,7 @@ async function startServer() {
       // Diagnostic check...
       const { data: existingProp, error: checkError } = await supabase
         .from('properties')
-        .select('id, name_pt, casperlet_id')
+        .select('id, name, casperlet_id')
         .eq('casperlet_id', targetId)
         .single();
       
@@ -273,7 +288,8 @@ async function startServer() {
         return res.status(500).json({ error: error.message });
       }
 
-      console.log(`✅ Success! Updated: ${data[0].name_pt || data[0].id}`);
+      const propName = data[0].name || data[0].id;
+      console.log(`✅ Success! Updated: ${propName}`);
     } catch (err) {
       console.error('❌ Webhook Critical Error:', err.message);
     }
