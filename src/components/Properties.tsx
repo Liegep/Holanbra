@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key } from 'lucide-react';
+import { MapPin, ArrowUpRight, DollarSign, Heart, ExternalLink, X, ChevronLeft, ChevronRight, Loader2, Key, Layers } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
@@ -256,7 +256,7 @@ export default function Properties() {
                   <div className="text-2xl font-light text-white decoration-amber-500/50">
                     L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">{t('properties.per_week')}</span>
                     {property.prims_allowed && (
-                      <span className="ml-2 text-[10px] uppercase font-bold text-amber-500">{property.prims_allowed} Prims</span>
+                      <span className="ml-2 text-[10px] uppercase font-bold text-amber-500">{property.prims_allowed} {t('properties.prims_allowed')}</span>
                     )}
                   </div>
                 </div>
@@ -441,11 +441,34 @@ export default function Properties() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="text-3xl font-display font-medium text-black">
-                      L$ {selectedProperty.price} <span className="text-xs uppercase font-black tracking-widest text-black/30">{t('properties.per_week')}</span>
+                    <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
+                          <DollarSign size={24} />
+                        </div>
+                        <div>
+                          <div className="text-3xl font-display font-bold text-black leading-none">
+                            L$ {selectedProperty.price}
+                          </div>
+                          <div className="text-[10px] uppercase font-black tracking-widest text-amber-600/60 mt-1">
+                            {t('properties.per_week')}
+                          </div>
+                        </div>
+                      </div>
+                      
                       {selectedProperty.prims_allowed && (
-                        <div className="text-xs text-black/60 font-medium">
-                          {selectedProperty.prims_allowed} Prims Allowed
+                        <div className="flex items-center gap-4 pt-4 border-t border-amber-100">
+                          <div className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-white">
+                            <Layers size={20} />
+                          </div>
+                          <div>
+                            <div className="text-xl font-bold text-black leading-none">
+                              {selectedProperty.prims_allowed}
+                            </div>
+                            <div className="text-[10px] uppercase font-black tracking-widest text-black/40 mt-1">
+                              {t('properties.prims_allowed')}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
