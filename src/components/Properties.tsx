@@ -66,10 +66,10 @@ export default function Properties() {
 
   useEffect(() => {
     const fetchProperties = async () => {
+      // Fetch all properties to allow filtering in the UI (including rented ones)
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
-        .eq('status', 'available');
+        .select('*');
       
       if (error) {
         console.error(error);

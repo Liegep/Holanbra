@@ -10,33 +10,69 @@ To sync your properties in Second Life with this website, create a new script in
 5. Save the script.
 
 ```lsl
-// HOLAMBRA REAL ESTATE - CASPERLET SYNC v1.0
-// Paste your website URL here (keep the /api/casperlet/sync at the end)
-string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/api/casperlet/sync";
+// HOLAMBRA REAL ESTATE - CASPERLET SYNC v1.1
+// Este script deve ser colocado dentro da sua caixa CasperLet Rental Meter da Second Life.
 
-// The CasperLet ID must match the one you registered on the Admin Panel
-string CASPERLET_ID = ""; // Leave empty to auto-detect if the object name is the ID, or set manually
+string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/api/webhooks/casperlet";
+string API_TOKEN = "holanbra_secret_token"; // Token de segurança configurado no servidor
+
+// O CASPERLET_ID deve ser o mesmo que você registrou no Painel Administrativo.
+// Por padrão, o script usa o NOME DO OBJETO se você deixar em branco.
+string CASPERLET_ID = ""; 
 
 default
 {
     state_entry()
     {
         if(CASPERLET_ID == "") CASPERLET_ID = llGetObjectName();
-        llOwnerSay("CasperLet Sync initialized for ID: " + CASPERLET_ID);
+        llOwnerSay("✅ Holanbra CasperLet Sync inicializado para ID: " + CASPERLET_ID);
+        llOwnerSay("🔗 URL: " + WEB_URL);
     }
 
-    // This event is triggered by CasperLet when a rental status changes
-    // Note: You might need to bridge this with the CasperLet API event if using official meters
+    // O CasperLet envia mensagens via Link Message quando o status muda.
+    // Dependendo da versão do seu CasperLet, você pode precisar ajustar os parâmetros.
     link_message(integer sender, integer num, string str, key id)
     {
-        // Example: CasperLet sends status updates via Link Message
-        // You may need to adjust this depending on which CasperLet version/plugin you use
-        if(str == "rented" || str == "available" || str == "expired")
+        // str costuma conter o comando/status (ex: "rented", "available", "expired")
+        // id costuma ser o UUID do locatário (tenant)
+        
+        // Filtramos apenas os eventos relevantes
+        list events = ["rented", "available", "expired", "occupied", "vacant", "payment"];
+        
+        string lowerStr = llToLower(str);
+        integer found = -1;
+        integer i;
+        for(i = 0; i < llGetListLength(events); ++i) {
+            if(llSubStringIndex(lowerStr, llList2String(events, i)) != -1) {
+                found = i;
+                jump end_check;
+            }
+        }
+        @end_check;
+
+        if(found != -1)
         {
-            string status = str;
-            if(str == "expired") status = "available";
+            llOwnerSay("🔄 Evento detectado: " + str + ". Sincronizando com o site...");
             
-            string json = "{\"casperletId\":\"" + CASPERLET_ID + "\", \"status\":\"" + status + "\"}";
+            // Definimos o status para o site
+            string status = "rented";
+            if(lowerStr == "available" || lowerStr == "expired" || lowerStr == "vacant") {
+                status = "available";
+            }
+            
+            // Tentamos obter o tempo restante da CasperLet (comum em meters)
+            // Se o seu meter fornecer o tempo via Link Message, use-o aqui.
+            // Aqui enviamos 0 se não soubermos, mas você pode passar a variável correta da CasperLet.
+            integer remaining = 0; 
+            
+            // Constrói o JSON para o Webhook
+            string json = "{";
+            json += "\"casperlet_id\":\"" + CASPERLET_ID + "\",";
+            json += "\"status\":\"" + status + "\",";
+            json += "\"tenant_key\":\"" + (string)id + "\",";
+            json += "\"remaining_seconds\":" + (string)remaining + ",";
+            json += "\"api_key\":\"" + API_TOKEN + "\"";
+            json += "}";
             
             llHTTPRequest(WEB_URL, [
                 HTTP_METHOD, "POST",
@@ -48,18 +84,23 @@ default
     http_response(key id, integer status, list meta, string body)
     {
         if(status == 200) {
-            llOwnerSay("Sync successful!");
+            llOwnerSay("✅ Sincronização bem sucedida!");
         } else {
-            llOwnerSay("Sync failed. Status: " + (string)status + " - " + body);
+            llOwnerSay("❌ Falha na sincronização. Status: " + (string)status + ". Resposta: " + body);
         }
     }
 
     touch_start(integer total_number)
     {
         if(llDetectedKey(0) == llGetOwner()) {
-            llOwnerSay("Manually syncing status...");
-            // Manual test
-            string json = "{\"casperletId\":\"" + CASPERLET_ID + "\", \"status\":\"available\"}";
+            llOwnerSay("🛠️ Sincronização manual iniciada...");
+            
+            string json = "{";
+            json += "\"casperlet_id\":\"" + CASPERLET_ID + "\",";
+            json += "\"status\":\"available\",";
+            json += "\"api_key\":\"" + API_TOKEN + "\"";
+            json += "}";
+            
             llHTTPRequest(WEB_URL, [
                 HTTP_METHOD, "POST",
                 HTTP_MIME_TYPE, "application/json"
