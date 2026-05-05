@@ -586,9 +586,11 @@ export default function AdminArea() {
   };
 
   const handleSaveProperty = async () => {
-    // Required fields: name, price and image
-    if (!formData.name || !formData.price || !formData.imageUrl) {
-      showToast("Name, Price and Image URL are mandatory", "info");
+    console.log("Dados ao salvar:", formData);
+    
+    // Required fields: name_pt (at least Portuguese), price and image
+    if (!formData.name_pt || !formData.price || !formData.imageUrl) {
+      showToast("Name (PT), Price and Image URL are mandatory", "info");
       return;
     }
 
