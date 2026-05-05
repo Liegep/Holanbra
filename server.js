@@ -81,16 +81,13 @@ async function startServer() {
 
   // 2. SL UPDATE ROUTE (TOP PRIORITY API ROUTE)
   app.all('/sl-update', async (req, res) => {
-    // Combine body and query to catch LSL data regardless of how it's sent
+    // Combine body and query for maximum flexibility
     const payload = { ...req.query, ...req.body };
     
     // Diagnostic log entry
     const logEntry = {
       timestamp: new Date().toISOString(),
       method: req.method,
-      headers: req.headers,
-      query: req.query,
-      body: req.body,
       combinedPayload: payload,
       message: "Hit on /sl-update"
     };
@@ -105,70 +102,66 @@ async function startServer() {
     }
 
     try {
-      // Support common field names used by CasperLet and LSL scripts
-      const targetId = payload.id || payload.casperlet_id || payload.casperlet;
-      const statusRaw = payload.status || payload.state;
+      // 1. Extract values exactly as requested
+      const id = payload.id || payload.casperlet_id || payload.casperlet;
+      const status = (payload.status || payload.state || '').toLowerCase().trim();
       const token = payload.api_key || payload.token || payload.apikey || payload.secret;
-      const tenantKey = payload.tenant_key || payload.tenant_id;
-      // The user specifically mentioned updating tenant_name with the 'tenant' value from payload
-      const tenantName = payload.tenant || payload.tenant_name || payload.name || payload.resident;
-      
-      // Prioritize 'duration' as requested, then fall back to others
-      const rawDuration = payload.duration || payload.remaining_seconds || payload.expires || payload.remaining;
+      const tenant = payload.tenant || payload.tenant_name || payload.name || payload.resident || payload.tenant_id;
+      const duration = payload.duration || payload.remaining_seconds || payload.expires;
 
-      console.log(`[SL-Update] Incoming Webhook: ID=${targetId}, Status=${statusRaw}, Tenant=${tenantName}, Duration=${rawDuration}`);
-
-      if (token === 'holanbra_secret_token' && targetId) {
-        const newStatus = (statusRaw || '').toLowerCase().trim();
-        let expiresAt = null;
+      if (token === 'holanbra_secret_token' && id) {
+        const cleanId = String(id).trim();
         
-        // Handle duration to ISO Date conversion
-        if (rawDuration !== undefined && rawDuration !== null && rawDuration !== '') {
-           const val = Number(rawDuration);
-           if (!isNaN(val)) {
-             // If duration is > 1 billion, assume it's already a Unix timestamp (seconds)
-             // Otherwise, assume it's remaining seconds and add to current time
-             const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
-             expiresAt = dateObj.toISOString();
-             console.log(`[SL-Update] Calculated Expiry: ${expiresAt}`);
-           }
-        }
-
-        const cleanTargetId = String(targetId).trim();
-        const updatePayload = {
-          status: newStatus,
-          tenant_id: tenantKey || null,
-          tenant_name: tenantName || (newStatus === 'rented' ? (tenantKey || 'Ocupado') : 'Disponível'),
-          expiry_date: expiresAt,
+        // 2. Build update payload with cleanup rules
+        let updateData = {
+          status: status,
           updated_at: new Date().toISOString()
         };
 
-        console.log(`[SL-Update] Attempting DB update for casperlet_id: ${cleanTargetId}`, updatePayload);
+        if (status === 'available') {
+          // Rule: If available, clear occupancy fields
+          updateData.tenant_id = null;
+          updateData.tenant_name = 'Disponível';
+          updateData.expiry_date = null;
+          console.log(`[SL-Update] Cleaning fields for available status (ID: ${cleanId})`);
+        } else {
+          // Rule: Use status and tenant from request
+          updateData.tenant_name = tenant || 'Ocupado';
+          updateData.tenant_id = payload.tenant_id || payload.tenant_key || null;
+          
+          if (duration && !isNaN(Number(duration))) {
+             const val = Number(duration);
+             const dateObj = val > 1000000000 ? new Date(val * 1000) : new Date(Date.now() + val * 1000);
+             updateData.expiry_date = dateObj.toISOString();
+          }
+        }
 
-        const { data, error } = await supabase
+        console.log(`[SL-Update] Final Query: .update(${JSON.stringify(updateData)}).eq('casperlet_id', '${cleanId}')`);
+
+        // 3. Exact Filter Update with Detailed Logging
+        const { data, error, count } = await supabase
           .from('properties')
-          .update(updatePayload)
-          .eq('casperlet_id', cleanTargetId)
-          .select();
+          .update(updateData)
+          .eq('casperlet_id', cleanId)
+          .select('*');
         
         if (error) {
-          console.error(`[SL-Update] Supabase Error: ${error.message} (Code: ${error.code})`);
+          console.error(`[SL-Update] ❌ Supabase Error: ${error.message} (Code: ${error.code})`);
           logEntry.db_status = "Error: " + error.message;
         } else if (data && data.length > 0) {
-          const propName = data[0].name || targetId;
-          logEntry.db_status = "Success: Updated " + propName;
-          console.log(`[SL-Update] ✅ SUCCESS: Updated ${propName} (${cleanTargetId}) to ${newStatus}`);
+          console.log(`[SL-Update] ✅ SUCCESS! Row updated in Supabase. Name: ${data[0].name}`);
+          logEntry.db_status = "Success: Updated " + (data[0].name || cleanId);
         } else {
-          console.warn(`[SL-Update] ⚠️ WARNING: No property found with casperlet_id: ${cleanTargetId}`);
-          logEntry.db_status = "NotFound: Property not found with that casperlet_id";
+          console.warn(`[SL-Update] ⚠️ WARNING: Update matched 0 rows. Check if casperlet_id "${cleanId}" exists in DB.`);
+          logEntry.db_status = "NotFound: ID not found";
         }
       } else {
-        const skipReason = !targetId ? "Missing ID" : "Invalid Token";
-        console.warn(`[SL-Update] ⚠️ Skipped: ${skipReason}`);
-        logEntry.db_status = "Skipped: " + skipReason;
+        const reason = !id ? "Missing ID" : "Invalid Token";
+        console.warn(`[SL-Update] ⚠️ Skipping: ${reason}`);
+        logEntry.db_status = "Skipped: " + reason;
       }
     } catch (err) {
-      console.error(`[SL-Update] ❌ Critical Exception:`, err);
+      console.error(`[SL-Update] ❌ Exception:`, err.message);
       logEntry.db_status = "Critical: " + err.message;
     }
 
