@@ -129,11 +129,11 @@ async function startServer() {
       };
 
       if (statusFromReq === 'available') {
-        // CLEAR fields if available
+        // Rule: If available, force fields to null as requested
         updateData.tenant_id = null;
-        updateData.tenant_name = 'Disponível';
+        updateData.tenant_name = null;
         updateData.expiry_date = null;
-        console.log(`[SL-Update] 🧹 FORCING CLEANUP: status is 'available'. Clearing tenant data for ID: ${id}`);
+        console.log(`[SL-Update] 🧹 FORCING CLEANUP: status is 'available'. Clearing tenant data (NULL) for ID: ${id}`);
       } else {
         // SET fields if occupied
         updateData.tenant_name = tenant || 'Ocupado';
