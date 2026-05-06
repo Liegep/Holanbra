@@ -103,20 +103,18 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // 2. Lógica de Data com proteção total
+      // 2. Lógica de Data Robusta (Segundos para Milissegundos)
+      const rawExpiry = req.query.expiry || payload.expiry; 
       let finalDate = null;
-      if (status !== 'available' && expiry) {
-        try {
-          const expiryNum = parseInt(expiry);
-          if (expiryNum > 0) {
-            // A CORREÇÃO: Segundos * 1000 = Milissegundos
-            finalDate = new Date(expiryNum * 1000).toISOString();
-            console.log(`[SL-Update] Data Convertida: ${finalDate}`);
+
+      if (status !== 'available' && rawExpiry && rawExpiry !== "0") {
+          const timestamp = Number(rawExpiry) * 1000;
+          if (!isNaN(timestamp) && timestamp > 0) {
+              finalDate = new Date(timestamp).toISOString();
           }
-        } catch (e) {
-          console.error('[SL-Update] Erro ao converter data:', e.message);
-        }
       }
+      
+      console.log(`[SL-Update] Debug Expiry -> Bruto: ${rawExpiry} | Formatado: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
