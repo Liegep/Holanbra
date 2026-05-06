@@ -82,25 +82,20 @@ async function startServer() {
 
   // 2. SL UPDATE ROUTE (DIRECT DB SAVER)
   app.all('/sl-update', async (req, res) => {
-    // Pegamos os dados da query (URL) ou do body (POST)
     const payload = { ...req.query, ...req.body };
     const { id, status, tenant, token, expiry } = payload;
 
-    // Log para ver o que chegou
-    console.log(`[SL-Update] Recebido: ID=${id}, Status=${status}, Expiry=${expiry}`);
+    console.log(`[SL-Update] Requisição: ID=${id}, Status=${status}, Expiry=${expiry}`);
 
-    // Validação básica do token de segurança
+    // 1. Validação do Token
     if (token !== 'holanbra_secret_token') {
-      console.warn('[SL-Update] Token inválido recebido.');
+      console.warn('[SL-Update] Token inválido.');
       return res.status(200).send('ERROR - Invalid Token');
     }
 
-    if (!id) {
-       return res.status(200).send('ERROR - Missing ID');
-    }
+    if (!id) return res.status(200).send('ERROR - Missing ID');
 
     try {
-      // Definimos o que será gravado
       const updateData = {
         status: (status || '').toLowerCase().trim(),
         tenant_name: (status === 'available') ? null : (tenant || null),
@@ -108,39 +103,42 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // CORREÇÃO CRUCIAL: O Second Life envia Segundos (Unix Timestamp)
-      // O JavaScript Date() precisa de MILISSEGUNDOS!
-      if (status !== 'available' && expiry && expiry !== "0") {
-        const seconds = parseInt(expiry);
-        const date = new Date(seconds * 1000); // Multiplicamos por 1000 aqui!
-        updateData.expiry_date = date.toISOString();
-        console.log(`[SL-Update] Convertendo expiry: ${expiry} s -> ${updateData.expiry_date}`);
-      } else {
-        updateData.expiry_date = null;
+      // 2. Lógica de Data com proteção total
+      let finalDate = null;
+      if (status !== 'available' && expiry) {
+        try {
+          const expiryNum = parseInt(expiry);
+          if (expiryNum > 0) {
+            // A CORREÇÃO: Segundos * 1000 = Milissegundos
+            finalDate = new Date(expiryNum * 1000).toISOString();
+            console.log(`[SL-Update] Data Convertida: ${finalDate}`);
+          }
+        } catch (e) {
+          console.error('[SL-Update] Erro ao converter data:', e.message);
+        }
       }
+      updateData.expiry_date = finalDate;
 
-      // Executa o UPDATE no Supabase
+      // 3. Executa o UPDATE
       const { data, error } = await supabase
         .from('properties')
         .update(updateData)
         .eq('casperlet_id', String(id).trim())
         .select();
 
-      // LOG DE ERRO EXPLICÍTO PARA O SUPABASE
       if (error) {
-        console.error('❌ ERRO NO SUPABASE:', error.message);
+        console.error('❌ ERRO SUPABASE:', error.message);
         return res.status(200).send(`ERROR - DB: ${error.message}`);
       }
 
       if (data && data.length > 0) {
-        console.log(`✅ SUCESSO: Imóvel ${data[0].name || id} atualizado para ${status}`);
+        console.log(`✅ GRAVADO: ${data[0].name || id} | Status: ${status} | Exp: ${finalDate}`);
         return res.status(200).send('OK - Gravado');
       } else {
-        console.warn(`⚠️ AVISO: Nenhum imóvel encontrado com casperlet_id: ${id}`);
         return res.status(200).send('ERROR - ID Not Found');
       }
     } catch (err) {
-      console.error('❌ FALHA NO PROCESSAMENTO:', err.message);
+      console.error('❌ ERRO CRÍTICO:', err.message);
       return res.status(200).send('ERROR - Server Failure');
     }
   });
