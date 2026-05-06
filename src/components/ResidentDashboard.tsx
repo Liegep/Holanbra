@@ -27,7 +27,15 @@ import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 
 const ResidentDashboard:FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    // Force English in Resident Area
+    if (i18n.language !== 'en') {
+      i18n.changeLanguage('en');
+    }
+  }, [i18n]);
+
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -82,7 +90,7 @@ const ResidentDashboard:FC = () => {
           setTickets(userTickets || []);
         }
 
-        // Fetch SL profile picture via proxy do servidor
+        // Fetch SL profile picture via server proxy
         try {
           const proxyUrl = `/api/avatar/${residentId}`;
           const img = new Image();
@@ -121,7 +129,7 @@ const ResidentDashboard:FC = () => {
         .maybeSingle();
 
       if (renterError) {
-        console.error('Erro na busca:', renterError);
+        console.error('Search error:', renterError);
         throw renterError;
       }
 
@@ -131,8 +139,8 @@ const ResidentDashboard:FC = () => {
         return;
       }
 
-      // Se chegou aqui, logou!
-      console.log('Sucesso!', renter);
+      // If we reached here, login successful!
+      console.log('Success!', renter);
       setResidentData(renter);
 
       // Step 2: Fetch properties linked to this resident
@@ -428,7 +436,7 @@ const ResidentDashboard:FC = () => {
                         isExpired = false;
                         const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        timeRemainingLabel = `Expira em ${days} dias e ${hours} horas`;
+                        timeRemainingLabel = `Expires in ${days} days and ${hours} hours`;
                       }
                     }
                     
@@ -476,9 +484,9 @@ const ResidentDashboard:FC = () => {
                                 {expiresAt ? (
                                   (() => {
                                     const d = new Date(expiresAt);
-                                    const datePart = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-                                    const timePart = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                                    return `${datePart} às ${timePart}`;
+                                    const datePart = d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+                                    const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                                    return `${datePart} at ${timePart}`;
                                   })()
                                 ) : "Active"}
                               </p>
@@ -625,7 +633,7 @@ const ResidentDashboard:FC = () => {
                               </div>
                               <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
                               <p className="text-white/40 text-[10px] uppercase font-bold">
-                                {t('resident.ticket_opened_on')} {new Date(ticket.created_at).toLocaleDateString()}
+                                {t('resident.ticket_opened_on')} {new Date(ticket.created_at).toLocaleDateString('en-US')}
                               </p>
                             </div>
                           </div>

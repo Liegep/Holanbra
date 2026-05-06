@@ -130,8 +130,8 @@ async function startServer() {
       }
 
       if (data && data.length > 0) {
-        console.log(`✅ GRAVADO: ${data[0].name || id} | Status: ${status} | Exp: ${finalDate}`);
-        return res.status(200).send('OK - Gravado');
+        console.log(`✅ SAVED: ${data[0].name || id} | Status: ${status} | Exp: ${finalDate}`);
+        return res.status(200).send('OK - Saved');
       } else {
         return res.status(200).send('ERROR - ID Not Found');
       }
@@ -156,10 +156,10 @@ async function startServer() {
   });
 
 
-  // Debug Route - Pergunta do usuário: "Onde está o log?"
+  // Debug Route
   app.get('/api/webhooks/debug', (req, res) => {
     res.json({
-      message: "Últimos logs do Webhook",
+      message: "Latest Webhook logs",
       logs: lastWebhookLogs
     });
   });
@@ -187,7 +187,7 @@ async function startServer() {
           id: docId,
           price: price ? Number(price) : 0,
           status: status || "available",
-          tenant_name: tenant || "Disponível",
+          tenant_name: tenant || "Available",
           updated_at: new Date().toISOString()
         });
 
