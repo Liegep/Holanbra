@@ -103,22 +103,18 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // Lógica simplificada e robusta para conversão de data
-      const expiryRaw = req.query.expiry || req.body.expiry || expiry;
+      // 2. Lógica de conversão direta (Unix Segundos -> ISO Milissegundos)
+      const expiryRaw = req.query.expiry || payload.expiry;
       let finalDate = null;
 
       if (status !== 'available' && expiryRaw && expiryRaw !== "0") {
-          const timestampMs = Number(expiryRaw) * 1000;
-          if (!isNaN(timestampMs)) {
-              try {
-                  finalDate = new Date(timestampMs).toISOString();
-              } catch (e) {
-                  console.error('[SL-Update] Data inválida:', e.message);
-              }
+          const expiryTick = Number(expiryRaw);
+          if (!isNaN(expiryTick) && expiryTick > 0) {
+              finalDate = new Date(expiryTick * 1000).toISOString();
+              console.log(`[SL-Update] Data Final calculada: ${finalDate}`);
           }
       }
       
-      console.log(`[SL-Update] Expiry Bruto: ${expiryRaw} -> ISO: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
