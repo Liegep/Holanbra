@@ -475,7 +475,11 @@ const ResidentDashboard:FC = () => {
                         isExpired = false;
                         const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
                         const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        timeRemainingLabel = `Expires in ${days} days and ${hours} hours`;
+                        timeRemainingLabel = t('resident.expires_in', { 
+                          days, 
+                          hours, 
+                          defaultValue: `Expires in ${days} days and ${hours} hours` 
+                        });
                       }
                     }
                     
@@ -488,9 +492,9 @@ const ResidentDashboard:FC = () => {
                       >
                         {/* Property Image Header */}
                         <div className="relative h-64 overflow-hidden">
-                          <img src={prop.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
+                          <img src={prop.image_url} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
                           <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
-                          <div className="absolute bottom-6 left-8">
+                          <div className="absolute bottom-6 left-8 text-left">
                             <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
                             <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
                               <MapPin size={12} /> HOLANBRA
@@ -523,11 +527,15 @@ const ResidentDashboard:FC = () => {
                                 {expiresAt ? (
                                   (() => {
                                     const d = new Date(expiresAt);
-                                    const datePart = d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-                                    const timePart = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                                    return `${datePart} at ${timePart}`;
+                                    const datePart = d.toLocaleDateString(i18n.language === 'en' ? 'en-US' : (i18n.language === 'pt' ? 'pt-BR' : i18n.language), { day: 'numeric', month: 'long', year: 'numeric' });
+                                    const timePart = d.toLocaleTimeString(i18n.language === 'en' ? 'en-US' : (i18n.language === 'pt' ? 'pt-BR' : i18n.language), { hour: '2-digit', minute: '2-digit' });
+                                    return t('resident.date_at_time', { 
+                                      date: datePart, 
+                                      time: timePart, 
+                                      defaultValue: `${datePart} at ${timePart}` 
+                                    });
                                   })()
-                                ) : "Active"}
+                                ) : t('resident.active', 'Active')}
                               </p>
                               <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('resident.due')}</p>
                             </div>
@@ -539,7 +547,9 @@ const ResidentDashboard:FC = () => {
                                  <CreditCard className="text-amber-500" size={20} />
                                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.price')}</span>
                                </div>
-                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">L$ {prop.rental_price || prop.price} / Week</div>
+                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">
+                                 L$ {prop.rental_price || prop.price} / {t('resident.week', 'Week')}
+                               </div>
                              </div>
                              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                                 <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
