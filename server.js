@@ -84,7 +84,7 @@ async function startServer() {
   app.all('/sl-update', async (req, res) => {
     // Pegamos os dados da query (URL) ou do body (POST)
     const payload = { ...req.query, ...req.body };
-    const { id, status, tenant, token } = payload;
+    const { id, status, tenant, token, expiry } = payload;
 
     // Log para ver o que chegou
     console.log(`[SL-Update] Requisição recebida: ID=${id}, Status=${status}, Tenant=${tenant}`);
@@ -105,9 +105,18 @@ async function startServer() {
         status: (status || '').toLowerCase().trim(),
         tenant_name: (status === 'available') ? null : (tenant || null),
         tenant_id: (status === 'available') ? null : (payload.tenant_id || null),
-        expiry_date: (status === 'available') ? null : (payload.expiry_date || null),
         updated_at: new Date().toISOString()
       };
+
+      // Lógica específica para expiry_date
+      if (status === 'available') {
+        updateData.expiry_date = null;
+      } else if (expiry && expiry !== "0") {
+        const date = new Date(parseInt(expiry) * 1000);
+        updateData.expiry_date = date.toISOString();
+      } else {
+        updateData.expiry_date = null;
+      }
 
       // Executa o UPDATE no Supabase
       const { data, error } = await supabase

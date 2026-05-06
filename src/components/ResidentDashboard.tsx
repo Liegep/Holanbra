@@ -428,15 +428,9 @@ const ResidentDashboard:FC = () => {
                       
                       if (diffInMs > 0) {
                         isExpired = false;
-                        const totalDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-                        const weeks = Math.floor(totalDays / 7);
-                        const days = totalDays % 7;
-                        
-                        if (weeks > 0) {
-                          timeRemainingLabel = `${weeks} ${t('common.weeks', 'Weeks')} ${days} ${t('common.days', 'Days')}`;
-                        } else {
-                          timeRemainingLabel = `${days} ${t('common.days', 'Days')}`;
-                        }
+                        const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        timeRemainingLabel = `Expira em ${days} dias e ${hours} horas`;
                       }
                     }
                     
@@ -480,7 +474,16 @@ const ResidentDashboard:FC = () => {
                               <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.expires')}</span>
                             </div>
                             <div>
-                              <p className="text-2xl font-bold text-white">{expiresAt ? new Date(expiresAt).toLocaleDateString() : "Active"}</p>
+                              <p className="text-xl font-bold text-white">
+                                {expiresAt ? (
+                                  (() => {
+                                    const d = new Date(expiresAt);
+                                    const datePart = d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+                                    const timePart = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                                    return `${datePart} às ${timePart}`;
+                                  })()
+                                ) : "Active"}
+                              </p>
                               <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('resident.due')}</p>
                             </div>
                           </div>
