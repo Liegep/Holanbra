@@ -108,12 +108,15 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // Lógica específica para expiry_date
+      // Lógica específica para expiry_date (Conversão de Segundos para Milissegundos)
       if (status === 'available') {
         updateData.expiry_date = null;
       } else if (expiry && expiry !== "0") {
-        const date = new Date(parseInt(expiry) * 1000);
+        // O Second Life envia Unix Timestamp em SEGUNDOS. JS precisa de MILISSEGUNDOS.
+        const seconds = parseInt(expiry);
+        const date = new Date(seconds * 1000);
         updateData.expiry_date = date.toISOString();
+        console.log(`[SL-Update] Conv: Expiry="${expiry}" (${seconds}s) -> ${updateData.expiry_date}`);
       } else {
         updateData.expiry_date = null;
       }
