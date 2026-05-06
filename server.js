@@ -103,20 +103,21 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // 2. Lógica de Data Inteligente (Segundos vs Milissegundos)
+      // 2. Lógica de Expiração (Segundos Restantes -> Data Final)
       const rawExpiry = req.query.expiry || payload.expiry; 
       let finalDate = null;
 
       if (status !== 'available' && rawExpiry && rawExpiry !== "0") {
-          const expiryVal = Number(rawExpiry);
-          if (!isNaN(expiryVal) && expiryVal > 0) {
-              // Se < 10.000.000.000, assumimos que está em segundos e multiplicamos por 1000
-              const timestamp = expiryVal < 10000000000 ? expiryVal * 1000 : expiryVal;
-              finalDate = new Date(timestamp).toISOString();
+          const secondsLeft = Number(rawExpiry);
+          if (!isNaN(secondsLeft) && secondsLeft > 0) {
+              // Somamos os segundos restantes ao tempo atual
+              const nowInSeconds = Math.floor(Date.now() / 1000);
+              const finalTimestamp = (nowInSeconds + secondsLeft) * 1000;
+              finalDate = new Date(finalTimestamp).toISOString();
           }
       }
       
-      console.log(`[SL-Update] Debug Expiry -> Bruto: ${rawExpiry} | Final: ${finalDate}`);
+      console.log(`[SL-Update] Debug Expiry -> Restante: ${rawExpiry}s | Data Final: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
