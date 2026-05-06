@@ -87,7 +87,7 @@ async function startServer() {
     const { id, status, tenant, token, expiry } = payload;
 
     // Log para ver o que chegou
-    console.log(`[SL-Update] Requisição recebida: ID=${id}, Status=${status}, Tenant=${tenant}`);
+    console.log(`[SL-Update] Recebido: ID=${id}, Status=${status}, Expiry=${expiry}`);
 
     // Validação básica do token de segurança
     if (token !== 'holanbra_secret_token') {
@@ -108,15 +108,13 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // Lógica específica para expiry_date (Conversão de Segundos para Milissegundos)
-      if (status === 'available') {
-        updateData.expiry_date = null;
-      } else if (expiry && expiry !== "0") {
-        // O Second Life envia Unix Timestamp em SEGUNDOS. JS precisa de MILISSEGUNDOS.
+      // CORREÇÃO CRUCIAL: O Second Life envia Segundos (Unix Timestamp)
+      // O JavaScript Date() precisa de MILISSEGUNDOS!
+      if (status !== 'available' && expiry && expiry !== "0") {
         const seconds = parseInt(expiry);
-        const date = new Date(seconds * 1000);
+        const date = new Date(seconds * 1000); // Multiplicamos por 1000 aqui!
         updateData.expiry_date = date.toISOString();
-        console.log(`[SL-Update] Conv: Expiry="${expiry}" (${seconds}s) -> ${updateData.expiry_date}`);
+        console.log(`[SL-Update] Convertendo expiry: ${expiry} s -> ${updateData.expiry_date}`);
       } else {
         updateData.expiry_date = null;
       }
@@ -131,7 +129,6 @@ async function startServer() {
       // LOG DE ERRO EXPLICÍTO PARA O SUPABASE
       if (error) {
         console.error('❌ ERRO NO SUPABASE:', error.message);
-        console.error('Detalhes:', error);
         return res.status(200).send(`ERROR - DB: ${error.message}`);
       }
 
@@ -143,7 +140,7 @@ async function startServer() {
         return res.status(200).send('ERROR - ID Not Found');
       }
     } catch (err) {
-      console.error('❌ FALHA CRÍTICA NO SERVIDOR:', err.message);
+      console.error('❌ FALHA NO PROCESSAMENTO:', err.message);
       return res.status(200).send('ERROR - Server Failure');
     }
   });
