@@ -103,19 +103,22 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // 2. Lógica de Expiração (Timestamp Unix Direto)
-      const rawExpiry = req.query.expiry || payload.expiry; 
+      // Lógica simplificada e robusta para conversão de data
+      const expiryRaw = req.query.expiry || req.body.expiry || expiry;
       let finalDate = null;
 
-      if (status !== 'available' && rawExpiry && rawExpiry !== "0") {
-          const timestampSeconds = Number(rawExpiry);
-          if (!isNaN(timestampSeconds) && timestampSeconds > 0) {
-              // O SL envia o Timestamp Unix direto (segundos)
-              finalDate = new Date(timestampSeconds * 1000).toISOString();
+      if (status !== 'available' && expiryRaw && expiryRaw !== "0") {
+          const timestampMs = Number(expiryRaw) * 1000;
+          if (!isNaN(timestampMs)) {
+              try {
+                  finalDate = new Date(timestampMs).toISOString();
+              } catch (e) {
+                  console.error('[SL-Update] Data inválida:', e.message);
+              }
           }
       }
       
-      console.log(`[SL-Update] Debug Expiry -> Unix: ${rawExpiry} | ISO: ${finalDate}`);
+      console.log(`[SL-Update] Expiry Bruto: ${expiryRaw} -> ISO: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
