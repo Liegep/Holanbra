@@ -82,14 +82,13 @@ const ResidentDashboard:FC = () => {
           setTickets(userTickets || []);
         }
 
-        // Fetch SL profile picture
+        // Fetch SL profile picture via proxy do servidor
         try {
-          const res = await fetch(`https://api.allorigins.win/raw?url=https://world.secondlife.com/resident/${residentId}`);
-          const html = await res.text();
-          const match = html.match(/<img[^>]+src=["'](https:\/\/picture-service\.secondlife\.com\/[^"']+)["']/i);
-          if (match && match[1]) {
-            setSlAvatarUrl(match[1]);
-          }
+          const proxyUrl = `/api/avatar/${residentId}`;
+          const img = new Image();
+          img.onload = () => setSlAvatarUrl(proxyUrl);
+          img.onerror = () => setSlAvatarUrl(null);
+          img.src = proxyUrl;
         } catch (err) {
           console.warn('Failed to fetch SL profile picture', err);
         }
@@ -341,7 +340,6 @@ const ResidentDashboard:FC = () => {
                   src={slAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
                   alt="Avatar"
                   className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
                 />
               </div>
               <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">
