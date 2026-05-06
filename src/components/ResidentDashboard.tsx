@@ -16,6 +16,7 @@ import {
   User,
   Lock,
   MessageSquare,
+  Mail,
   Plus,
   History,
   CheckCircle2,
@@ -53,6 +54,7 @@ const ResidentDashboard:FC = () => {
   const [properties, setProperties] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'rentals' | 'support'>('rentals');
+  const [hasNewReply, setHasNewReply] = useState(false);
   const [error, setError] = useState('');
   const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
 
@@ -87,7 +89,24 @@ const ResidentDashboard:FC = () => {
           .order('created_at', { ascending: false });
 
         if (!ticketError) {
-          setTickets(userTickets || []);
+          const fetchedTickets = userTickets || [];
+          setTickets(fetchedTickets);
+          
+          // Check for unread admin replies
+          const residentUuid = residentData.avatar_uuid;
+          const lastViewedStr = localStorage.getItem(`sl_last_support_view_${residentUuid}`);
+          const lastViewed = lastViewedStr ? new Date(lastViewedStr) : new Date(0);
+          
+          const hasUnread = fetchedTickets.some(t => {
+            if (!t.admin_reply) return false;
+            // Use updated_at if available, otherwise created_at
+            const updateTime = new Date(t.updated_at || t.created_at);
+            return updateTime > lastViewed;
+          });
+
+          if (hasUnread && activeTab !== 'support') {
+            setHasNewReply(true);
+          }
         }
 
         // Fetch SL profile picture via server proxy
@@ -390,13 +409,33 @@ const ResidentDashboard:FC = () => {
             <Home size={14} /> {t('resident.my_rentals')} ({properties.length})
           </button>
           <button 
-            onClick={() => setActiveTab('support')}
+            onClick={() => {
+              setActiveTab('support');
+              setHasNewReply(false);
+              const uuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+              if (uuid) {
+                localStorage.setItem(`sl_last_support_view_${uuid}`, new Date().toISOString());
+              }
+            }}
             className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 relative group",
               activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
             )}
           >
-            <MessageSquare size={14} /> {t('resident.support')} ({tickets.length})
+            {hasNewReply && activeTab !== 'support' ? (
+              <motion.div
+                animate={{ opacity: [1, 0, 1] }}
+                transition={{ duration: 1, repeat: Infinity }}
+                className="absolute -top-1 -right-1"
+              >
+                <div className="bg-blue-500 p-1.5 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                  <Mail size={10} className="text-white" />
+                </div>
+              </motion.div>
+            ) : (
+              <MessageSquare size={14} />
+            )}
+            {t('resident.support')} ({tickets.length})
           </button>
         </div>
 
