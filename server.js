@@ -103,21 +103,19 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // 2. Lógica de Expiração (Segundos Restantes -> Data Final)
+      // 2. Lógica de Expiração (Timestamp Unix Direto)
       const rawExpiry = req.query.expiry || payload.expiry; 
       let finalDate = null;
 
       if (status !== 'available' && rawExpiry && rawExpiry !== "0") {
-          const secondsLeft = Number(rawExpiry);
-          if (!isNaN(secondsLeft) && secondsLeft > 0) {
-              // Somamos os segundos restantes ao tempo atual
-              const nowInSeconds = Math.floor(Date.now() / 1000);
-              const finalTimestamp = (nowInSeconds + secondsLeft) * 1000;
-              finalDate = new Date(finalTimestamp).toISOString();
+          const timestampSeconds = Number(rawExpiry);
+          if (!isNaN(timestampSeconds) && timestampSeconds > 0) {
+              // O SL envia o Timestamp Unix direto (segundos)
+              finalDate = new Date(timestampSeconds * 1000).toISOString();
           }
       }
       
-      console.log(`[SL-Update] Debug Expiry -> Restante: ${rawExpiry}s | Data Final: ${finalDate}`);
+      console.log(`[SL-Update] Debug Expiry -> Unix: ${rawExpiry} | ISO: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
