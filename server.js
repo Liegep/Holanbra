@@ -103,18 +103,20 @@ async function startServer() {
         updated_at: new Date().toISOString()
       };
 
-      // 2. Lógica de Data Robusta (Segundos para Milissegundos)
+      // 2. Lógica de Data Inteligente (Segundos vs Milissegundos)
       const rawExpiry = req.query.expiry || payload.expiry; 
       let finalDate = null;
 
       if (status !== 'available' && rawExpiry && rawExpiry !== "0") {
-          const timestamp = Number(rawExpiry) * 1000;
-          if (!isNaN(timestamp) && timestamp > 0) {
+          const expiryVal = Number(rawExpiry);
+          if (!isNaN(expiryVal) && expiryVal > 0) {
+              // Se < 10.000.000.000, assumimos que está em segundos e multiplicamos por 1000
+              const timestamp = expiryVal < 10000000000 ? expiryVal * 1000 : expiryVal;
               finalDate = new Date(timestamp).toISOString();
           }
       }
       
-      console.log(`[SL-Update] Debug Expiry -> Bruto: ${rawExpiry} | Formatado: ${finalDate}`);
+      console.log(`[SL-Update] Debug Expiry -> Bruto: ${rawExpiry} | Final: ${finalDate}`);
       updateData.expiry_date = finalDate;
 
       // 3. Executa o UPDATE
