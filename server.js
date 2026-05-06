@@ -235,8 +235,7 @@ async function startServer() {
       res.send(response.data);
     } catch (error) {
       console.error(`Proxy Error for UUID ${uuid}:`, error.message);
-      // Fallback to UI Avatars if Second Life fails
-      res.redirect(`https://ui-avatars.com/api/?name=SL&background=111&color=f59e0b&size=512`);
+      res.status(404).send('Avatar not found');
     }
   });
 
