@@ -65,6 +65,9 @@ const ResidentDashboard:FC = () => {
     message: ''
   });
   const [isSubmittingTicket, setIsSubmittingTicket] = useState(false);
+  const [replyingToTicketId, setReplyingToTicketId] = useState<string | null>(null);
+  const [residentReply, setResidentReply] = useState('');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   // Auto-login if session exists
   useEffect(() => {
@@ -250,6 +253,55 @@ const ResidentDashboard:FC = () => {
       showToast(`Error sending ticket: ${errorMsg}`, "error");
     } finally {
       setIsSubmittingTicket(false);
+    }
+  };
+
+  const handleToggleTicketStatus = async (ticketId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
+    try {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ status: newStatus })
+        .eq('id', ticketId);
+      
+      if (error) throw error;
+      
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
+      showToast(newStatus === 'resolved' ? "Ticket closed" : "Ticket reopened");
+    } catch (err: any) {
+      showToast("Error updating ticket", "error");
+    }
+  };
+
+  const handleResidentReply = async (ticketId: string) => {
+    if (!residentReply.trim()) return;
+    setIsSubmittingReply(true);
+    try {
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+
+      const timestamp = new Date().toLocaleString();
+      const separator = "\n\n--- Follow-up " + timestamp + " ---\n";
+      const updatedMessage = ticket.message + separator + residentReply.trim();
+
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ 
+          message: updatedMessage,
+          status: 'open' 
+        })
+        .eq('id', ticketId);
+
+      if (error) throw error;
+
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, message: updatedMessage, status: 'open' } : t));
+      setResidentReply('');
+      setReplyingToTicketId(null);
+      showToast("Reply sent successfully");
+    } catch (err: any) {
+      showToast("Error sending reply", "error");
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -687,9 +739,53 @@ const ResidentDashboard:FC = () => {
                             </div>
                           </div>
 
-                          <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                            <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
+                          <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-4">
+                            <p className="text-sm text-white/80 leading-relaxed italic whitespace-pre-wrap">"{ticket.message}"</p>
+                            
+                            <div className="flex gap-2 pt-2 border-t border-white/5">
+                              <button 
+                                onClick={() => setReplyingToTicketId(replyingToTicketId === ticket.id ? null : ticket.id)}
+                                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/60 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all"
+                              >
+                                {replyingToTicketId === ticket.id ? t('admin.common.cancel', 'Cancel') : t('admin.common.reply', 'Reply')}
+                              </button>
+                              <button 
+                                onClick={() => handleToggleTicketStatus(ticket.id, ticket.status)}
+                                className="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/60 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all"
+                              >
+                                {ticket.status === 'resolved' ? t('resident.reopen', 'Reopen') : t('resident.close', 'Close Ticket')}
+                              </button>
+                            </div>
                           </div>
+
+                          <AnimatePresence>
+                            {replyingToTicketId === ticket.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="space-y-3 pt-2">
+                                  <textarea 
+                                    value={residentReply}
+                                    onChange={(e) => setResidentReply(e.target.value)}
+                                    placeholder={t('resident.message_placeholder')}
+                                    className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
+                                    rows={3}
+                                  />
+                                  <button 
+                                    onClick={() => handleResidentReply(ticket.id)}
+                                    disabled={isSubmittingReply || !residentReply.trim()}
+                                    className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                  >
+                                    {isSubmittingReply ? <Loader2 className="animate-spin" size={14} /> : <MessageSquare size={14} />}
+                                    {t('resident.submit')}
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
 
                           {ticket.admin_reply && (
                             <div className="bg-blue-900/40 p-4 mt-2 rounded-xl border border-blue-500/30 space-y-3">

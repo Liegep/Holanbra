@@ -799,27 +799,38 @@ export default function AdminArea() {
     }
   };
 
-  const handleResolveTicket = async (id: string) => {
+  const handleResolveTicket = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
-      const { error } = await supabase.from('support_tickets').update({ status: 'resolved' }).eq('id', id);
+      const { error } = await supabase.from('support_tickets').update({ status: newStatus }).eq('id', id);
       if (error) throw error;
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'resolved' } : t));
-      showToast("Ticket marked as resolved");
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+      showToast(newStatus === 'resolved' ? "Ticket marked as resolved" : "Ticket reopened");
     } catch (err) {
-      showToast("Error resolving ticket", "error");
+      showToast("Error updating ticket status", "error");
     }
   };
 
-  const handleSendResponse = async (id: string) => {
+  const handleSendResponse = async (id: string, resolve: boolean = true) => {
     if (!adminResponse.trim()) return;
     setIsSubmittingResponse(true);
     try {
-      const { error } = await supabase.from('support_tickets').update({ admin_reply: adminResponse, status: 'resolved' }).eq('id', id);
+      const { error } = await supabase.from('support_tickets').update({ 
+        admin_reply: adminResponse, 
+        status: resolve ? 'resolved' : 'open' 
+      }).eq('id', id);
+      
       if (error) throw error;
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, admin_reply: adminResponse, status: 'resolved' } : t));
+      
+      setTickets(prev => prev.map(t => t.id === id ? { 
+        ...t, 
+        admin_reply: adminResponse, 
+        status: resolve ? 'resolved' : 'open' 
+      } : t));
+      
       setReplyingTicketId(null);
       setAdminResponse('');
-      showToast("Response sent successfully");
+      showToast(resolve ? "Response sent and resolved" : "Response sent");
     } catch (err: any) {
       showToast("Error sending response", "error");
     } finally {

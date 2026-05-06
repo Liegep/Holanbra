@@ -22,8 +22,8 @@ interface AdminSupportTicketsProps {
   adminResponse: string;
   setAdminResponse: (val: string) => void;
   isSubmittingResponse: boolean;
-  handleResolveTicket: (id: string) => void;
-  handleSendResponse: (id: string) => void;
+  handleResolveTicket: (id: string, currentStatus: string) => void;
+  handleSendResponse: (id: string, resolve?: boolean) => void;
   handleDeleteTicket: (e: React.MouseEvent, id: string) => void;
   stats: any;
 }
@@ -121,13 +121,28 @@ export function AdminSupportTickets({
                     </div>
                   </div>
 
-                  {ticket.status === 'open' && (
+                  {ticket.status === 'resolved' ? (
                     <button 
-                      onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
-                      className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
+                      onClick={() => handleResolveTicket(ticket.id, 'resolved')}
+                      className="w-full py-3 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-lg border border-blue-500/20"
                     >
-                      {replyingTicketId === ticket.id ? "Cancel" : "Reply & Resolve"}
+                      <RefreshCw size={12} className="inline mr-2" /> Reopen Ticket
                     </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <button 
+                        onClick={() => setReplyingTicketId(replyingTicketId === ticket.id ? null : ticket.id)}
+                        className="w-full py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all shadow-lg"
+                      >
+                        {replyingTicketId === ticket.id ? "Cancel" : "Reply / Resolve"}
+                      </button>
+                      <button 
+                        onClick={() => handleResolveTicket(ticket.id, 'open')}
+                        className="w-full py-2 bg-white/5 text-white/40 text-[8px] font-black uppercase tracking-widest rounded-lg hover:bg-white/10 hover:text-white transition-all"
+                      >
+                        Resolve without reply
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -165,15 +180,17 @@ export function AdminSupportTickets({
                             className="w-full bg-black/40 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-amber-500 outline-none transition-all resize-none"
                             rows={4}
                           />
-                          <div className="flex justify-end gap-3">
+                          <div className="flex justify-end gap-3 font-display">
                             <button 
-                              onClick={() => handleResolveTicket(ticket.id)}
-                              className="px-6 py-3 bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all"
+                              onClick={() => handleSendResponse(ticket.id, false)}
+                              disabled={isSubmittingResponse || !adminResponse.trim()}
+                              className="px-6 py-3 bg-white/5 text-white/80 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-white/10 transition-all border border-white/5 flex items-center gap-2"
                             >
-                              {t('admin.tickets.resolve_only')}
+                              {isSubmittingResponse ? <Loader2 className="animate-spin" size={14} /> : <MessageSquare size={14} />}
+                              Reply Only
                             </button>
                             <button 
-                              onClick={() => handleSendResponse(ticket.id)}
+                              onClick={() => handleSendResponse(ticket.id, true)}
                               disabled={isSubmittingResponse || !adminResponse.trim()}
                               className="px-8 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-lg disabled:opacity-50"
                             >
