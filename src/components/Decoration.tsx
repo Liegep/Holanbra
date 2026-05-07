@@ -173,7 +173,7 @@ export default function Decoration() {
                 </div>
               </div>
               <Link 
-                to={`/${lang}/portfolio`}
+                to="/portfolio"
                 className="flex items-center gap-2 px-6 py-4 bg-white text-black rounded-full hover:bg-amber-400 transition-colors text-[10px] font-bold uppercase tracking-widest"
               >
                 {t('decoration.view_portfolio')}

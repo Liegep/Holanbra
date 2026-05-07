@@ -16,10 +16,13 @@ interface PricingPackage {
 }
 
 export default function Pricing() {
-  const { lang } = useParams();
-  const { t } = useTranslation();
+  const { lang: paramLang } = useParams();
+  const { t, i18n } = useTranslation();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Use i18n language as the primary source for translation lookup
+  const currentLang = i18n.language || paramLang || 'en';
 
   const DEFAULT_PACKAGES: PricingPackage[] = [
     {
@@ -65,8 +68,8 @@ export default function Pricing() {
           // Localize data
           const localizedData = data.map(item => ({
             ...item,
-            name: (lang && lang !== 'en' && item[`name_${lang}`]) ? item[`name_${lang}`] : item.name,
-            features: (lang && lang !== 'en' && item[`features_${lang}`]) ? item[`features_${lang}`] : item.features,
+            name: (currentLang && currentLang !== 'en' && item[`name_${currentLang}`]) ? item[`name_${currentLang}`] : item.name,
+            features: (currentLang && currentLang !== 'en' && item[`features_${currentLang}`]) ? item[`features_${currentLang}`] : item.features,
           }));
           setPackages(localizedData);
         }
@@ -79,7 +82,7 @@ export default function Pricing() {
     };
 
     fetchPricing();
-  }, [lang]);
+  }, [currentLang]);
 
   const handleOrder = (packageName: string) => {
     // @ts-ignore

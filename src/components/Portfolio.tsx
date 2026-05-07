@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import Pricing from './Pricing';
+import Gallery from './Gallery';
 
 // Definition of portfolio item
 interface PortfolioItem {
@@ -15,10 +16,13 @@ interface PortfolioItem {
 }
 
 export default function Portfolio() {
-  const { lang } = useParams();
-  const { t } = useTranslation();
+  const { lang: paramLang } = useParams();
+  const { t, i18n } = useTranslation();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Use i18n language as the primary source for translation lookup
+  const currentLang = i18n.language || paramLang || 'en';
 
   useEffect(() => {
     const fetchPortfolio = async () => {
@@ -34,8 +38,8 @@ export default function Portfolio() {
         } else {
           // Normalize the data to use standard title/description keys
           const normalizedData = (data || []).map((item: any) => {
-            const titleField = lang && lang !== 'en' ? `title_${lang}` : 'title';
-            const descField = lang && lang !== 'en' ? `description_${lang}` : 'description';
+            const titleField = currentLang && currentLang !== 'en' ? `title_${currentLang}` : 'title';
+            const descField = currentLang && currentLang !== 'en' ? `description_${currentLang}` : 'description';
             
             return {
               id: item.id,
@@ -54,9 +58,9 @@ export default function Portfolio() {
     };
 
     fetchPortfolio();
-  }, [lang]);
+  }, [currentLang]);
 
-  const baseUrl = lang ? `/${lang}` : '';
+  const baseUrl = ''; // Removed dynamic lang prefix since we use standard routes
 
   return (
     <div className="min-h-screen pt-32 pb-24 px-6 md:px-12 bg-background-dark">
@@ -121,6 +125,10 @@ export default function Portfolio() {
             ))}
           </div>
         )}
+      </div>
+      
+      <div className="mt-24">
+        <Gallery />
       </div>
       
       <div className="mt-16">
