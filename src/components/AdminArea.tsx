@@ -802,7 +802,10 @@ export default function AdminArea() {
   const handleResolveTicket = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
-      const { error } = await supabase.from('support_tickets').update({ status: newStatus }).eq('id', id);
+      const { error } = await supabase.from('support_tickets').update({ 
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
       if (error) throw error;
       setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
       showToast(newStatus === 'resolved' ? "Ticket marked as resolved" : "Ticket reopened");
@@ -817,7 +820,8 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('support_tickets').update({ 
         admin_reply: adminResponse, 
-        status: resolve ? 'resolved' : 'open' 
+        status: resolve ? 'resolved' : 'open',
+        updated_at: new Date().toISOString()
       }).eq('id', id);
       
       if (error) throw error;

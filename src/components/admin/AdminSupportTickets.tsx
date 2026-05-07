@@ -88,10 +88,20 @@ export function AdminSupportTickets({
                       <div className="flex items-center gap-2">
                         <span className={cn(
                           "text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded",
-                          ticket.status === 'open' ? "bg-amber-500 text-black" : "bg-white/10 text-white/40"
+                          ticket.status === 'open' ? "bg-amber-500 text-black shadow-[0_0_10px_rgba(245,158,11,0.3)]" : "bg-white/10 text-white/40"
                         )}>
                           {ticket.status === 'open' ? t('admin.tickets.status_open') : t('admin.tickets.status_resolved')}
                         </span>
+                        {ticket.status === 'open' && !ticket.admin_reply && (
+                          <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 bg-red-500 text-white animate-pulse rounded shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                            Action Required
+                          </span>
+                        )}
+                        {ticket.status === 'open' && ticket.admin_reply && (
+                          <span className="text-[8px] font-black uppercase tracking-widest px-2 py-1 bg-amber-500/20 text-amber-500 border border-amber-500/30 rounded">
+                            Follow-up Needed
+                          </span>
+                        )}
                         <button 
                           onClick={(e) => handleDeleteTicket(e, ticket.id)}
                           className="p-1 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
@@ -146,23 +156,57 @@ export function AdminSupportTickets({
                   )}
                 </div>
 
-                <div className="flex-1 p-8 space-y-6">
-                  <div className="space-y-2 text-left">
+                <div className="flex-1 p-8 space-y-8">
+                  <div className="space-y-4 text-left">
                     <h4 className="text-xl font-bold text-white tracking-tight">{ticket.subject}</h4>
-                    <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
-                      <p className="text-sm text-white/80 leading-relaxed italic">"{ticket.message}"</p>
+                    
+                    <div className="space-y-4">
+                      {/* Message History */}
+                      {(() => {
+                        const parseMessages = (text: string) => {
+                          if (!text) return [];
+                          const parts = text.split(/--- Follow-up (.*?) ---/);
+                          const result = [];
+                          result.push({ text: parts[0]?.trim() || '', date: null, isFollowUp: false });
+                          for (let i = 1; i < parts.length; i += 2) {
+                            if (parts[i] && parts[i+1]) {
+                              result.push({ text: parts[i+1]?.trim() || '', date: parts[i]?.trim(), isFollowUp: true });
+                            }
+                          }
+                          return result.filter(m => m.text);
+                        };
+                        
+                        const messages = parseMessages(ticket.message || '');
+                        return messages.map((m, idx) => (
+                          <div key={idx} className={cn(
+                            "p-6 rounded-2xl border transition-all",
+                            m.isFollowUp ? "bg-white/[0.03] border-white/5 ml-4" : "bg-white/5 border-white/10 shadow-lg shadow-black/20"
+                          )}>
+                            <div className="flex justify-between items-start mb-2">
+                              <span className="text-[8px] font-black uppercase tracking-widest text-amber-500/60">
+                                {m.isFollowUp ? `FOLLOW-UP ${m.date || ''}` : 'ORIGINAL REQUEST'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                              {m.text.startsWith('"') && m.text.endsWith('"') ? m.text.slice(1, -1) : m.text}
+                            </p>
+                          </div>
+                        ));
+                      })()}
+
+                      {/* Admin Responses */}
+                      {ticket.admin_reply && (
+                        <div className="p-6 rounded-2xl border bg-amber-500/5 border-amber-500/20 shadow-lg shadow-amber-500/5 relative overflow-hidden group">
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl group-hover:bg-amber-500/10 transition-colors" />
+                          <div className="flex items-center gap-2 mb-3 relative z-10">
+                            <ShieldCheck className="text-amber-500" size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('admin.tickets.official_response')}</span>
+                          </div>
+                          <p className="text-sm text-white/90 leading-relaxed relative z-10 whitespace-pre-wrap">{ticket.admin_reply}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {ticket.admin_reply && (
-                    <div className="pl-6 border-l-2 border-amber-500/30 space-y-2 text-left">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="text-amber-500" size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">{t('admin.tickets.official_response')}</span>
-                      </div>
-                      <p className="text-sm text-white/60 leading-relaxed">{ticket.admin_reply}</p>
-                    </div>
-                  )}
 
                   <AnimatePresence>
                     {replyingTicketId === ticket.id && (

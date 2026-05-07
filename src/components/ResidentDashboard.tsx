@@ -103,12 +103,19 @@ const ResidentDashboard:FC = () => {
           const hasUnread = fetchedTickets.some(t => {
             if (!t.admin_reply) return false;
             // Use updated_at if available, otherwise created_at
-            const updateTime = new Date(t.updated_at || t.created_at);
-            return updateTime > lastViewed;
+            const updateTime = new Date(t.updated_at || t.created_at).getTime();
+            const lastViewedTime = lastViewed.getTime();
+            
+            // Log for debugging
+            console.log(`Ticket ${t.id} - Update: ${updateTime}, LastViewed: ${lastViewedTime}`);
+            
+            return updateTime > lastViewedTime;
           });
 
           if (hasUnread && activeTab !== 'support') {
             setHasNewReply(true);
+          } else {
+            setHasNewReply(false);
           }
         }
 
@@ -261,7 +268,10 @@ const ResidentDashboard:FC = () => {
     try {
       const { error } = await supabase
         .from('support_tickets')
-        .update({ status: newStatus })
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', ticketId);
       
       if (error) throw error;
@@ -288,7 +298,8 @@ const ResidentDashboard:FC = () => {
         .from('support_tickets')
         .update({ 
           message: updatedMessage,
-          status: 'open' 
+          status: 'open',
+          updated_at: new Date().toISOString()
         })
         .eq('id', ticketId);
 
@@ -487,8 +498,8 @@ const ResidentDashboard:FC = () => {
                 }}
                 className="absolute -top-1 -right-1"
               >
-                <div className="bg-amber-500 p-1.5 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.6)] border border-black/20">
-                  <Mail size={10} className="text-black" />
+                <div className="bg-blue-500 p-1.5 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] border border-black/20">
+                  <Mail size={10} className="text-white" />
                 </div>
               </motion.div>
             ) : (
@@ -746,8 +757,39 @@ const ResidentDashboard:FC = () => {
                             </div>
                           </div>
 
-                          <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-4">
-                            <p className="text-sm text-white/80 leading-relaxed italic whitespace-pre-wrap">"{ticket.message}"</p>
+                          <div className="space-y-4">
+                            {/* Message History */}
+                            <div className="space-y-3">
+                              {(() => {
+                                const parseMessages = (text: string) => {
+                                  if (!text) return [];
+                                  const parts = text.split(/--- Follow-up (.*?) ---/);
+                                  const result = [];
+                                  result.push({ text: parts[0]?.trim() || '', date: null, isFollowUp: false });
+                                  for (let i = 1; i < parts.length; i += 2) {
+                                    if (parts[i] && parts[i+1]) {
+                                      result.push({ text: parts[i+1]?.trim() || '', date: parts[i]?.trim(), isFollowUp: true });
+                                    }
+                                  }
+                                  return result.filter(m => m.text);
+                                };
+                                
+                                const messages = parseMessages(ticket.message || '');
+                                return messages.map((m, idx) => (
+                                  <div key={idx} className={cn(
+                                    "p-5 rounded-2xl border transition-all",
+                                    m.isFollowUp ? "bg-white/[0.02] border-white/5 ml-4" : "bg-white/5 border-white/10 shadow-lg shadow-black/20"
+                                  )}>
+                                    <span className="text-[7px] font-black uppercase tracking-widest text-amber-500/60 block mb-2">
+                                      {m.isFollowUp ? `FOLLOW-UP ${m.date || ''}` : 'ORIGINAL REQUEST'}
+                                    </span>
+                                    <p className="text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                                      {m.text.startsWith('"') && m.text.endsWith('"') ? m.text.slice(1, -1) : m.text}
+                                    </p>
+                                  </div>
+                                ));
+                              })()}
+                            </div>
                             
                             <div className="flex gap-2 pt-2 border-t border-white/5">
                               <button 
@@ -795,12 +837,29 @@ const ResidentDashboard:FC = () => {
                           </AnimatePresence>
 
                           {ticket.admin_reply && (
-                            <div className="bg-blue-900/40 p-4 mt-2 rounded-xl border border-blue-500/30 space-y-3">
-                              <div className="flex items-center gap-2">
+                            <div className="bg-blue-500/5 p-6 mt-2 rounded-[24px] border border-blue-500/20 space-y-3 relative overflow-hidden group">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl group-hover:bg-blue-500/10 transition-colors" />
+                              <div className="flex items-center gap-2 relative z-10">
                                 <ShieldCheck className="text-blue-400" size={14} />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">{t('resident.staff')}</span>
                               </div>
-                              <p className="text-sm text-white/80 leading-relaxed">{ticket.admin_reply}</p>
+                              <p className="text-sm text-white/90 leading-relaxed relative z-10 whitespace-pre-wrap">{ticket.admin_reply}</p>
+                              
+                              {(() => {
+                                const residentUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+                                const lastViewedStr = localStorage.getItem(`sl_last_support_view_${residentUuid}`);
+                                const lastViewed = lastViewedStr ? new Date(lastViewedStr) : new Date(0);
+                                const isNew = new Date(ticket.updated_at || ticket.created_at) > lastViewed;
+                                
+                                if (isNew) {
+                                  return (
+                                    <div className="absolute top-4 right-4 flex items-center gap-2 bg-blue-500 text-white text-[7px] font-black uppercase px-2 py-1 rounded-full animate-pulse shadow-lg z-10">
+                                      <Mail size={8} /> NEW RESPONSE
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })()}
                             </div>
                           )}
                         </div>
