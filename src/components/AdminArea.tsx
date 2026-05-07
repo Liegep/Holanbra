@@ -388,21 +388,15 @@ export default function AdminArea() {
     if (!confirm("Are you sure you want to delete this message?")) return;
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('contact_messages')
         .delete()
-        .eq('id', id)
-        .select();
+        .eq('id', id);
       
       if (error) {
         console.error('Supabase Delete Error (contact_messages):', error);
         alert('Erro no Supabase: ' + error.message);
         return;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("Delete successful but no rows affected in 'contact_messages'.");
-        alert('Atenção: A mensagem sumiu da tela, mas não foi encontrada no banco.');
       }
       
       setInboxMessages(prev => prev.filter(m => m.id !== id));
@@ -711,17 +705,16 @@ export default function AdminArea() {
       
       console.log("Saving Resident to 'renters':", dataToSave);
       
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('renters')
-        .upsert(dataToSave, { onConflict: 'avatar_uuid' })
-        .select('avatar_name,avatar_uuid,password');
+        .upsert(dataToSave, { onConflict: 'avatar_uuid' });
 
       if (error) {
         alert("Supabase Error (renters): " + error.message);
         throw error;
       }
       
-      console.log("Resident saved successfully:", data);
+      console.log("Resident saved successfully");
       
       const renterUuid = renterFormData.avatarUuid.trim();
       
@@ -772,23 +765,15 @@ export default function AdminArea() {
         .eq('tenant_id', cleanUuid);
 
       // Step 2: Delete from renters table using avatar_uuid
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('renters')
         .delete()
-        .eq('avatar_uuid', cleanUuid)
-        .select('avatar_uuid');
+        .eq('avatar_uuid', cleanUuid);
 
       if (error) {
         alert('Supabase Error (Delete Renter): ' + error.message);
         console.error('Error details:', error);
         return;
-      }
-
-      if (!data || data.length === 0) {
-        alert('Atenção: O comando foi enviado para a tabela RENTERS mas o banco não encontrou o UUID: ' + cleanUuid);
-        console.warn('ID mismatch between Frontend and Database. Refresh (F5) is recommended.');
-      } else {
-        console.log("Deleted successfully from 'renters':", data);
       }
       
       // Clean screen
@@ -868,21 +853,15 @@ export default function AdminArea() {
     if (!confirm("Are you sure you want to permanently delete this ticket?")) return;
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('support_tickets')
         .delete()
-        .eq('id', id)
-        .select();
+        .eq('id', id);
       
       if (error) {
         console.error('Supabase Delete Error (support_tickets):', error);
         alert('Erro no Supabase: ' + error.message);
         return;
-      }
-
-      if (!data || data.length === 0) {
-        console.warn("Delete command successful, but ZERO rows affected in 'support_tickets'.");
-        alert('Atenção: O ticket sumiu da tela, mas não foi encontrado no banco.');
       }
       
       setTickets(prev => prev.filter(t => t.id !== id));
