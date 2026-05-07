@@ -54,7 +54,6 @@ export default function Navbar() {
     { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, label: t('nav.properties') },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, label: t('nav.gallery') },
     { name: 'Decoration', path: '/#services', icon: Paintbrush, label: t('nav.decoration') },
-    { name: 'Pricing', path: '/#pricing', icon: DollarSign, label: t('nav.pricing') },
     { name: 'Team', path: '/#team', icon: Users, label: t('nav.team') },
     { name: 'Covenant', path: '/covenant', icon: FileText, label: t('nav.covenant') },
   ];
@@ -92,12 +91,19 @@ export default function Navbar() {
                 key={link.name} 
                 to={link.path}
                 className={cn(
-                  "text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 whitespace-nowrap",
+                  "relative group text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 whitespace-nowrap py-1",
                   isActive(link.path) ? "text-white" : "text-white/60",
                   link.highlight && "text-amber-500"
                 )}
               >
                 {link.label}
+                {isActive(link.path) && (
+                  <motion.div 
+                    layoutId="nav-underline"
+                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-amber-500"
+                    initial={false}
+                  />
+                )}
               </Link>
             ))}
           </div>
