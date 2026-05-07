@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Maximize2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,15 @@ export default function Gallery() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
   useEffect(() => {
     const fetchGallery = async () => {
       const { data, error } = await supabase
@@ -48,7 +57,10 @@ export default function Gallery() {
     };
   }, []);
 
-  const displayImages = images.length > 0 ? images : DEFAULT_IMAGES;
+  const displayImages = useMemo(() => {
+    const source = images.length > 0 ? images : DEFAULT_IMAGES;
+    return shuffleArray(source);
+  }, [images]);
 
   return (
     <section id="gallery" className="py-32 bg-black scroll-mt-32">
