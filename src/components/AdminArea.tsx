@@ -803,8 +803,7 @@ export default function AdminArea() {
     const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
       const { error } = await supabase.from('support_tickets').update({ 
-        status: newStatus,
-        updated_at: new Date().toISOString()
+        status: newStatus
       }).eq('id', id);
       if (error) throw error;
       setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
@@ -820,8 +819,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('support_tickets').update({ 
         admin_reply: adminResponse, 
-        status: resolve ? 'resolved' : 'open',
-        updated_at: new Date().toISOString()
+        status: resolve ? 'resolved' : 'open'
       }).eq('id', id);
       
       if (error) throw error;

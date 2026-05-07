@@ -102,14 +102,9 @@ const ResidentDashboard:FC = () => {
           
           const hasUnread = fetchedTickets.some(t => {
             if (!t.admin_reply) return false;
-            // Use updated_at if available, otherwise created_at
-            const updateTime = new Date(t.updated_at || t.created_at).getTime();
-            const lastViewedTime = lastViewed.getTime();
-            
-            // Log for debugging
-            console.log(`Ticket ${t.id} - Update: ${updateTime}, LastViewed: ${lastViewedTime}`);
-            
-            return updateTime > lastViewedTime;
+            // Indicators: if there is a reply and it was recently updated or we haven't seen it
+            // For now, simpler: if admin_reply exists and we are not on support tab
+            return true;
           });
 
           if (hasUnread && activeTab !== 'support') {
@@ -269,8 +264,7 @@ const ResidentDashboard:FC = () => {
       const { error } = await supabase
         .from('support_tickets')
         .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
+          status: newStatus
         })
         .eq('id', ticketId);
       
@@ -298,8 +292,7 @@ const ResidentDashboard:FC = () => {
         .from('support_tickets')
         .update({ 
           message: updatedMessage,
-          status: 'open',
-          updated_at: new Date().toISOString()
+          status: 'open'
         })
         .eq('id', ticketId);
 
@@ -849,12 +842,12 @@ const ResidentDashboard:FC = () => {
                                 const residentUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
                                 const lastViewedStr = localStorage.getItem(`sl_last_support_view_${residentUuid}`);
                                 const lastViewed = lastViewedStr ? new Date(lastViewedStr) : new Date(0);
-                                const isNew = new Date(ticket.updated_at || ticket.created_at) > lastViewed;
+                                const isNew = ticket.admin_reply && new Date(ticket.created_at) > lastViewed; // Fallback to created_at logic or just reply presence
                                 
-                                if (isNew) {
+                                if (ticket.admin_reply) {
                                   return (
-                                    <div className="absolute top-4 right-4 flex items-center gap-2 bg-blue-500 text-white text-[7px] font-black uppercase px-2 py-1 rounded-full animate-pulse shadow-lg z-10">
-                                      <Mail size={8} /> NEW RESPONSE
+                                    <div className="absolute top-4 right-4 flex items-center gap-2 bg-blue-500 text-white text-[7px] font-black uppercase px-2 py-1 rounded-full shadow-lg z-10">
+                                      <ShieldCheck size={8} /> STAFF RESPONSE
                                     </div>
                                   );
                                 }
