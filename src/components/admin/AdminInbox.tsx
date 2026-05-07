@@ -81,13 +81,20 @@ export function AdminInbox({
                     <button 
                       onClick={() => handleToggleRead(msg.id, msg.is_read)}
                       title={msg.is_read ? t('admin.inbox.mark_unread') : t('admin.inbox.mark_read')}
-                      className="p-2 text-white/10 hover:text-amber-500 hover:bg-amber-500/10 rounded-xl transition-all"
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest",
+                        msg.is_read 
+                          ? "bg-white/5 text-white/40 hover:bg-white/10" 
+                          : "bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-black shadow-[0_0_20px_rgba(245,158,11,0.1)]"
+                      )}
                     >
-                      {msg.is_read ? <Mail size={16} /> : <CheckCircle size={16} />}
+                      {msg.is_read ? <Mail size={14} /> : <CheckCircle size={14} />}
+                      {!msg.is_read && <span>OK</span>}
                     </button>
                     <button 
                       onClick={(e) => handleDeleteMessage(e, msg.id)}
                       className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                      title={t('admin.common.delete')}
                     >
                       <Trash2 size={16} />
                     </button>

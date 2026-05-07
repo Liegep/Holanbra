@@ -234,7 +234,6 @@ export default function AdminArea() {
 
   const fetchInboxMessages = async () => {
     try {
-      setInboxMessages([]); // Clear state before update
       const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       
@@ -368,12 +367,29 @@ export default function AdminArea() {
 
   const handleToggleRead = async (id: string, currentStatus: boolean) => {
     try {
+      console.log(`Toggling read status for message ${id} from ${currentStatus} to ${!currentStatus}`);
+      
+      // Optimistic update
+      setInboxMessages(prev => prev.map(msg => 
+        msg.id === id ? { ...msg, is_read: !currentStatus } : msg
+      ));
+
       const { error } = await supabase.from('contact_messages').update({ is_read: !currentStatus }).eq('id', id);
-      if (error) throw error;
-      fetchInboxMessages();
+      
+      if (error) {
+        // Rollback on error
+        setInboxMessages(prev => prev.map(msg => 
+          msg.id === id ? { ...msg, is_read: currentStatus } : msg
+        ));
+        throw error;
+      }
+      
+      showToast("Status updated");
     } catch (error: any) {
+      console.error("Error updating message status:", error);
       alert("Error updating status: " + error.message);
       showToast("Status update error", "error");
+      fetchInboxMessages(); // Resync on error
     }
   };
 

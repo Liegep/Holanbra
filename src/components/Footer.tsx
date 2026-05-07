@@ -163,7 +163,7 @@ export default function Footer() {
                     value={messageForm.visitor_name}
                     onChange={(e) => setMessageForm({ ...messageForm, visitor_name: e.target.value })}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-amber-500/50 transition-colors"
-                    placeholder="e.g. JohnResident"
+                    placeholder="e.g. Avatar Name"
                   />
                 </div>
                 
