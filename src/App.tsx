@@ -35,6 +35,7 @@ import Portfolio from './components/Portfolio';
 import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   const location = useLocation();
@@ -74,6 +75,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+      <ScrollToTop />
       <Navbar />
       <main>
         <Routes>
