@@ -367,14 +367,21 @@ export default function AdminArea() {
 
   const handleToggleRead = async (id: string, currentStatus: boolean) => {
     try {
-      console.log(`Toggling read status for message ${id} from ${currentStatus} to ${!currentStatus}`);
+      const newStatus = !currentStatus;
       
       // Optimistic update
       setInboxMessages(prev => prev.map(msg => 
-        msg.id === id ? { ...msg, is_read: !currentStatus } : msg
+        msg.id === id ? { ...msg, is_read: newStatus } : msg
       ));
 
-      const { error } = await supabase.from('contact_messages').update({ is_read: !currentStatus }).eq('id', id);
+      // Handle numeric IDs if necessary
+      const numId = parseInt(id);
+      const queryId = (!isNaN(numId) && numId.toString() === id) ? numId : id;
+
+      const { error } = await supabase
+        .from('contact_messages')
+        .update({ is_read: newStatus })
+        .eq('id', queryId);
       
       if (error) {
         // Rollback on error
@@ -384,30 +391,29 @@ export default function AdminArea() {
         throw error;
       }
       
-      showToast("Status updated");
+      showToast(newStatus ? "Message marked as read" : "Message marked as unread");
     } catch (error: any) {
       console.error("Error updating message status:", error);
-      alert("Error updating status: " + error.message);
+      alert("Erro no Supabase: " + error.message);
       showToast("Status update error", "error");
-      fetchInboxMessages(); // Resync on error
+      fetchInboxMessages();
     }
   };
 
   const handleDeleteMessage = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    if (!id) {
-      console.error("Delete Message: No ID provided");
-      return;
-    }
-    
-    console.log("Starting delete for Message ID (Table: contact_messages):", id);
+    if (!id) return;
     if (!confirm("Are you sure you want to delete this message?")) return;
     
     try {
+      // Handle numeric IDs if necessary
+      const numId = parseInt(id);
+      const queryId = (!isNaN(numId) && numId.toString() === id) ? numId : id;
+
       const { error } = await supabase
         .from('contact_messages')
         .delete()
-        .eq('id', id);
+        .eq('id', queryId);
       
       if (error) {
         console.error('Supabase Delete Error (contact_messages):', error);

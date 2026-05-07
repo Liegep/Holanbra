@@ -67,7 +67,10 @@ export function AdminInbox({
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-3">
-                      <h4 className="text-white font-bold tracking-tight text-lg">{msg.visitor_name}</h4>
+                      <h4 className="text-white font-bold tracking-tight text-lg">
+                        <span className="text-amber-500/40 text-[10px] uppercase font-black mr-2 tracking-tighter">Avatar:</span>
+                        {msg.visitor_name}
+                      </h4>
                       {!msg.is_read && (
                         <span className="px-2 py-0.5 bg-amber-500 text-[8px] text-black font-black uppercase rounded-full">{t('admin.inbox.new_badge')}</span>
                       )}
