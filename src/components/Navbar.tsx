@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, ImageIcon, LayoutDashboard, DollarSign, Briefcase } from 'lucide-react';
+import { Menu, X, Home, User as Admin, Layers, MessageSquare, Paintbrush, FileText, ShieldCheck, Users, ImageIcon, LayoutDashboard, DollarSign, Briefcase, Globe } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
@@ -11,9 +11,20 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const languages = [
+    { code: 'en', label: 'EN' },
+    { code: 'pt', label: 'PT' },
+    { code: 'es', label: 'ES' },
+    { code: 'nl', label: 'NL' }
+  ];
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+  };
   
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -109,6 +120,21 @@ export default function Navbar() {
           </div>
 
           <div className="flex items-center gap-4">
+            <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10 mr-2">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => changeLanguage(lang.code)}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-black transition-all",
+                    i18n.language === lang.code ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
+                  )}
+                >
+                  {lang.code.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
             {isAdmin && (
               <Link 
                 to="/admin" 
@@ -131,6 +157,20 @@ export default function Navbar() {
 
         {/* Mobile Toggle */}
         <div className="flex items-center gap-4 md:hidden">
+          <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10 mr-2">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={cn(
+                  "px-2 py-1 rounded-full text-[8px] font-black transition-all",
+                  i18n.language === lang.code ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
+                )}
+              >
+                {lang.code.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <button 
             className="p-2 text-gray-400"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

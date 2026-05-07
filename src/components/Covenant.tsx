@@ -4,30 +4,33 @@ import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FileText, ArrowLeft, Loader2, Printer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { cn } from '../lib/utils';
 
 const Covenant: React.FC = () => {
-  const { lang } = useParams();
-  const { t } = useTranslation();
+  const { lang: urlLang } = useParams();
+  const { t, i18n } = useTranslation();
+  const [data, setData] = useState<any>(null);
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
+
+  const languages = [
+    { code: 'en', label: 'English', flag: '🇺🇸' },
+    { code: 'pt', label: 'Português', flag: '🇧🇷' },
+    { code: 'es', label: 'Español', flag: '🇪🇸' },
+    { code: 'nl', label: 'Nederlands', flag: '🇳🇱' }
+  ];
 
   useEffect(() => {
     const fetchCovenant = async () => {
       try {
-        const { data } = await supabase
+        const { data: covenantData } = await supabase
           .from('land_covenants')
           .select('*')
           .limit(1)
           .maybeSingle();
         
-        if (data) {
-          const getLocalized = (baseKey: string) => {
-            if (lang && lang !== 'en') {
-              return data[`${baseKey}_${lang}`] || data[baseKey];
-            }
-            return data[baseKey];
-          };
-          setContent(getLocalized('content') || 'Terms are currently unavailable.');
+        if (covenantData) {
+          setData(covenantData);
         }
       } catch (error) {
         console.error("Error fetching covenant:", error);
@@ -36,7 +39,22 @@ const Covenant: React.FC = () => {
       }
     };
     fetchCovenant();
-  }, [lang]);
+  }, []);
+
+  useEffect(() => {
+    if (data) {
+      const currentLang = i18n.language.split('-')[0]; // Normalize pt-BR to pt
+      const langKey = currentLang === 'pt' ? 'content_pt' : 
+                      currentLang === 'es' ? 'content_es' :
+                      currentLang === 'nl' ? 'content_nl' : 'content_en';
+      
+      setContent(data[langKey] || data['content_en'] || 'Terms are currently unavailable.');
+    }
+  }, [data, i18n.language]);
+
+  const changeLang = (code: string) => {
+    i18n.changeLanguage(code);
+  };
 
   if (loading) {
     return (
@@ -49,9 +67,27 @@ const Covenant: React.FC = () => {
   return (
     <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
       <div className="max-w-4xl mx-auto">
-        <Link to={`/${lang}/`} className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-[0.3em] text-[10px] font-black mb-12">
-          <ArrowLeft size={14} /> {t('common.back_home')}
-        </Link>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+          <Link to={`/`} className="inline-flex items-center gap-2 text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-[0.3em] text-[10px] font-black">
+            <ArrowLeft size={14} /> {t('common.back_home')}
+          </Link>
+
+          <div className="flex bg-white/5 p-1 rounded-full border border-white/10">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => changeLang(lang.code)}
+                className={cn(
+                  "px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
+                  i18n.language.startsWith(lang.code) ? "bg-amber-500 text-black shadow-lg" : "text-white/40 hover:text-white"
+                )}
+              >
+                <span className="mr-2">{lang.flag}</span>
+                {lang.code}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-16">
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-amber-500">
@@ -64,7 +100,8 @@ const Covenant: React.FC = () => {
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}className="glass-card p-8 md:p-16 rounded-[40px] border-white/5 relative overflow-hidden"
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card p-8 md:p-16 rounded-[40px] border-white/5 relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[100px] -mr-32 -mt-32"></div>
           
