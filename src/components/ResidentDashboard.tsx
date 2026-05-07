@@ -476,12 +476,19 @@ const ResidentDashboard:FC = () => {
           >
             {hasNewReply && activeTab !== 'support' ? (
               <motion.div
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ duration: 1, repeat: Infinity }}
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [1, 0.5, 1] 
+                }}
+                transition={{ 
+                  duration: 0.8, 
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
                 className="absolute -top-1 -right-1"
               >
-                <div className="bg-blue-500 p-1.5 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                  <Mail size={10} className="text-white" />
+                <div className="bg-amber-500 p-1.5 rounded-full shadow-[0_0_15px_rgba(245,158,11,0.6)] border border-black/20">
+                  <Mail size={10} className="text-black" />
                 </div>
               </motion.div>
             ) : (

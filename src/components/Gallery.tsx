@@ -51,7 +51,7 @@ export default function Gallery() {
   const displayImages = images.length > 0 ? images : DEFAULT_IMAGES;
 
   return (
-    <section id="gallery" className="py-32 bg-black">
+    <section id="gallery" className="py-32 bg-black scroll-mt-32">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 space-y-4">
           <span className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-500">{t('gallery.atmosphere')}</span>

@@ -157,7 +157,7 @@ export default function Properties() {
   };
 
   return (
-    <section id="properties" className="py-32 px-6 md:px-12 bg-white min-h-screen">
+    <section id="properties" className="py-32 px-6 md:px-12 bg-white min-h-screen scroll-mt-32">
       <div className="max-w-7xl mx-auto space-y-12">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10">
           <div className="space-y-4 text-left">

@@ -99,7 +99,7 @@ export default function Pricing() {
   };
 
   return (
-    <section id="pricing" className="py-24 bg-zinc-950 relative overflow-hidden">
+    <section id="pricing" className="py-24 bg-zinc-950 relative overflow-hidden scroll-mt-32">
       {/* Background accents */}
       <div className="absolute top-0 right-[-10%] w-[40%] aspect-square bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-[-10%] w-[30%] aspect-square bg-amber-500/5 rounded-full blur-[100px] pointer-events-none" />

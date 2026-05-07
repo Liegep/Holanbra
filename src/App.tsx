@@ -41,11 +41,33 @@ export default function App() {
 
   useEffect(() => {
     if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1));
+      // Find the element with the ID from hash
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        // Use a small timeout to ensure the DOM is ready and any layout shifts have occurred
+        const timeoutId = setTimeout(() => {
+          element.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+          
+          // Double check scroll after a bit more time because of image loads
+          setTimeout(() => {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }, 300);
+        }, 100);
+        return () => clearTimeout(timeoutId);
       }
-    } else {
+    } else if (location.pathname === '/' || location.pathname === '') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [location.pathname, location.hash]);

@@ -260,6 +260,7 @@ const resources = {
           "placeholder_reply": "Type your official response here...",
           "resolve_only": "Resolve without reply",
           "send_resolve": "Send Response & Resolve",
+          "reopen": "Reopen Ticket",
           "none_found": "No support tickets found",
           "delete_title": "Delete Ticket"
         },
@@ -601,7 +602,7 @@ const resources = {
       },
       "quote": {
         "philosophy": "Filosofia",
-        "main": "\"Redefinisando os limites",
+        "main": "\"Redefinindo os limites",
         "italic": "do viver de luxo virtual",
         "end": "além das expectativas.\"",
         "subtitle": "Ambientes Exclusivos para Residentes Exigentes"
@@ -786,6 +787,7 @@ const resources = {
           "placeholder_reply": "Digite sua resposta oficial aqui...",
           "resolve_only": "Resolver sem resposta",
           "send_resolve": "Enviar Resposta e Resolver",
+          "reopen": "Reabrir Ticket",
           "none_found": "Nenhum ticket de suporte encontrado",
           "delete_title": "Excluir Ticket"
         },
@@ -1417,12 +1419,14 @@ const resources = {
           "subtitle": "Responda a las consultas de los residentes y problemas técnicos",
           "status_open": "Abierto",
           "status_resolved": "Resuelto",
+          "reopen": "Reabrir Ticket",
           "reply_cancel": "Cancelar",
           "reply_resolve": "Responder y resolver",
           "official_response": "Respuesta oficial",
           "placeholder_reply": "Escriba su respuesta oficial aquí...",
           "resolve_only": "Resolver sin responder",
           "send_resolve": "Enviar respuesta y resolver",
+          "reopen": "Reabrir Ticket",
           "none_found": "No se encontraron tickets de soporte",
           "delete_title": "Eliminar Ticket"
         },
@@ -1835,7 +1839,49 @@ const resources = {
           "settings": "Instellingen"
         },
         "property": {
-          "prims_allowed": "Toegestane Prims"
+          "edit_config": "Woningconfiguratie Bewerken",
+          "add_new": "Nieuw Vastgoedobject Toevoegen",
+          "cancel": "Annuleren",
+          "display_name": "Eigendomsnaam",
+          "type": "Eigendomstype",
+          "price_week": "Prijs (L$ / Week)",
+          "teleport_slurl": "Teleport Link (SLURL)",
+          "description": "Eigendomsbeschrijving",
+          "prims_allowed": "Toegestane Prims",
+          "availability": "Beschikbaarheid Status",
+          "main_image": "Hoofdafbeelding",
+          "gallery_photo_1": "Gallerijfoto 01",
+          "gallery_photo_2": "Gallerijfoto 02",
+          "video_asset": "Video Bron",
+          "processing_media": "Media Verwerken...",
+          "secondary_settings": "Secundaire Instellingen",
+          "tenant_name": "Huurder Naam",
+          "tenant_uuid": "Huurder UUID",
+          "expiry_date": "Vervaldatum",
+          "casperlet_id": "Casperlet Apparaat ID",
+          "calc_time": "Tijdcalculatie",
+          "update": "Configuratie Bijwerken",
+          "publish": "Publiceren",
+          "placeholder_name": "Bijv: Luxe Landhuis",
+          "placeholder_price": "1000",
+          "placeholder_slurl": "http://maps.secondlife.com/secondlife/...",
+          "placeholder_desc": "Beschrijf de woning...",
+          "placeholder_tenant": "Naam Bewoner",
+          "placeholder_uuid": "Second Life UUID",
+          "placeholder_device": "Apparaat UUID",
+          "status": {
+            "available": "Beschikbaar",
+            "rented": "Verhuurd",
+            "maintenance": "Onderhoud"
+          },
+          "types": {
+            "land": "Land",
+            "furnished": "Gemeubileerd",
+            "not_furnished": "Niet Gemeubileerd",
+            "skybox": "Skybox",
+            "shop": "Winkel",
+            "house": "Huis"
+          }
         },
         "fields": {
           "price": "Prijs",
@@ -1858,7 +1904,200 @@ const resources = {
           "add": "Toevoegen aan Map",
           "save": "Wijzigingen Opslaan",
           "cancel": "Annuleren",
-          "resolve": "Beantwoorden & Oplossen"
+          "resolve": "Beantwoorden & Oplossen",
+          "add_to_collection": "Aan collectie toevoegen"
+        },
+        "dashboard": "Ondernemingsdashboard",
+        "operational_overview": "Operationeel Overzicht",
+        "sync": "Synchroniseren",
+        "stats": {
+          "total_portfolio": "Totale Portfolio",
+          "units_across": "Eenheden over alle Sims",
+          "open_tickets": "Openstaande Support Tickets",
+          "total_tickets": "Totaal aantal tickets",
+          "occupancy": "Totale Bezetting",
+          "available": "Beschikbaar",
+          "critical": "Kritieke Vervaldatums",
+          "expiring_72": "Vervalt binnen 72 uur",
+          "priority": "Verlengingen",
+          "expiring_7": "Vervalt binnen 7 dagen"
+        },
+        "filters": {
+          "all": "Alle Woningen",
+          "expiring": "Binnenkort Vervallend"
+        },
+        "portfolio": {
+          "title": "Decoratie Portfolio",
+          "subtitle": "Beheer decoratieprojecten en referentieafbeeldingen",
+          "project_title": "Projecttitel",
+          "project_photo": "Projectfoto",
+          "add_button": "Toevoegen aan Portfolio",
+          "upload_image": "Afbeelding uploaden",
+          "placeholder_url": "Afbeelding URL"
+        },
+        "pricing": {
+          "title": "Prijspakketten",
+          "subtitle": "Beheer de prijslijsten voor decoratie",
+          "create_new": "Nieuw Pakket Aanmaken",
+          "editing": "Pakket Bewerken",
+          "cancel_edit": "Bewerken Annuleren",
+          "package_name": "Pakketnaam",
+          "price": "Prijs",
+          "features_list": "Kenmerken Lijst",
+          "add_row": "Rij Toevoegen",
+          "feature_placeholder": "Kenmerk #",
+          "highlight_popular": "Markeren als \"Meest Populair\"",
+          "create_button": "Pakket Aanmaken",
+          "update_button": "Pakket Bijwerken",
+          "current_packages": "Huidige Pakketten",
+          "loading": "Pakketten Laden...",
+          "none_found": "Geen pakketten gevonden. Voeg er een toe hierboven.",
+          "order_updated": "Volgorde Bijgewerkt",
+          "error_required": "Naam, prijs en minstens 1 kenmerk zijn verplicht",
+          "success_updated": "Pakket succesvol bijgewerkt!",
+          "success_created": "Pakket succesvol aangemaakt!",
+          "confirm_delete": "Weet u zeker dat u dit pakket wilt verwijderen?",
+          "success_deleted": "Pakket succesvol verwijderd"
+        },
+        "hero": {
+          "title": "Hoofdsectie",
+          "subtitle": "Beheer de branding en visuele elementen van de site",
+          "background_photo": "Achtergrondfoto",
+          "change_background": "Achtergrond Wijzigen",
+          "tour_video": "Wereld Tour Video",
+          "change_video": "Video Wijzigen",
+          "upload_video": "Video Uploaden",
+          "featured_photos": "Uitgelichte Fotogalerij",
+          "badge_text": "Badge Tekst",
+          "main_title": "Hoofdtitel",
+          "secondary_title": "Secundaire Titel (Cursief)",
+          "about_photo": "Over Ons Foto",
+          "save_all": "ALLE WIJZIGINGEN OPSLAAN",
+          "uploading": "Uploaden..."
+        },
+        "gallery": {
+          "title": "Galerijbeheer",
+          "subtitle": "Beheer de sfeerfoto's in de hoofdgallerij"
+        },
+        "tickets": {
+          "title": "Support Tickets",
+          "subtitle": "Beantwoord vragen van bewoners en technische problemen",
+          "status_open": "Open",
+          "status_resolved": "Opgelost",
+          "reopen": "Ticket Heropenen",
+          "reply_cancel": "Annuleren",
+          "reply_resolve": "Beantwoorden & Oplossen",
+          "official_response": "Officieel Antwoord",
+          "placeholder_reply": "Schrijf hier uw officieel antwoord...",
+          "resolve_only": "Oplossen zonder antwoord",
+          "send_resolve": "Stuur antwoord & Los op",
+          "reopen": "Ticket Heropenen",
+          "none_found": "Geen support tickets gevonden",
+          "delete_title": "Ticket verwijderen"
+        },
+        "inbox": {
+          "title": "Berichten van Bezoekers",
+          "subtitle": "Directe vragen via de publieke portal",
+          "none_found": "Inbox is stil",
+          "mark_unread": "Markeren als ongelezen",
+          "mark_read": "Markeren als gelezen",
+          "new_badge": "NIEUW"
+        },
+        "residents": {
+          "title": "Bewonersbeheer",
+          "subtitle": "Bewonersgegevens en toegangsrechten beheren",
+          "none_found": "Geen bewoners gevonden",
+          "last_seen": "Laatst gezien",
+          "never_seen": "Nooit gezien",
+          "online": "Online",
+          "avatar_name": "Avatar Naam (SL)",
+          "avatar_uuid": "Avatar UUID",
+          "password": "Toegangswachtwoord",
+          "assign_properties": "Woningen Toewijzen",
+          "selected_count": "Geselecteerde Woningen",
+          "occupied": "Bezet",
+          "update_button": "Bewoner Bijwerken",
+          "register_button": "Bewoner Registreren",
+          "preview": "Avatar Voorbeeld"
+        },
+        "covenant": {
+          "title": "Covenant Beheer",
+          "subtitle": "Bewerk juridische documenten en regels",
+          "save_success": "Covenants succesvol bijgewerkt",
+          "lang_en": "Engelse Versie",
+          "lang_pt": "Portugese Versie",
+          "lang_es": "Spaanse Versie",
+          "lang_nl": "Nederlandse Versie",
+          "update_button": "Covenants Bijwerken",
+          "placeholder_en": "Voer covenant tekst in in het Engels...",
+          "placeholder_pt": "Voer covenant tekst in in het Portugees...",
+          "placeholder_es": "Voer covenant tekst in in het Spaans...",
+          "placeholder_nl": "Voer covenant tekst in in het Nederlands...",
+          "link_prompt": "Voer URL in:",
+          "type_text": "Tekst"
+        },
+        "team": {
+          "title": "Teambeheer",
+          "reset": "Formulier wissen",
+          "avatar_name": "Avatar Naam",
+          "role": "Professionele Rol",
+          "icon_style": "Icoon Stijl",
+          "sequence": "Weergavevolgorde",
+          "profile_url": "SL Profiel URL",
+          "expertise": "Expertise",
+          "portrait": "Portret",
+          "update_button": "Profiel Bijwerken",
+          "add_button": "Toevoegen aan Team",
+          "directory": "Personeelsgids",
+          "placeholder_url": "Plak URL of upload foto",
+          "placeholder_bio": "Korte biografie...",
+          "icons": {
+            "briefcase": "Aktetas",
+            "paintbrush": "Penseel",
+            "shield": "Schild",
+            "legal": "Juridisch",
+            "community": "Gemeenschap"
+          }
+        },
+        "auth": {
+          "title": "Beveiligde Toegang",
+          "subtitle": "Veilige authenticatie vereist voor beheer",
+          "verify_google": "Identiteit verificatie via Google",
+          "login_failed": "Inloggen mislukt"
+        },
+        "common": {
+          "save": "Opslaan",
+          "cancel": "Annuleren",
+          "edit": "Bewerken",
+          "delete": "Verwijderen",
+          "confirm_delete": "Weet u zeker dat u dit wilt doen?",
+          "upload": "Uploaden",
+          "expired": "Verlopen",
+          "days_left": "dagen over",
+          "no_items": "Geen items geregistreerd",
+          "multi_select": "Meerdere selecties",
+          "success": {
+            "updated": "Succesvol bijgewerkt!",
+            "added": "Succesvol toegevoegd!",
+            "deleted": "Succesvol verwijderd!",
+            "media_processed": "Media succesvol verwerkt"
+          },
+          "error": {
+            "required": "Verplichte velden ontbreken",
+            "generic": "Er is een fout opgetreden"
+          }
+        },
+        "tabs": {
+          "listings": "Aanbod",
+          "portfolio": "Portfolio",
+          "pricing": "Prijzen",
+          "team": "Team",
+          "tickets": "Spoor",
+          "residents": "Bewoners",
+          "covenant": "Regels",
+          "settings": "Instellingen",
+          "inbox": "Inbox",
+          "gallery": "Gallerij"
         }
       }
     }

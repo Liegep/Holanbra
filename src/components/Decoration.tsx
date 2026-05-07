@@ -10,7 +10,7 @@ export default function Decoration() {
   const { lang } = useParams<{ lang: string }>();
 
   return (
-    <section id="services" className="py-32 px-6 md:px-12 bg-background-light relative overflow-hidden">
+    <section id="services" className="py-32 px-6 md:px-12 bg-background-light relative overflow-hidden scroll-mt-32">
       {/* Background Decor */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] bg-amber-500/5 rounded-full blur-[150px] pointer-events-none"></div>
 

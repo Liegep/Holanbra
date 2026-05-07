@@ -54,9 +54,19 @@ export default function Navbar() {
     { name: 'Properties', path: '/#properties', icon: Layers, highlight: true, label: t('nav.properties') },
     { name: 'Gallery', path: '/#gallery', icon: ImageIcon, label: t('nav.gallery') },
     { name: 'Decoration', path: '/#services', icon: Paintbrush, label: t('nav.decoration') },
+    { name: 'Pricing', path: '/#pricing', icon: DollarSign, label: t('nav.pricing') },
     { name: 'Team', path: '/#team', icon: Users, label: t('nav.team') },
     { name: 'Covenant', path: '/covenant', icon: FileText, label: t('nav.covenant') },
   ];
+
+  const isActive = (path: string) => {
+    const currentPath = location.pathname + (location.hash || '');
+    // Handle both cases: path with leading slash and without
+    if (path.startsWith('/#') && location.pathname === '/') {
+      return location.hash === path.substring(1);
+    }
+    return currentPath === path || (location.pathname === path && !location.hash);
+  };
 
   return (
     <nav className={cn(
@@ -83,7 +93,7 @@ export default function Navbar() {
                 to={link.path}
                 className={cn(
                   "text-[10px] font-bold uppercase tracking-[0.2em] transition-all hover:text-amber-400 whitespace-nowrap",
-                  location.pathname + location.hash === link.path ? "text-white" : "text-white/60",
+                  isActive(link.path) ? "text-white" : "text-white/60",
                   link.highlight && "text-amber-500"
                 )}
               >
@@ -139,8 +149,12 @@ export default function Navbar() {
                   key={link.name} 
                   to={link.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-lg font-medium text-gray-400 hover:text-white flex items-center gap-3"
+                  className={cn(
+                    "text-lg font-medium flex items-center gap-3 transition-colors",
+                    isActive(link.path) ? "text-amber-500" : "text-gray-400 hover:text-white"
+                  )}
                 >
+                  <link.icon size={20} className={cn(isActive(link.path) ? "text-amber-500" : "text-gray-500")} />
                   {link.label}
                 </Link>
               ))}
