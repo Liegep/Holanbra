@@ -452,6 +452,7 @@ export default function AdminArea() {
       showToast("Team member updated successfully");
       setTeamFormData({ name: '', role: '', bio: '', image: '', icon: 'Users', slProfile: '#', order: (teamMembers.length + 1).toString() });
       setEditingTeamId(null);
+      fetchTeam();
     } catch (error) {
       showToast("Error saving team member", "error");
     }
