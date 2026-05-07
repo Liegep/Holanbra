@@ -122,9 +122,8 @@ export default function Properties() {
         if (p.property_type && Array.isArray(p.property_type)) {
           typeMatch = p.property_type.includes(filter.type);
         } else {
-          // Fallback legacy logic
-          typeMatch = (filter.type === 'Land' && !p.name.toLowerCase().includes('loft')) || 
-                      (filter.type === 'Furnished' && p.name.toLowerCase().includes('loft'));
+          // If no array, check as direct string for older records or specific cases
+          typeMatch = (p as any).property_type === filter.type;
         }
       }
       const statusMatch = filter.status === 'all' || p.status === filter.status;
@@ -173,17 +172,21 @@ export default function Properties() {
           </div>
           
           <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap justify-start">
               {[
                 { id: 'All', label: t('properties.filter_all') },
                 { id: 'Land', label: t('properties.filter_land') },
-                { id: 'Furnished', label: t('properties.filter_furnished') }
+                { id: 'Furnished', label: t('properties.filter_furnished') },
+                { id: 'Not Furnished', label: t('properties.filter_not_furnished') },
+                { id: 'Skybox', label: t('properties.filter_skybox') },
+                { id: 'Shop', label: t('properties.filter_shop') },
+                { id: 'House', label: t('properties.filter_house') }
               ].map((type) => (
                 <button 
                   key={type.id}
                   onClick={() => setFilter({ ...filter, type: type.id })}
                   className={cn(
-                    "px-6 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all",
+                    "px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all mb-2",
                     filter.type === type.id ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-black/5 border-black/5 text-black/60 hover:text-black"
                   )}
                 >
