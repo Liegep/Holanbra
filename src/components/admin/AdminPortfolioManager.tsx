@@ -106,6 +106,8 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
       const { error } = await supabase.from('portfolio').delete().eq('id', id);
       if (error) throw error;
 
+      setPortfolioItems(prev => prev.filter(item => item.id !== id));
+
       if (imageUrl && imageUrl.includes('supabase.co')) {
         try {
           const path = imageUrl.split('/media/')[1];

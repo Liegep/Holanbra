@@ -440,6 +440,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('team').delete().eq('id', id);
       if (error) throw error;
+      setTeamMembers(prev => prev.filter(t => t.id !== id));
       showToast("Deleted successfully");
     } catch (error) {
       showToast("Delete error", "error");
@@ -480,8 +481,8 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('gallery').delete().eq('id', id);
       if (error) throw error;
+      setGalleryImages(prev => prev.filter(img => img.id !== id));
       showToast("Deleted successfully");
-      fetchGallery();
     } catch (err: any) {
       showToast("Delete error", "error");
     }
@@ -682,6 +683,7 @@ export default function AdminArea() {
     try {
       const { error } = await supabase.from('properties').delete().eq('id', id);
       if (error) throw error;
+      setProperties(prev => prev.filter(p => p.id !== id));
       showToast("Deleted successfully");
     } catch (error) {
       showToast("Delete error", "error");

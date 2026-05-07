@@ -121,8 +121,8 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
     try {
       const { error } = await supabase.from('pricing_packages').delete().eq('id', id);
       if (error) throw error;
+      setPackages(prev => prev.filter(pkg => pkg.id !== id));
       showToast(t('admin.pricing.success_deleted'));
-      fetchPackages();
     } catch (err: any) {
       showToast(err.message, "error");
     }
