@@ -261,16 +261,24 @@ const ResidentDashboard:FC = () => {
   const handleToggleTicketStatus = async (ticketId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (!ticket) return;
+
+      const userName = residentData?.avatar_name || "Resident";
+      const actionMessage = newStatus === 'resolved' ? `${userName} closed the ticket.` : `${userName} reopened the ticket.`;
+      const updatedMessage = `${ticket.message}\n\n--- Follow-up ${new Date().toLocaleString()} ---\n${actionMessage}`;
+
       const { error } = await supabase
         .from('support_tickets')
         .update({ 
-          status: newStatus
+          status: newStatus,
+          message: updatedMessage
         })
         .eq('id', ticketId);
       
       if (error) throw error;
       
-      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus } : t));
+      setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus, message: updatedMessage } : t));
       showToast(newStatus === 'resolved' ? "Ticket closed" : "Ticket reopened");
     } catch (err: any) {
       showToast("Error updating ticket", "error");
@@ -745,7 +753,7 @@ const ResidentDashboard:FC = () => {
                               </div>
                               <h4 className="text-lg font-bold text-white">{ticket.subject}</h4>
                               <p className="text-white/40 text-[10px] uppercase font-bold">
-                                {t('resident.ticket_opened_on')} {new Date(ticket.created_at).toLocaleDateString('en-US')}
+                                {t('resident.opened_on')} {new Date(ticket.created_at).toLocaleDateString('en-US')}
                               </p>
                             </div>
                           </div>

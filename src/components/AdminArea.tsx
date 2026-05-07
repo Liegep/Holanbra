@@ -802,11 +802,18 @@ export default function AdminArea() {
   const handleResolveTicket = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
     try {
+      const ticket = tickets.find(t => t.id === id);
+      if (!ticket) return;
+
+      const actionMessage = newStatus === 'resolved' ? "Admin closed the ticket." : "Admin reopened the ticket.";
+      const updatedMessage = `${ticket.message}\n\n--- Follow-up ${new Date().toLocaleString()} ---\n${actionMessage}`;
+
       const { error } = await supabase.from('support_tickets').update({ 
-        status: newStatus
+        status: newStatus,
+        message: updatedMessage
       }).eq('id', id);
       if (error) throw error;
-      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: newStatus, message: updatedMessage } : t));
       showToast(newStatus === 'resolved' ? "Ticket marked as resolved" : "Ticket reopened");
     } catch (err) {
       showToast("Error updating ticket status", "error");
@@ -817,9 +824,18 @@ export default function AdminArea() {
     if (!adminResponse.trim()) return;
     setIsSubmittingResponse(true);
     try {
+      const ticket = tickets.find(t => t.id === id);
+      if (!ticket) return;
+
+      let updatedMessage = ticket.message;
+      if (resolve) {
+        updatedMessage = `${ticket.message}\n\n--- Follow-up ${new Date().toLocaleString()} ---\nAdmin closed the ticket.`;
+      }
+
       const { error } = await supabase.from('support_tickets').update({ 
         admin_reply: adminResponse, 
-        status: resolve ? 'resolved' : 'open'
+        status: resolve ? 'resolved' : 'open',
+        message: updatedMessage
       }).eq('id', id);
       
       if (error) throw error;
@@ -827,7 +843,8 @@ export default function AdminArea() {
       setTickets(prev => prev.map(t => t.id === id ? { 
         ...t, 
         admin_reply: adminResponse, 
-        status: resolve ? 'resolved' : 'open' 
+        status: resolve ? 'resolved' : 'open',
+        message: updatedMessage
       } : t));
       
       setReplyingTicketId(null);
