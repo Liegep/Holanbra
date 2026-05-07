@@ -123,7 +123,7 @@ export function AdminSupportTickets({
 
                   {ticket.status === 'resolved' ? (
                     <button 
-                      onClick={() => handleResolveTicket(ticket.id, 'open')}
+                      onClick={() => handleResolveTicket(ticket.id, ticket.status)}
                       className="w-full py-3 bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-500 hover:text-white transition-all shadow-lg border border-blue-500/20"
                     >
                       <RefreshCw size={12} className="inline mr-2" /> {t('admin.tickets.reopen')}
@@ -137,7 +137,7 @@ export function AdminSupportTickets({
                         {replyingTicketId === ticket.id ? t('admin.common.cancel') : t('admin.tickets.reply_resolve', 'Reply / Resolve')}
                       </button>
                       <button 
-                        onClick={() => handleResolveTicket(ticket.id, 'resolved')}
+                        onClick={() => handleResolveTicket(ticket.id, ticket.status)}
                         className="w-full py-2 bg-white/5 text-white/40 text-[8px] font-black uppercase tracking-widest rounded-lg hover:bg-white/10 hover:text-white transition-all"
                       >
                         {t('admin.tickets.resolve_only')}
