@@ -38,6 +38,29 @@ import { AdminPropertyListings } from './admin/AdminPropertyListings';
 import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
 
+const INITIAL_FORM_DATA = {
+  name: '',
+  casperletId: '',
+  price: '',
+  rental_price: '',
+  teleport_url: '',
+  status: 'available',
+  description: '',
+  description_pt: '',
+  description_nl: '',
+  description_es: '',
+  imageUrl: '',
+  gallery_image_1: '',
+  gallery_image_2: '',
+  expiry_date: '',
+  tenant_name: '',
+  tenant_id: '',
+  property_type: [] as string[],
+  videoUrl: '',
+  prims_allowed: '',
+  perks: [] as string[]
+};
+
 export default function AdminArea() {
   const { t } = useTranslation();
   
@@ -86,28 +109,7 @@ export default function AdminArea() {
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>([]);
   
-  const [formData, setFormData] = useState({
-    name: '',
-    casperletId: '',
-    price: '',
-    rental_price: '',
-    teleport_url: '',
-    status: 'available',
-    description: '',
-    description_pt: '',
-    description_nl: '',
-    description_es: '',
-    imageUrl: '',
-    gallery_image_1: '',
-    gallery_image_2: '',
-    expiry_date: '',
-    tenant_name: '',
-    tenant_id: '',
-    property_type: [] as string[],
-    videoUrl: '',
-    prims_allowed: '',
-    perks: [] as string[]
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
   const [renterFormData, setRenterFormData] = useState({
     avatarName: '',
@@ -1079,7 +1081,13 @@ export default function AdminArea() {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
+              onClick={() => {
+                if (item.id === 'add') {
+                  setFormData(INITIAL_FORM_DATA);
+                  setEditingId(null);
+                }
+                setActiveTab(item.id as any);
+              }}
               className={cn(
                 "w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-sm font-medium relative",
                 activeTab === item.id ? "bg-amber-500 text-black shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -1215,6 +1223,7 @@ export default function AdminArea() {
               editingId={editingId}
               setEditingId={setEditingId}
               formData={formData}
+              initialFormData={INITIAL_FORM_DATA}
               setFormData={setFormData}
               isUploading={isUploading}
               uploadProgress={uploadProgress}

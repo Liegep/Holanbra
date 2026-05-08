@@ -18,6 +18,7 @@ interface AdminPropertyFormProps {
   editingId: string | null;
   setEditingId: (id: string | null) => void;
   formData: any;
+  initialFormData: any;
   setFormData: (val: any | ((prev: any) => any)) => void;
   isUploading: boolean;
   uploadProgress: number;
@@ -32,6 +33,7 @@ export function AdminPropertyForm({
   editingId,
   setEditingId,
   formData,
+  initialFormData,
   setFormData,
   isUploading,
   uploadProgress,
@@ -73,27 +75,7 @@ export function AdminPropertyForm({
           <button 
             onClick={() => {
               setEditingId(null);
-              setFormData({
-                name: '',
-                casperletId: '',
-                price: '',
-                rental_price: '',
-                teleport_url: '',
-                status: 'available',
-                description: '',
-                description_pt: '',
-                description_nl: '',
-                imageUrl: '',
-                gallery_image_1: '',
-                gallery_image_2: '',
-                videoUrl: '',
-                expiry_date: '',
-                tenant_name: '',
-                tenant_id: '',
-                property_type: [],
-                prims_allowed: '',
-                perks: []
-              });
+              setFormData(initialFormData);
             }}
             className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline"
           >
@@ -227,6 +209,7 @@ export function AdminPropertyForm({
                 key={lang}
                 value={formData[lang === 'en' ? 'description' : `description_${lang}`] || ''} 
                 onChange={(e) => {
+                  console.log(`Lang: ${lang}, Value: ${e.target.value}`);
                   setFormData((prev: any) => ({
                     ...prev,
                     [lang === 'en' ? 'description' : `description_${lang}`]: e.target.value

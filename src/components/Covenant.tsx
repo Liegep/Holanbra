@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FileText, ArrowLeft, Loader2, Printer } from 'lucide-react';
+import { FileText, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 
@@ -116,6 +116,7 @@ const Covenant: React.FC = () => {
 
           <div className="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
              <div className="flex items-center gap-4">
+               {/* Just testing */}
                 <div className="text-left">
                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Legal Dept</p>
                    <p className="text-xs text-white/40">Holanbra Real Estate v1.0</p>

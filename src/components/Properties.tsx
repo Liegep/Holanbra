@@ -39,6 +39,9 @@ interface Property {
   expiry_date?: string;
   property_type?: string[];
   description?: string;
+  description_pt?: string;
+  description_nl?: string;
+  description_es?: string;
   bedrooms?: number;
   bathrooms?: number;
   prims_allowed?: number;
@@ -112,6 +115,9 @@ export default function Properties() {
   }, []);
 
   const getDescription = (p: any) => {
+    if (lang === 'pt') return p.description_pt || p.description;
+    if (lang === 'nl') return p.description_nl || p.description;
+    if (lang === 'es') return p.description_es || p.description;
     return p.description || "Experience unparalleled luxury and comfort in Holanbra.";
   };
 
