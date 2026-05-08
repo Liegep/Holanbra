@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Maximize2, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
+import { cn } from '../lib/utils';
 
 interface GalleryItem {
   id: string;
@@ -11,8 +12,9 @@ interface GalleryItem {
   caption?: string;
 }
 
-const MediaItem = ({ item, index, onClick }: { item: GalleryItem, index: number, onClick: () => void }) => {
+function MediaItem({ item, index, onClick }: { item: GalleryItem, index: number, onClick: () => void, key?: React.Key }) {
   const [isInView, setIsInView] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,26 +46,38 @@ const MediaItem = ({ item, index, onClick }: { item: GalleryItem, index: number,
       className="break-inside-avoid mb-6 relative group cursor-pointer overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5 min-h-[200px]"
       onClick={onClick}
     >
-      {isInView ? (
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-zinc-800 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+        </div>
+      )}
+
+      {isInView && (
         isVideo ? (
           <video
             src={item.url}
-            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+            className={cn(
+              "w-full h-auto object-cover transition-all duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0",
+              isLoaded ? "opacity-100" : "opacity-0"
+            )}
             muted
             loop
             playsInline
             autoPlay
+            onLoadedData={() => setIsLoaded(true)}
           />
         ) : (
           <img 
             src={item.url} 
             alt={item.caption || 'Holanbra Gallery item'} 
-            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
+            className={cn(
+              "w-full h-auto object-cover transition-all duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0",
+              isLoaded ? "opacity-100" : "opacity-0"
+            )}
+            onLoad={() => setIsLoaded(true)}
             referrerPolicy="no-referrer"
           />
         )
-      ) : (
-        <div className="w-full aspect-video bg-zinc-800 animate-pulse" />
       )}
       
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -76,7 +90,7 @@ const MediaItem = ({ item, index, onClick }: { item: GalleryItem, index: number,
       )}
     </motion.div>
   );
-};
+}
 
 export default function Gallery() {
   const { t } = useTranslation();

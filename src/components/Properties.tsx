@@ -48,6 +48,116 @@ interface Property {
   prims_allowed?: number;
 }
 
+const PropertySkeleton = () => (
+  <div className="bento-card relative h-[450px] bg-zinc-100 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-full animate-shimmer" style={{ backgroundSize: '200% 100%' }}></div>
+    <div className="absolute bottom-8 left-8 right-8 space-y-4">
+      <div className="w-20 h-4 bg-zinc-200 rounded animate-pulse" />
+      <div className="w-3/4 h-8 bg-zinc-200 rounded animate-pulse" />
+      <div className="w-1/2 h-3 bg-zinc-200 rounded animate-pulse" />
+      <div className="flex gap-2 pt-4">
+        <div className="flex-1 h-10 bg-zinc-200 rounded-full animate-pulse" />
+        <div className="flex-1 h-10 bg-zinc-200 rounded-full animate-pulse" />
+      </div>
+    </div>
+  </div>
+);
+
+function PropertyCard({ 
+  property, 
+  idx, 
+  t, 
+  openGallery, 
+  filterType 
+}: { 
+  property: Property, 
+  idx: number, 
+  t: any, 
+  openGallery: (p: Property) => void,
+  filterType: string,
+  key?: React.Key
+}) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.1 }}
+      className={cn(
+        "bento-card group h-[450px] cursor-pointer",
+        idx === 0 && filterType === 'All' ? "lg:col-span-1 md:col-span-2" : ""
+      )}
+      onClick={() => openGallery(property)}
+    >
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
+      
+      {!imgLoaded && (
+        <div className="absolute inset-0 bg-zinc-800 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer" />
+        </div>
+      )}
+
+      <img 
+        src={property.image} 
+        alt={property.name}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setImgLoaded(true)}
+        className={cn(
+          "absolute inset-0 w-full h-full object-cover transition-all duration-[2000ms] group-hover:scale-110",
+          imgLoaded ? "opacity-100" : "opacity-0"
+        )}
+        referrerPolicy="no-referrer"
+      />
+      
+      <div className="absolute bottom-8 left-8 right-8 z-20 space-y-3 text-left">
+        <div className={cn(
+          "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit mb-3",
+          property.status === 'available' ? "bg-amber-500 text-black" : "bg-white/20 text-white"
+        )}>
+          {property.status === 'available' ? t('properties.status_available') : t('properties.status_rented')}
+        </div>
+        <h3 className="text-3xl font-bold tracking-tight text-white">{property.name}</h3>
+        <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
+          HOLANBRA | PRIMA OCEAN
+        </p>
+        <div className="flex items-center gap-4 pt-2">
+          <div className="text-2xl font-light text-white decoration-amber-500/50">
+            L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">{t('properties.per_week')}</span>
+            {property.prims_allowed && (
+              <span className="ml-2 text-[10px] uppercase font-bold text-amber-500">{property.prims_allowed} {t('properties.prims_allowed')}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2 pt-2">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(property.teleport_url || property.slurl, '_blank');
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
+          >
+            <MapPin size={12} />
+            {t('properties.teleport')}
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              openGallery(property);
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
+          >
+            <ExternalLink size={12} />
+            {t('hero.tour')}
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function Properties() {
   const { lang } = useParams();
   const { t } = useTranslation();
@@ -115,6 +225,7 @@ export default function Properties() {
       supabase.removeChannel(propertiesSubscription);
     };
   }, []);
+
 
   const getDescription = (p: any) => {
     if (lang === 'pt') return p.description_pt || p.description;
@@ -241,78 +352,23 @@ export default function Properties() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {sortedAndFilteredProperties.slice(0, visibleCount).map((property, idx) => (
-            <motion.div 
-              key={property.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className={cn(
-                "bento-card group h-[450px] cursor-pointer",
-                idx === 0 && filter.type === 'All' ? "lg:col-span-1 md:col-span-2" : ""
-              )}
-              onClick={() => openGallery(property)}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10 transition-opacity group-hover:opacity-80"></div>
-              <img 
-                src={property.image} 
-                alt={property.name}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
-                referrerPolicy="no-referrer"
-              />
-              
-              <div className="absolute bottom-8 left-8 right-8 z-20 space-y-3 text-left">
-                <div className={cn(
-                  "px-3 py-1 text-[10px] font-black uppercase rounded-md w-fit mb-3",
-                  property.status === 'available' ? "bg-amber-500 text-black" : "bg-white/20 text-white"
-                )}>
-                  {property.status === 'available' ? t('properties.status_available') : t('properties.status_rented')}
-                </div>
-                <h3 className="text-3xl font-bold tracking-tight text-white">{property.name}</h3>
-                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">
-                  HOLANBRA | PRIMA OCEAN
-                </p>
-                <div className="flex items-center gap-4 pt-2">
-                  <div className="text-2xl font-light text-white decoration-amber-500/50">
-                    L$ {property.price} <span className="text-[10px] uppercase font-bold tracking-tighter opacity-60">{t('properties.per_week')}</span>
-                    {property.prims_allowed && (
-                      <span className="ml-2 text-[10px] uppercase font-bold text-amber-500">{property.prims_allowed} {t('properties.prims_allowed')}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(property.teleport_url || property.slurl, '_blank');
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20"
-                  >
-                    <MapPin size={12} />
-                    {t('properties.teleport')}
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openGallery(property);
-                    }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/20 transition-all border border-white/20 backdrop-blur-sm"
-                  >
-                    <ExternalLink size={12} />
-                    {t('hero.tour')}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-          
-          {sortedAndFilteredProperties.length === 0 && (
+          {loading ? (
+            [...Array(6)].map((_, i) => <PropertySkeleton key={i} />)
+          ) : sortedAndFilteredProperties.length === 0 ? (
             <div className="col-span-full py-20 text-center bg-black/5 rounded-[2rem] border-2 border-dashed border-black/10">
               <p className="text-black/40 uppercase tracking-[0.3em] font-bold text-sm">{t('properties.no_found')}</p>
             </div>
+          ) : (
+            sortedAndFilteredProperties.slice(0, visibleCount).map((property, idx) => (
+              <PropertyCard 
+                key={property.id} 
+                property={property} 
+                idx={idx} 
+                t={t} 
+                openGallery={openGallery}
+                filterType={filter.type}
+              />
+            ))
           )}
         </div>
 
