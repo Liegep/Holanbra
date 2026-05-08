@@ -9,8 +9,8 @@ export default function TeleportCTA() {
   const [teleportUrl, setTeleportUrl] = useState("secondlife:///app/teleport/Holanbra/210/90/25");
 
   useEffect(() => {
-    supabase.from('site_settings').select('teleport_url').eq('id', 'site_links').maybeSingle().then(({ data }) => {
-      if (data?.teleport_url) setTeleportUrl(data.teleport_url);
+    supabase.from('site_settings').select('location_url').eq('id', 'site_links').maybeSingle().then(({ data }) => {
+      if (data?.location_url) setTeleportUrl(data.location_url);
     });
   }, []);
 

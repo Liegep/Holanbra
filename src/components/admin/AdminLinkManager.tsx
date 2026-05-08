@@ -5,7 +5,6 @@ import { Save } from 'lucide-react';
 import { ToastType } from '../Toast';
 
 interface LinkSettings {
-  teleport_url: string;
   facebook_url: string;
   location_url: string;
 }
@@ -13,7 +12,6 @@ interface LinkSettings {
 export const AdminLinkManager = ({ showToast }: { showToast: (msg: string, type: ToastType) => void }) => {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<LinkSettings>({
-    teleport_url: '',
     facebook_url: '',
     location_url: ''
   });
@@ -26,13 +24,12 @@ export const AdminLinkManager = ({ showToast }: { showToast: (msg: string, type:
   const fetchSettings = async () => {
     const { data, error } = await supabase
       .from('site_settings')
-      .select('*')
+      .select('facebook_url, location_url')
       .eq('id', 'site_links')
       .maybeSingle();
 
     if (data) {
       setSettings({
-        teleport_url: data.teleport_url || '',
         facebook_url: data.facebook_url || '',
         location_url: data.location_url || ''
       });
