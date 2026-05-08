@@ -116,20 +116,11 @@ const Covenant: React.FC = () => {
 
           <div className="mt-20 pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
              <div className="flex items-center gap-4">
-               {/* Just testing */}
                 <div className="text-left">
                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Legal Dept</p>
                    <p className="text-xs text-white/40">Holanbra Real Estate v1.0</p>
                 </div>
              </div>
-             
-             <button 
-               onClick={() => window.print()}
-               className="px-8 py-4 bg-white text-black rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-colors shadow-xl shadow-white/5 flex items-center gap-2"
-             >
-                <Printer size={14} />
-                {t('covenant.print')}
-             </button>
           </div>
         </motion.div>
       </div>
