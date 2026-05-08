@@ -127,7 +127,7 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center justify-center gap-6"
         >
           <Link 
-            to={`/${lang}/#properties`}
+            to="/properties"
             className="group px-10 py-5 rounded-full bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] flex items-center gap-2 hover:bg-amber-400 transition-all transform hover:scale-105 shadow-[0_10px_40px_rgba(245,158,11,0.3)]"
           >
             {t('properties.view_all')} <ArrowRight className="group-hover:translate-x-1 transition-transform" />
