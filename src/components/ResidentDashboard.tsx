@@ -168,15 +168,40 @@ const ResidentDashboard:FC = () => {
       setResidentData(renter);
 
       // Step 2: Fetch properties linked to this resident
+      // Busca tanto pelo tenant_id principal quanto pela tabela property_tenants
       const residentId = renter.avatar_uuid;
-      const { data: userProperties, error: propError } = await supabase
+
+      // Busca imóveis pelo tenant_id principal
+      const { data: primaryProperties, error: propError } = await supabase
         .from('properties')
         .select('*')
         .eq('tenant_id', residentId);
 
       if (propError) throw propError;
 
-      const mappedProperties = (userProperties || []).map(p => ({
+      // Busca imóveis via tabela property_tenants (múltiplos inquilinos)
+      const { data: sharedLinks } = await supabase
+        .from('property_tenants')
+        .select('property_id')
+        .eq('tenant_id', residentId);
+
+      let sharedProperties: any[] = [];
+      if (sharedLinks && sharedLinks.length > 0) {
+        const sharedIds = sharedLinks.map(l => l.property_id);
+        const { data: sharedProps } = await supabase
+          .from('properties')
+          .select('*')
+          .in('id', sharedIds);
+        sharedProperties = sharedProps || [];
+      }
+
+      // Combina e remove duplicatas pelo id
+      const allProperties = [...(primaryProperties || []), ...sharedProperties];
+      const uniqueProperties = allProperties.filter(
+        (p, index, self) => self.findIndex(x => x.id === p.id) === index
+      );
+
+      const mappedProperties = uniqueProperties.map(p => ({
         ...p,
         name: p.name || `Property ${p.id}`
       }));
