@@ -30,13 +30,6 @@ import Toast, { ToastType } from './Toast';
 const ResidentDashboard:FC = () => {
   const { t, i18n } = useTranslation();
 
-  useEffect(() => {
-    // Force English in Resident Area
-    if (i18n.language !== 'en') {
-      i18n.changeLanguage('en');
-    }
-  }, [i18n]);
-
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',

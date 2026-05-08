@@ -127,7 +127,7 @@ export default function Navbar() {
                   onClick={() => changeLanguage(lang.code)}
                   className={cn(
                     "px-3 py-1 rounded-full text-[10px] font-black transition-all",
-                    i18n.language === lang.code ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
+                    i18n.language.startsWith(lang.code) ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
                   )}
                 >
                   {lang.code.toUpperCase()}
@@ -164,7 +164,7 @@ export default function Navbar() {
                 onClick={() => changeLanguage(lang.code)}
                 className={cn(
                   "px-2 py-1 rounded-full text-[8px] font-black transition-all",
-                  i18n.language === lang.code ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
+                  i18n.language.startsWith(lang.code) ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
                 )}
               >
                 {lang.code.toUpperCase()}
