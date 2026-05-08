@@ -37,6 +37,7 @@ import { AdminPropertyForm } from './admin/AdminPropertyForm';
 import { AdminPropertyListings } from './admin/AdminPropertyListings';
 import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
+import { AdminLinkManager } from './admin/AdminLinkManager';
 
 const INITIAL_FORM_DATA = {
   name: '',
@@ -65,7 +66,7 @@ export default function AdminArea() {
   const { t } = useTranslation();
   
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -1078,6 +1079,7 @@ export default function AdminArea() {
             { id: 'inbox', name: t('admin.navigation.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
             { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
+            { id: 'links', name: t('admin.navigation.links'), icon: LinkIcon },
           ].map((item) => (
             <button
               key={item.id}
@@ -1202,6 +1204,10 @@ export default function AdminArea() {
               setIsDirty={setIsDirty}
               handleSaveCovenant={handleSaveCovenant}
             />
+          )}
+
+          {activeTab === 'links' && (
+            <AdminLinkManager showToast={showToast} />
           )}
 
           {activeTab === 'listings' && (

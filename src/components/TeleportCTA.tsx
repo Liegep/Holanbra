@@ -1,10 +1,18 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
 
 export default function TeleportCTA() {
   const { t } = useTranslation();
-  const teleportUrl = "secondlife:///app/teleport/Holanbra/210/90/25";
+  const [teleportUrl, setTeleportUrl] = useState("secondlife:///app/teleport/Holanbra/210/90/25");
+
+  useEffect(() => {
+    supabase.from('site_settings').select('teleport_url').eq('id', 'site_links').maybeSingle().then(({ data }) => {
+      if (data?.teleport_url) setTeleportUrl(data.teleport_url);
+    });
+  }, []);
 
   return (
     <section className="py-32 bg-background-dark relative overflow-hidden">

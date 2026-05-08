@@ -14,12 +14,14 @@ export default function Gallery() {
   const { t } = useTranslation();
 
   const DEFAULT_IMAGES: GalleryImage[] = [
-    { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&q=80', caption: 'Luxury Shoreline' },
-    { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&q=80', caption: 'Modern Architecture' },
-    { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80', caption: 'Sunset View' },
-    { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&q=80', caption: 'Garden Oasis' },
-    { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80', caption: 'Exclusive Lounge' },
-    { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&q=80', caption: 'Serene Forest' }
+    { id: 'def-1', url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&h=800&q=80', caption: 'Luxury Shoreline' },
+    { id: 'def-2', url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&h=1200&q=80', caption: 'Modern Architecture' },
+    { id: 'def-3', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=800&q=80', caption: 'Sunset View' },
+    { id: 'def-4', url: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=800&h=1000&q=80', caption: 'Garden Oasis' },
+    { id: 'def-5', url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1000&h=800&q=80', caption: 'Exclusive Lounge' },
+    { id: 'def-6', url: 'https://images.unsplash.com/photo-1448518340475-e3c680e9b4be?w=800&h=1100&q=80', caption: 'Serene Forest' },
+    { id: 'def-7', url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=1000&q=80', caption: 'Estate View' },
+    { id: 'def-8', url: 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=1200&h=800&q=80', caption: 'Minimalist Design' }
   ];
 
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -75,14 +77,14 @@ export default function Gallery() {
           </p>
         </div>
 
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+        <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
           {displayImages.map((image, index) => (
             <motion.div
               key={image.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="relative group cursor-pointer overflow-hidden rounded-[2rem] bg-zinc-900"
+              transition={{ delay: index * 0.05 }}
+              className="break-inside-avoid mb-6 relative group cursor-pointer overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5"
               onClick={() => setSelectedImage(image)}
             >
               <img 
@@ -94,11 +96,11 @@ export default function Gallery() {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Maximize2 className="text-white" size={32} />
+                <Maximize2 className="text-amber-500" size={32} />
               </div>
               {image.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
-                  <p className="text-white text-xs font-bold uppercase tracking-widest">{image.caption}</p>
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
+                  <p className="text-white text-[10px] font-black uppercase tracking-[0.2em]">{image.caption}</p>
                 </div>
               )}
             </motion.div>

@@ -357,6 +357,7 @@ const resources = {
           "edit_property": "Edit Property",
           "add_property": "Add New Property",
           "covenant": "Covenants",
+          "links": "Site Links",
           "settings": "Portal Settings"
         },
         "fields": {
@@ -893,6 +894,7 @@ const resources = {
           "edit_property": "Editar Imóvel",
           "add_property": "Novo Imóvel",
           "covenant": "Regras/Termos",
+          "links": "Links do Site",
           "settings": "Configurações do Portal"
         },
         "fields": {
@@ -1540,6 +1542,7 @@ const resources = {
           "edit_property": "Editar Propiedad",
           "add_property": "Añadir Nueva Propiedad",
           "covenant": "Convenios",
+          "links": "Enlaces del Sitio",
           "settings": "Configuración del Portal"
         },
         "fields": {
