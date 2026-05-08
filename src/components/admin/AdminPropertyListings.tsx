@@ -175,7 +175,7 @@ export function AdminPropertyListings({
 
             return (
               <div 
-                key={prop.id} 
+                key={prop.id || `prop-${prop.name}-${Math.random()}`} 
                 className={cn(
                   "glass-card p-4 flex items-center gap-4 group transition-all duration-300",
                   isCritical ? "border-red-500/30 bg-red-500/5 shadow-[0_0_20px_rgba(239,68,68,0.05)] scale-[1.01]" : 
@@ -192,9 +192,9 @@ export function AdminPropertyListings({
                     
                     {prop.property_type && prop.property_type.length > 0 && (
                       <div className="flex gap-1">
-                        {prop.property_type.map((type: string) => (
+                        {Array.from(new Set(prop.property_type)).map((type: any, typeIdx: number) => (
                           <span 
-                            key={type}
+                            key={`${prop.id}-${type}-${typeIdx}`}
                             className="px-1.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-[8px] text-white/40 uppercase font-bold"
                           >
                             {type}

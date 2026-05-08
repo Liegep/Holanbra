@@ -303,7 +303,7 @@ export default function AdminArea() {
         title1: heroData.title_main || '',
         title2: heroData.title_italic || '',
         virtualTourUrl: heroData.virtual_tour_url || '',
-        backgroundImage: heroData.background_url || '',
+        backgroundImage: heroData.hero_image_url || '',
         aboutImage: heroData.about_image_url || '',
         gridImages: [
           heroData.grid_photo_1 || '',
@@ -352,13 +352,12 @@ export default function AdminArea() {
         title_main: heroContent.title1,
         title_italic: heroContent.title2,
         virtual_tour_url: heroContent.virtualTourUrl,
-        background_url: heroContent.backgroundImage,
+        hero_image_url: heroContent.backgroundImage,
         about_image_url: heroContent.aboutImage,
         grid_photo_1: heroContent.gridImages[0] || '',
         grid_photo_2: heroContent.gridImages[1] || '',
         grid_photo_3: heroContent.gridImages[2] || '',
-        grid_photo_4: heroContent.gridImages[3] || '',
-        updated_at: new Date().toISOString()
+        grid_photo_4: heroContent.gridImages[3] || ''
       });
       if (error) throw error;
       showToast("Settings saved successfully");
@@ -578,14 +577,13 @@ export default function AdminArea() {
           badge_text: updatedHero.badgeText,
           title_main: updatedHero.title1,
           title_italic: updatedHero.title2,
-          background_url: updatedHero.backgroundImage,
+          hero_image_url: updatedHero.backgroundImage,
           about_image_url: updatedHero.aboutImage,
           virtual_tour_url: updatedHero.virtualTourUrl,
           grid_photo_1: updatedHero.gridImages[0] || '',
           grid_photo_2: updatedHero.gridImages[1] || '',
           grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || '',
-          updated_at: new Date().toISOString()
+          grid_photo_4: updatedHero.gridImages[3] || ''
         });
       } else if (targetField === 'gridImage' && gridIdx !== undefined) {
         const newGrid = [...heroContent.gridImages];
@@ -597,13 +595,12 @@ export default function AdminArea() {
           badge_text: updatedHero.badgeText,
           title_main: updatedHero.title1,
           title_italic: updatedHero.title2,
-          background_url: updatedHero.backgroundImage,
+          hero_image_url: updatedHero.backgroundImage,
           about_image_url: updatedHero.aboutImage,
           grid_photo_1: updatedHero.gridImages[0] || '',
           grid_photo_2: updatedHero.gridImages[1] || '',
           grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || '',
-          updated_at: new Date().toISOString()
+          grid_photo_4: updatedHero.gridImages[3] || ''
         });
       }
       showToast("Media processed successfully");

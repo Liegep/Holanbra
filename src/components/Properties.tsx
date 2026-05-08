@@ -160,7 +160,7 @@ function PropertyCard({
 
 export default function Properties() {
   const { lang } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -218,8 +218,9 @@ export default function Properties() {
               teleport_url: p.teleport_url || p.slurl 
             };
           });
-        // Randomize the order by default
-        setProperties(shuffleArray(propertyList));
+        // Randomize the order by default and ensure unique IDs
+        const uniqueProperties = propertyList.filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
+        setProperties(shuffleArray(uniqueProperties));
         setLoading(false);
       }
     };
@@ -238,10 +239,12 @@ export default function Properties() {
 
 
   const getDescription = (p: any) => {
-    if (lang === 'pt') return p.description_pt || p.description;
-    if (lang === 'nl') return p.description_nl || p.description;
-    if (lang === 'es') return p.description_es || p.description;
-    return p.description || "Experience unparalleled luxury and comfort in Holanbra.";
+    // Priority: description_[SelectedLang] -> description -> fallback text
+    // The user specifically requested to use description_[lang] dynamically.
+    const currentLang = i18n.language || lang || 'en';
+    const fieldName = `description_${currentLang}`;
+    
+    return p[fieldName] || p.description || "Experience unparalleled luxury and comfort in Holanbra.";
   };
 
   const sortedAndFilteredProperties = [...properties]

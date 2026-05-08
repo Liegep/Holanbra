@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 
 export default function Hero() {
   const { lang } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [content, setContent] = useState<any>({
     backgroundImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
@@ -34,14 +34,13 @@ export default function Hero() {
       
       if (data) {
         const getLocalized = (baseKey: string) => {
-          if (lang && lang !== 'en') {
-            return data[`${baseKey}_${lang}`] || data[baseKey];
-          }
-          return data[baseKey];
+          const currentLangCode = i18n.language || lang || 'en';
+          const field = `${baseKey}_${currentLangCode}`;
+          return data[field] || data[baseKey];
         };
 
         setContent({
-          backgroundImage: data.background_url || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
+          backgroundImage: data.hero_image_url || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
           badgeText: getLocalized('badge_text'),
           title1: getLocalized('title_main') || 'Holanbra',
           title2: getLocalized('title_italic') || 'Sims',

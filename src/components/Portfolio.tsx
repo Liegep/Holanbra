@@ -38,8 +38,9 @@ export default function Portfolio() {
         } else {
           // Normalize the data to use standard title/description keys
           const normalizedData = (data || []).map((item: any) => {
-            const titleField = currentLang && currentLang !== 'en' ? `title_${currentLang}` : 'title';
-            const descField = currentLang && currentLang !== 'en' ? `description_${currentLang}` : 'description';
+            const currentLangCode = currentLang || 'en';
+            const titleField = `title_${currentLangCode}`;
+            const descField = `description_${currentLangCode}`;
             
             return {
               id: item.id,

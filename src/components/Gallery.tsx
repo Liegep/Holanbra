@@ -125,7 +125,8 @@ export default function Gallery() {
         .select('*');
       
       if (data) {
-        setImages(data as GalleryItem[]);
+        const uniqueImages = (data as GalleryItem[]).filter((v, i, a) => a.findIndex(t => (t.id === v.id)) === i);
+        setImages(uniqueImages);
       }
     };
 
