@@ -224,6 +224,7 @@ export function AdminPropertyForm({
           <div className="glass-card bg-transparent border-white/10 overflow-hidden focus-within:border-amber-500 transition-all">
             <EditorProvider>
               <Editor 
+                key={lang}
                 value={formData[lang === 'en' ? 'description' : `description_${lang}`] || ''} 
                 onChange={(e) => {
                   setFormData((prev: any) => ({
