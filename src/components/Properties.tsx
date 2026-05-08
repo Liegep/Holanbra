@@ -175,6 +175,15 @@ export default function Properties() {
 
   const [visibleCount, setVisibleCount] = useState(6);
 
+  const shuffleArray = (array: any[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   useEffect(() => {
     const fetchProperties = async () => {
       // Public view: only show AVAILABLE properties
@@ -209,7 +218,8 @@ export default function Properties() {
               teleport_url: p.teleport_url || p.slurl 
             };
           });
-        setProperties(propertyList);
+        // Randomize the order by default
+        setProperties(shuffleArray(propertyList));
         setLoading(false);
       }
     };
