@@ -7,7 +7,6 @@ import { ToastType } from '../Toast';
 interface LinkSettings {
   teleport_url: string;
   facebook_url: string;
-  instagram_url: string;
   location_url: string;
 }
 
@@ -16,7 +15,6 @@ export const AdminLinkManager = ({ showToast }: { showToast: (msg: string, type:
   const [settings, setSettings] = useState<LinkSettings>({
     teleport_url: '',
     facebook_url: '',
-    instagram_url: '',
     location_url: ''
   });
   const [loading, setLoading] = useState(true);
@@ -36,7 +34,6 @@ export const AdminLinkManager = ({ showToast }: { showToast: (msg: string, type:
       setSettings({
         teleport_url: data.teleport_url || '',
         facebook_url: data.facebook_url || '',
-        instagram_url: data.instagram_url || '',
         location_url: data.location_url || ''
       });
     }

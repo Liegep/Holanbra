@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageSquare, MapPin, Facebook, Instagram, Mail, X, Loader2, Send } from 'lucide-react';
+import { MessageSquare, MapPin, Facebook, Mail, X, Loader2, Send } from 'lucide-react';
 import { GridStatus } from './GridStatus';
 import { supabase } from '../lib/supabase';
 import Toast, { ToastType } from './Toast';
@@ -11,16 +11,14 @@ export default function Footer() {
   const { t } = useTranslation();
   const [links, setLinks] = useState({
     facebook: '#',
-    instagram: '#',
     location: 'secondlife:///app/teleport/Holanbra/210/90/25'
   });
 
   useEffect(() => {
-    supabase.from('site_settings').select('facebook_url, instagram_url, location_url').eq('id', 'site_links').maybeSingle().then(({ data }) => {
+    supabase.from('site_settings').select('facebook_url, location_url').eq('id', 'site_links').maybeSingle().then(({ data }) => {
       if (data) {
         setLinks({
           facebook: data.facebook_url || '#',
-          instagram: data.instagram_url || '#',
           location: data.location_url || 'secondlife:///app/teleport/Holanbra/210/90/25'
         });
       }
@@ -96,7 +94,6 @@ export default function Footer() {
           <div className="space-y-6">
             <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-500/60">{t('footer.nav')}</h4>
             <ul className="space-y-4 text-[10px] font-bold uppercase tracking-widest text-white/40">
-              <li><Link to="/" className="hover:text-amber-400 transition-colors">{t('nav.home')}</Link></li>
               <li><Link to="/#properties" className="hover:text-amber-400 transition-colors">{t('nav.properties')}</Link></li>
               <li><Link to="/covenant" className="hover:text-amber-400 transition-colors">{t('nav.covenant')}</Link></li>
               <li><Link to="/resident" className="hover:text-amber-400 transition-colors">Resident Portal</Link></li>
@@ -125,9 +122,6 @@ export default function Footer() {
             <div className="flex gap-4">
               <a href={links.facebook} className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
                 <Facebook size={16} />
-              </a>
-              <a href={links.instagram} className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
-                <Instagram size={16} />
               </a>
               <a href={links.location} className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
                 <MapPin size={16} />
