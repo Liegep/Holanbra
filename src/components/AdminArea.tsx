@@ -300,8 +300,6 @@ export default function AdminArea() {
     if (heroData) {
       setHeroContent({
         badgeText: heroData.badge_text || '',
-        title1: heroData.title_main || '',
-        title2: heroData.title_italic || '',
         virtualTourUrl: heroData.virtual_tour_url || '',
         backgroundImage: heroData.hero_image_url || '',
         aboutImage: heroData.about_image_url || '',
@@ -349,15 +347,8 @@ export default function AdminArea() {
       const { error } = await supabase.from('site_settings').upsert({
         id: 'hero_section',
         badge_text: heroContent.badgeText,
-        title_main: heroContent.title1,
-        title_italic: heroContent.title2,
-        virtual_tour_url: heroContent.virtualTourUrl,
         hero_image_url: heroContent.backgroundImage,
-        about_image_url: heroContent.aboutImage,
-        grid_photo_1: heroContent.gridImages[0] || '',
-        grid_photo_2: heroContent.gridImages[1] || '',
-        grid_photo_3: heroContent.gridImages[2] || '',
-        grid_photo_4: heroContent.gridImages[3] || ''
+        about_image_url: heroContent.aboutImage
       });
       if (error) throw error;
       showToast("Settings saved successfully");
@@ -575,15 +566,8 @@ export default function AdminArea() {
         await supabase.from('site_settings').upsert({ 
           id: 'hero_section',
           badge_text: updatedHero.badgeText,
-          title_main: updatedHero.title1,
-          title_italic: updatedHero.title2,
           hero_image_url: updatedHero.backgroundImage,
-          about_image_url: updatedHero.aboutImage,
-          virtual_tour_url: updatedHero.virtualTourUrl,
-          grid_photo_1: updatedHero.gridImages[0] || '',
-          grid_photo_2: updatedHero.gridImages[1] || '',
-          grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || ''
+          about_image_url: updatedHero.aboutImage
         });
       } else if (targetField === 'gridImage' && gridIdx !== undefined) {
         const newGrid = [...heroContent.gridImages];
@@ -593,14 +577,8 @@ export default function AdminArea() {
         await supabase.from('site_settings').upsert({ 
           id: 'hero_section',
           badge_text: updatedHero.badgeText,
-          title_main: updatedHero.title1,
-          title_italic: updatedHero.title2,
           hero_image_url: updatedHero.backgroundImage,
-          about_image_url: updatedHero.aboutImage,
-          grid_photo_1: updatedHero.gridImages[0] || '',
-          grid_photo_2: updatedHero.gridImages[1] || '',
-          grid_photo_3: updatedHero.gridImages[2] || '',
-          grid_photo_4: updatedHero.gridImages[3] || ''
+          about_image_url: updatedHero.aboutImage
         });
       }
       showToast("Media processed successfully");
