@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function TeleportCTA() {
   const { t } = useTranslation();
-  const teleportUrl = "secondlife:///app/teleport/Holanbra/128/128/22";
+  const teleportUrl = "secondlife:///app/teleport/Holanbra/210/90/25";
 
   return (
     <section className="py-32 bg-background-dark relative overflow-hidden">

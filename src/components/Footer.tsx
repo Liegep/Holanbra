@@ -109,7 +109,7 @@ export default function Footer() {
               <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
                 <Facebook size={16} />
               </a>
-              <a href="#" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
+              <a href="secondlife:///app/teleport/Holanbra/210/90/25" className="p-3 rounded-full border border-white/5 hover:bg-amber-500/20 transition-all">
                 <MapPin size={16} />
               </a>
             </div>
