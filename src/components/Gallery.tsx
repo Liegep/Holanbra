@@ -57,7 +57,7 @@ const MediaItem = ({ item, index, onClick }: { item: GalleryItem, index: number,
         ) : (
           <img 
             src={item.url} 
-            alt={item.caption || 'Holanbra Gallery'} 
+            alt={item.caption || 'Holanbra Gallery item'} 
             className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
             referrerPolicy="no-referrer"
           />
@@ -192,7 +192,7 @@ export default function Gallery() {
                 <img 
                   src={selectedImage.url} 
                   className="w-full h-full object-contain rounded-2xl"
-                  alt="Selected Gallery"
+                  alt={selectedImage.caption || 'Holanbra Gallery detailed view'}
                   referrerPolicy="no-referrer"
                 />
               )}
