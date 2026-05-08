@@ -16,7 +16,8 @@ import {
   Sun,
   Tv,
   Shield,
-  UserCheck
+  UserCheck,
+  HelpCircle
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -53,6 +54,7 @@ export default function Properties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [showHowToRent, setShowHowToRent] = useState(false);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
   const [filter, setFilter] = useState({
     type: 'All',
@@ -452,12 +454,21 @@ export default function Properties() {
                          HOLANBRA
                       </p>
                     </div>
-                    <button 
-                      onClick={() => setSelectedProperty(null)}
-                      className="p-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors text-black"
-                    >
-                      <X size={20} />
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <button 
+                        onClick={() => setSelectedProperty(null)}
+                        className="p-3 bg-zinc-100 hover:bg-zinc-200 rounded-full transition-colors text-black"
+                      >
+                        <X size={20} />
+                      </button>
+                      <button 
+                        onClick={() => setShowHowToRent(true)}
+                        className="p-3 bg-amber-500 hover:bg-amber-400 rounded-full text-black transition-all shadow-lg"
+                        title={t('properties.how_to_rent.button')}
+                      >
+                        <HelpCircle size={20} />
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -575,6 +586,45 @@ export default function Properties() {
             </motion.div>
           </motion.div>
         )}
+
+        <AnimatePresence>
+          {showHowToRent && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[120] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+              onClick={() => setShowHowToRent(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className="relative max-w-lg w-full bg-white text-zinc-800 rounded-[2rem] p-8 space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-2xl font-bold text-amber-600">{t('properties.how_to_rent.title')}</h3>
+                <div className="space-y-3 text-sm">
+                  {t('properties.how_to_rent.rules').split('\n').filter(rule => rule.trim() !== '').map((rule, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 bg-zinc-50 rounded-xl">
+                      <div className="mt-0.5 flex-shrink-0 w-5 h-5 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 font-bold text-[10px]">
+                        {idx + 1}
+                      </div>
+                      <span className="text-zinc-700 leading-relaxed">{rule}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setShowHowToRent(false)}
+                  className="w-full py-3 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest"
+                >
+                  Close
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </AnimatePresence>
     </section>
   );

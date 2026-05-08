@@ -57,6 +57,11 @@ const resources = {
           "security_orb": "Security Orb",
           "full_owner_rights": "Full Owner Rights"
         },
+        "how_to_rent": {
+          "button": "How to rent",
+          "title": "How do I rent the house? 🌴",
+          "rules": "Visit the property available for rent.\nClick the property's rental box/sign.\nChoose the desired period and make the payment in Linden Dollars (L$).\nAfter payment, the house will be automatically assigned to you.\nWait a moment — the BOT will automatically send you the Holanbra group invite.\nIf someone from our team doesn't contact you within 24 hours, you can send us a message here on the site or directly in Second Life.\nEnjoy your new home 💛"
+        },
         "description_label": "Description",
         "contact_agent_btn": "CONTACT AGENT",
         "ready_msg_singular": "Property ready for occupancy",
@@ -587,6 +592,11 @@ const resources = {
           "tv": "TV",
           "security_orb": "Orb de Segurança",
           "full_owner_rights": "Direitos de Proprietário Total"
+        },
+        "how_to_rent": {
+          "button": "Como alugar",
+          "title": "Como eu alugo a casa? 🌴",
+          "rules": "Visite a propriedade disponível para aluguel.\nClique na placa/rental box da casa.\nEscolha o período desejado e efetue o pagamento em Linden Dollars (L$).\nApós o pagamento, a casa será automaticamente atribuída a você.\nAguarde alguns instantes — o BOT enviará automaticamente o grupo da Holanbra.\nCaso alguém da equipe não entre em contato em até 24 horas, você pode nos enviar uma mensagem aqui pelo site ou diretamente no Second Life.\nAproveite sua nova casa 💛"
         },
         "description_label": "Descrição",
         "contact_agent_btn": "CONTATAR AGENTE",
@@ -1121,6 +1131,11 @@ const resources = {
           "security_orb": "Orb de Seguridad",
           "full_owner_rights": "Derechos Totales de Propietario"
         },
+        "how_to_rent": {
+          "button": "Cómo alquilar",
+          "title": "¿Cómo alquilo la casa? 🌴",
+          "rules": "Visite la propiedad disponible para alquilar.\nHaga clic en el cartel/caja de alquiler de la casa.\nElija el período deseado y realice el pago en Linden Dollars (L$).\nDespués del pago, la casa se le asignará automáticamente.\nEspere unos instantes: el BOT le enviará automáticamente la invitación al grupo de Holanbra.\nSi alguien de nuestro equipo no lo contacta en un plazo de 24 horas, puede enviarnos un mensaje aquí a través del sitio o directamente en Second Life.\n¡Disfrute de su nuevo hogar! 💛"
+        },
         "description_label": "Descripción",
         "contact_agent_btn": "CONTACTAR AGENTE",
         "ready_msg_singular": "Propiedad lista para ocupar",
@@ -1639,6 +1654,11 @@ const resources = {
           "tv": "TV",
           "security_orb": "Beveiligings Orb",
           "full_owner_rights": "Volledige Eigenaarsrechten"
+        },
+        "how_to_rent": {
+          "button": "Hoe huren",
+          "title": "Hoe huur ik het huis? 🌴",
+          "rules": "Bezoek de woning die te huur is.\nKlik op het huurbord/de rental box van het huis.\nKies de gewenste periode en betaal in Linden Dollars (L$).\nNa betaling wordt het huis automatisch aan u toegewezen.\nWacht even — de BOT stuurt u automatisch een uitnodiging voor de Holanbra-groep.\nAls iemand van ons team binnen 24 uur geen contact met u opneemt, kunt u ons een bericht sturen via de website of rechtstreeks in Second Life.\nGeniet van uw nieuwe huis 💛"
         },
         "description_label": "Beschrijving",
         "contact_agent_btn": "CONTACTEER AGENT",
