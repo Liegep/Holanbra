@@ -109,6 +109,97 @@ export function AdminHeroSection({
                </div>
             </div>
           </div>
+
+          <div className="space-y-4 text-left">
+            <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+               <Video size={14} /> {t('admin.hero.tour_video')}
+            </label>
+            <div className="relative group aspect-video rounded-3xl overflow-hidden border-2 border-white/5 bg-zinc-900 shadow-2xl">
+              {heroContent.virtualTourUrl ? (
+                <video src={heroContent.virtualTourUrl} className="w-full h-full object-cover opacity-60 transition-opacity group-hover:opacity-40" />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-white/10">
+                  <Video size={48} />
+                </div>
+              )}
+              
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all gap-3">
+                <label className="px-6 py-3 bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl cursor-pointer hover:bg-amber-400 transform hover:scale-105 transition-all">
+                   <input 
+                     type="file" 
+                     className="hidden" 
+                     accept="video/mp4"
+                     onChange={(e) => handleFileUpload(e, 'virtualTourUrl')}
+                     disabled={isUploadingSlot === 'virtualTourUrl'}
+                   />
+                   {isUploadingSlot === 'virtualTourUrl' ? t('admin.hero.uploading') : heroContent.virtualTourUrl ? t('admin.hero.change_video') : t('admin.hero.upload_video')}
+                </label>
+                {heroContent.virtualTourUrl && (
+                  <button 
+                    onClick={() => setHeroContent((prev: any) => ({ ...prev, virtualTourUrl: '' }))}
+                    className="p-3 bg-red-500/20 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-lg backdrop-blur-md"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {isUploadingSlot === 'virtualTourUrl' && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                   <Loader2 className="text-amber-500 animate-spin" size={32} />
+                </div>
+              )}
+              
+              <div className="absolute bottom-4 left-4">
+                <div className="px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-md border border-white/5 text-[8px] font-bold text-white/40 uppercase tracking-widest">
+                  MAX 10MB • MP4
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 text-left">
+            <label className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2">
+               < ImageIcon size={14} /> {t('admin.hero.featured_photos')}
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[0, 1, 2, 3].map((idx) => (
+                <div key={idx} className={cn(
+                  "relative group aspect-[3/4] rounded-2xl overflow-hidden border border-white/5 bg-zinc-900 transition-all",
+                  idx % 2 !== 0 && "md:translate-y-6"
+                )}>
+                  {heroContent.gridImages[idx] ? (
+                    <img src={heroContent.gridImages[idx]} className="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-white/5">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                    <label className="w-10 h-10 bg-white/10 backdrop-blur-md text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-amber-500 hover:text-black transition-all">
+                       <input 
+                         type="file" 
+                         className="hidden" 
+                         accept="image/*"
+                         onChange={(e) => handleFileUpload(e, 'gridImage', idx)}
+                         disabled={isUploadingSlot === `grid-${idx}`}
+                       />
+                       <Plus size={18} />
+                    </label>
+                  </div>
+
+                  {isUploadingSlot === `grid-${idx}` && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                       <Loader2 className="text-amber-500 animate-spin" size={24} />
+                    </div>
+                  )}
+                  
+                  <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">Slot {idx + 1}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="glass-card p-10 border-white/5 space-y-8">

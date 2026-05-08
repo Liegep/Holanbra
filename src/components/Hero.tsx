@@ -26,30 +26,38 @@ export default function Hero() {
 
   useEffect(() => {
     const fetchHero = async () => {
+      // Fetch main settings
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
         .eq('id', 'hero_section')
         .maybeSingle();
       
-      if (data) {
+      // Fetch grid and tour from separate rows (compatibility with limited schema)
+      const { data: tourData } = await supabase.from('site_settings').select('location_url').eq('id', 'virtual_tour').maybeSingle();
+      const { data: grid1 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_1').maybeSingle();
+      const { data: grid2 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_2').maybeSingle();
+      const { data: grid3 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_3').maybeSingle();
+      const { data: grid4 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_4').maybeSingle();
+      
+      if (data || tourData || grid1) {
         const getLocalized = (baseKey: string) => {
           const currentLangCode = i18n.language || lang || 'en';
           const field = `${baseKey}_${currentLangCode}`;
-          return data[field] || data[baseKey];
+          return data?.[field] || data?.[baseKey];
         };
 
         setContent({
-          backgroundImage: data.hero_image_url || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
+          backgroundImage: data?.hero_image_url || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
           badgeText: getLocalized('badge_text'),
           title1: getLocalized('title_main') || 'Holanbra',
           title2: getLocalized('title_italic') || 'Sims',
-          virtualTourUrl: data.virtual_tour_url || '',
+          virtualTourUrl: tourData?.location_url || data?.virtual_tour_url || '',
           gridImages: [
-            data.grid_photo_1 || 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600&q=80',
-            data.grid_photo_2 || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
-            data.grid_photo_3 || 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80',
-            data.grid_photo_4 || 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80'
+            grid1?.hero_image_url || data?.grid_photo_1 || 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=600&q=80',
+            grid2?.hero_image_url || data?.grid_photo_2 || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+            grid3?.hero_image_url || data?.grid_photo_3 || 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600&q=80',
+            grid4?.hero_image_url || data?.grid_photo_4 || 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80'
           ]
         });
       }

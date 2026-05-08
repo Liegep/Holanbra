@@ -297,17 +297,23 @@ export default function AdminArea() {
 
     // Fetch Hero
     const { data: heroData } = await supabase.from('site_settings').select('*').eq('id', 'hero_section').maybeSingle();
-    if (heroData) {
+    const { data: tourData } = await supabase.from('site_settings').select('location_url').eq('id', 'virtual_tour').maybeSingle();
+    const { data: grid1 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_1').maybeSingle();
+    const { data: grid2 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_2').maybeSingle();
+    const { data: grid3 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_3').maybeSingle();
+    const { data: grid4 } = await supabase.from('site_settings').select('hero_image_url').eq('id', 'grid_photo_4').maybeSingle();
+
+    if (heroData || tourData || grid1) {
       setHeroContent({
-        badgeText: heroData.badge_text || '',
-        virtualTourUrl: heroData.virtual_tour_url || '',
-        backgroundImage: heroData.hero_image_url || '',
-        aboutImage: heroData.about_image_url || '',
+        badgeText: heroData?.badge_text || '',
+        virtualTourUrl: tourData?.location_url || heroData?.virtual_tour_url || '',
+        backgroundImage: heroData?.hero_image_url || '',
+        aboutImage: heroData?.about_image_url || '',
         gridImages: [
-          heroData.grid_photo_1 || '',
-          heroData.grid_photo_2 || '',
-          heroData.grid_photo_3 || '',
-          heroData.grid_photo_4 || ''
+          grid1?.hero_image_url || heroData?.grid_photo_1 || '',
+          grid2?.hero_image_url || heroData?.grid_photo_2 || '',
+          grid3?.hero_image_url || heroData?.grid_photo_3 || '',
+          grid4?.hero_image_url || heroData?.grid_photo_4 || ''
         ]
       });
     }
@@ -344,13 +350,21 @@ export default function AdminArea() {
   // Handlers
   const handleSaveHero = async () => {
     try {
-      const { error } = await supabase.from('site_settings').upsert({
+      // 1. Save main hero settings (Safe list of columns)
+      await supabase.from('site_settings').upsert({
         id: 'hero_section',
         badge_text: heroContent.badgeText,
         hero_image_url: heroContent.backgroundImage,
         about_image_url: heroContent.aboutImage
       });
-      if (error) throw error;
+
+      // 2. Save grid and tour in separate rows to use valid columns (location_url, hero_image_url)
+      await supabase.from('site_settings').upsert({ id: 'virtual_tour', location_url: heroContent.virtualTourUrl });
+      await supabase.from('site_settings').upsert({ id: 'grid_photo_1', hero_image_url: heroContent.gridImages[0] });
+      await supabase.from('site_settings').upsert({ id: 'grid_photo_2', hero_image_url: heroContent.gridImages[1] });
+      await supabase.from('site_settings').upsert({ id: 'grid_photo_3', hero_image_url: heroContent.gridImages[2] });
+      await supabase.from('site_settings').upsert({ id: 'grid_photo_4', hero_image_url: heroContent.gridImages[3] });
+
       showToast("Settings saved successfully");
     } catch (error: any) {
       showToast("Save failed: " + error.message, "error");
@@ -560,7 +574,7 @@ export default function AdminArea() {
       else if (targetField === 'videoUrl') setFormData(prev => ({ ...prev, videoUrl: publicUrl }));
       else if (targetField === 'image') setTeamFormData(prev => ({ ...prev, image: publicUrl }));
       else if (targetField === 'gallery') setGalleryFormData(prev => ({ ...prev, imageUrl: publicUrl }));
-      else if (targetField === 'backgroundImage' || targetField === 'aboutImage' || targetField === 'virtualTourUrl') {
+      else if (targetField === 'backgroundImage' || targetField === 'aboutImage') {
         const updatedHero = { ...heroContent, [targetField]: publicUrl };
         setHeroContent(updatedHero);
         await supabase.from('site_settings').upsert({ 
@@ -569,16 +583,18 @@ export default function AdminArea() {
           hero_image_url: updatedHero.backgroundImage,
           about_image_url: updatedHero.aboutImage
         });
+      } else if (targetField === 'virtualTourUrl') {
+        const updatedHero = { ...heroContent, virtualTourUrl: publicUrl };
+        setHeroContent(updatedHero);
+        await supabase.from('site_settings').upsert({ id: 'virtual_tour', location_url: publicUrl });
       } else if (targetField === 'gridImage' && gridIdx !== undefined) {
         const newGrid = [...heroContent.gridImages];
         newGrid[gridIdx] = publicUrl;
         const updatedHero = { ...heroContent, gridImages: newGrid };
         setHeroContent(updatedHero);
         await supabase.from('site_settings').upsert({ 
-          id: 'hero_section',
-          badge_text: updatedHero.badgeText,
-          hero_image_url: updatedHero.backgroundImage,
-          about_image_url: updatedHero.aboutImage
+          id: `grid_photo_${gridIdx + 1}`,
+          hero_image_url: publicUrl
         });
       }
       showToast("Media processed successfully");
