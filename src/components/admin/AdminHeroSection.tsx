@@ -152,7 +152,7 @@ export function AdminHeroSection({
               
               <div className="absolute bottom-4 left-4">
                 <div className="px-3 py-1.5 rounded-lg bg-black/50 backdrop-blur-md border border-white/5 text-[8px] font-bold text-white/40 uppercase tracking-widest">
-                  MAX 10MB • MP4
+                  MAX 40MB • MP4
                 </div>
               </div>
             </div>

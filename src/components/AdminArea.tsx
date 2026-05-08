@@ -540,8 +540,11 @@ export default function AdminArea() {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    if (file.size > 10 * 1024 * 1024) {
-      showToast("File is too large (max 10MB)", "error");
+    const isVideo = file.type === 'video/mp4';
+    const maxSize = isVideo ? 40 : 10;
+    
+    if (file.size > maxSize * 1024 * 1024) {
+      showToast(`File is too large (max ${maxSize}MB)`, "error");
       return;
     }
     
