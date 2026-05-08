@@ -16,6 +16,7 @@ import { cn } from '../../lib/utils';
 interface AdminResidentsProps {
   renters: any[];
   properties: any[];
+  allPropertyTenants: any[];
   renterFormData: any;
   setRenterFormData: (val: any) => void;
   selectedPropertyIds: string[];
@@ -29,6 +30,7 @@ interface AdminResidentsProps {
 export function AdminResidents({
   renters,
   properties,
+  allPropertyTenants,
   renterFormData,
   setRenterFormData,
   selectedPropertyIds,
@@ -56,8 +58,9 @@ export function AdminResidents({
         password: renter.password
       });
       const id = renter.avatar_uuid;
+      // Filter by properties.tenant_id OR property_tenants.tenant_id
       const assignedIds = properties
-        .filter(p => (p.tenant_id === id))
+        .filter(p => (p.tenant_id === id) || allPropertyTenants.some(t => t.property_id === p.id && t.tenant_id === id))
         .map(p => p.id);
       setSelectedPropertyIds(assignedIds);
     } else {

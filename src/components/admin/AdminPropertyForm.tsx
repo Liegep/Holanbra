@@ -24,6 +24,8 @@ interface AdminPropertyFormProps {
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, target: string) => void;
   handleSave: () => void;
+  lang: string;
+  setLang: (lang: string) => void;
 }
 
 export function AdminPropertyForm({
@@ -35,7 +37,9 @@ export function AdminPropertyForm({
   uploadProgress,
   handleInputChange,
   handleFileUpload,
-  handleSave
+  handleSave,
+  lang,
+  setLang
 }: AdminPropertyFormProps) {
   const { t } = useTranslation();
   const propertyTypeOptions = ['Land', 'Furnished', 'Not Furnished', 'Skybox', 'Shop', 'House'];
@@ -77,6 +81,8 @@ export function AdminPropertyForm({
                 teleport_url: '',
                 status: 'available',
                 description: '',
+                description_pt: '',
+                description_nl: '',
                 imageUrl: '',
                 gallery_image_1: '',
                 gallery_image_2: '',
@@ -200,14 +206,29 @@ export function AdminPropertyForm({
       
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
+          <div className="flex gap-2 mb-2">
+            {['en', 'pt', 'nl'].map(l => (
+              <button 
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={cn(
+                  "px-3 py-1 rounded text-[10px] font-bold uppercase",
+                  lang === l ? "bg-amber-500 text-black" : "bg-white/5 text-white/40"
+                )}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
           <div className="glass-card bg-transparent border-white/10 overflow-hidden focus-within:border-amber-500 transition-all">
             <EditorProvider>
               <Editor 
-                value={formData.description || ''} 
+                value={formData[lang === 'en' ? 'description' : `description_${lang}`] || ''} 
                 onChange={(e) => {
                   setFormData((prev: any) => ({
                     ...prev,
-                    description: e.target.value
+                    [lang === 'en' ? 'description' : `description_${lang}`]: e.target.value
                   }));
                 }}
                 className="min-h-[200px] text-sm text-white"

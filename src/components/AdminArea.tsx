@@ -62,6 +62,8 @@ export default function AdminArea() {
   const [inboxMessages, setInboxMessages] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [allPropertyTenants, setAllPropertyTenants] = useState<any[]>([]);
+  const [selectedDescriptionLang, setSelectedDescriptionLang] = useState('en');
   const [heroContent, setHeroContent] = useState<any>({
     backgroundImage: '',
     badgeText: 'New Islands Available',
@@ -252,6 +254,7 @@ export default function AdminArea() {
     }
   };
 
+
   const fetchTeam = async () => {
     try {
       const { data, error } = await supabase.from('team').select('*').order('display_order', { ascending: true });
@@ -259,6 +262,16 @@ export default function AdminArea() {
       setTeamMembers(data || []);
     } catch (err) {
       console.error("Fetch team error:", err);
+    }
+  };
+
+  const fetchPropertyTenants = async () => {
+    try {
+      const { data, error } = await supabase.from('property_tenants').select('*');
+      if (error) throw error;
+      setAllPropertyTenants(data || []);
+    } catch (err) {
+      console.error("Fetch property_tenants error:", err);
     }
   };
 
@@ -301,6 +314,7 @@ export default function AdminArea() {
     fetchInboxMessages();
     fetchTeam();
     fetchTickets();
+    fetchPropertyTenants();
   };
 
   useEffect(() => {
@@ -314,6 +328,7 @@ export default function AdminArea() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'property_tenants' }, fetchPropertyTenants)
         .subscribe();
 
       return () => {
@@ -609,6 +624,8 @@ export default function AdminArea() {
       const dataToSave = {
         name: formData.name?.trim() || null,
         description: formData.description?.trim() || null,
+        description_pt: formData.description_pt?.trim() || null,
+        description_nl: formData.description_nl?.trim() || null,
         price: parseFloat(formData.price) || 0,
         rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
@@ -686,6 +703,8 @@ export default function AdminArea() {
       teleport_url: prop.teleport_url || '',
       status: prop.status || 'available',
       description: prop.description || '',
+      description_pt: prop.description_pt || '',
+      description_nl: prop.description_nl || '',
       imageUrl: prop.image_url || '',
       gallery_image_1: prop.gallery_image_1 || '',
       gallery_image_2: prop.gallery_image_2 || '',
@@ -744,6 +763,7 @@ export default function AdminArea() {
       const renterUuid = renterFormData.avatarUuid.trim();
       
       // Update property links
+      // 1. Primary link using properties table (for ResidentDashboard primary tenant check)
       const { data: currentLinked } = await supabase.from('properties').select('id').eq('tenant_id', renterUuid);
       const currentLinkedIds = currentLinked?.map(p => p.id) || [];
       
@@ -755,8 +775,24 @@ export default function AdminArea() {
       
       const toLink = selectedPropertyIds.filter(id => !currentLinkedIds.includes(id));
       if (toLink.length > 0) {
+        const updates = toLink.map(id => ({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName.trim(), status: 'rented' }));
         const { error: linkError } = await supabase.from('properties').update({ tenant_id: renterUuid, tenant_name: renterFormData.avatarName.trim(), status: 'rented' }).in('id', toLink);
         if (linkError) console.error("Link error:", linkError);
+      }
+
+      // 2. Shared link using property_tenants table (for multiple tenants support)
+      // Delete old shared links for this renter that are no longer selected
+      await supabase.from('property_tenants').delete().eq('tenant_id', renterUuid);
+      
+      // Insert new shared links
+      if (selectedPropertyIds.length > 0) {
+        const newLinks = selectedPropertyIds.map(id => ({
+          property_id: parseInt(id),
+          tenant_id: renterUuid,
+          tenant_name: renterFormData.avatarName.trim()
+        }));
+        const { error: insertError } = await supabase.from('property_tenants').insert(newLinks);
+        if (insertError) console.error("Shared link insert error:", insertError);
       }
       
       showToast("Resident update successful");
@@ -783,10 +819,15 @@ export default function AdminArea() {
     console.log(`Command: DELETE FROM renters WHERE avatar_uuid = '${cleanUuid}'`);
     
     try {
-      // Step 1: Sweep properties first
+      // Step 1: Sweep properties and shared links first
       await supabase
         .from('properties')
         .update({ tenant_id: null, tenant_name: null, status: 'available' })
+        .eq('tenant_id', cleanUuid);
+        
+      await supabase
+        .from('property_tenants')
+        .delete()
         .eq('tenant_id', cleanUuid);
 
       // Step 2: Delete from renters table using avatar_uuid
@@ -1071,6 +1112,7 @@ export default function AdminArea() {
             <AdminResidents 
               renters={renters}
               properties={properties}
+              allPropertyTenants={allPropertyTenants}
               renterFormData={renterFormData}
               setRenterFormData={setRenterFormData}
               selectedPropertyIds={selectedPropertyIds}
@@ -1171,6 +1213,8 @@ export default function AdminArea() {
               handleInputChange={(e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))}
               handleFileUpload={handleFileUpload}
               handleSave={handleSaveProperty}
+              lang={selectedDescriptionLang}
+              setLang={setSelectedDescriptionLang}
             />
           )}
         </main>
