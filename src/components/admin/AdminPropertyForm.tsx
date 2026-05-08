@@ -207,7 +207,7 @@ export function AdminPropertyForm({
         <div className="space-y-2 text-left">
           <label className="text-xs font-bold text-amber-500/70 uppercase">{t('admin.property.description')}</label>
           <div className="flex gap-2 mb-2">
-            {['en', 'pt', 'nl'].map(l => (
+            {['en', 'pt', 'nl', 'es'].map(l => (
               <button 
                 key={l}
                 type="button"
