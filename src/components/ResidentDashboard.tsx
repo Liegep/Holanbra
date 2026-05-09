@@ -22,12 +22,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Tag,
-  HelpCircle
+  HelpCircle,
+  Music
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
 import { FAQDisplay } from './FAQDisplay';
+import { SpotifyPlayer } from './SpotifyPlayer';
 
 const ResidentDashboard:FC = () => {
   const { t, i18n } = useTranslation();
@@ -477,6 +479,22 @@ const ResidentDashboard:FC = () => {
               className="mt-4 flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
             >
               <LogOut size={14} /> {t('resident.logout')}
+            </button>
+          </div>
+
+          {/* Spotify Radio Trigger (Lateral for Dashboard) */}
+          <div className="md:absolute md:right-12 md:top-1/2 md:-translate-y-1/2 w-full md:w-auto flex justify-center mt-8 md:mt-0">
+            <button 
+              onClick={() => window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }))}
+              className="group relative px-8 py-4 rounded-2xl glass border border-white/10 flex items-center gap-4 transition-all hover:bg-white/5 active:scale-95"
+            >
+              <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <Music size={20} className="text-amber-500 animate-pulse" />
+              </div>
+              <div className="flex flex-col items-start translate-y-[-1px]">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Holanbra Radio</span>
+                <span className="text-[8px] font-medium text-white/30 uppercase tracking-widest">Listen to your welcome gift</span>
+              </div>
             </button>
           </div>
         </div>

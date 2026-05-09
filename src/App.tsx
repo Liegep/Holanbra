@@ -36,7 +36,8 @@ import TawkChat from './components/TawkChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
-
+import { SpotifyPlayer } from './components/SpotifyPlayer';
+ 
 export default function App() {
   const location = useLocation();
 
@@ -105,6 +106,7 @@ export default function App() {
       </main>
       <TeleportCTA />
       <TawkChat />
+      <SpotifyPlayer />
       <Footer />
     </div>
   );

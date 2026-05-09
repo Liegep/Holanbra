@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Play, X } from 'lucide-react';
+import { ArrowRight, Play, X, Music } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
+import { SpotifyPlayer } from './SpotifyPlayer';
 
 export default function Hero() {
   const { lang } = useParams();
@@ -149,7 +150,21 @@ export default function Hero() {
             </div>
             {t('hero.tour')}
           </button>
+
+          <button 
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }));
+            }}
+            className={cn(
+              "px-10 py-5 rounded-full border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all transform hover:scale-105 shadow-xl bg-white border-white text-black shadow-white/10 hover:bg-zinc-100"
+            )}
+          >
+            <Music size={14} className="text-amber-500 animate-bounce" />
+            {t('hero.radio')}
+          </button>
         </motion.div>
+
+        {/* Removed local Radio Player expansion */}
       </div>
 
       <AnimatePresence>

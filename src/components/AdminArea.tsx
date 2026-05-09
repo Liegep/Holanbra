@@ -1057,7 +1057,7 @@ export default function AdminArea() {
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">{user.user_metadata?.full_name || user.email}</p>
+              <p className="text-xs font-bold text-white truncate">{t('admin.navigation.administrator', 'Administrator')}</p>
               <button onClick={() => signOut()} className="text-[10px] text-red-400 uppercase tracking-widest hover:underline">{t('resident.logout')}</button>
             </div>
           </div>

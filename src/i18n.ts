@@ -7,7 +7,7 @@ const resources = {
   en: {
     translation: {
       "nav": {
-        "home": "Welcome",
+        "home": "Home",
         "properties": "Properties",
         "gallery": "Gallery",
         "about": "About Us",
@@ -16,11 +16,14 @@ const resources = {
         "covenant": "Rules",
         "portfolio": "Portfolio",
         "decoration": "Decoration",
-        "resident_portal": "Resident Login"
+        "resident_portal": "Resident Login",
+        "radio_open": "Open Radio",
+        "radio_close": "Close Radio"
       },
       "hero": {
         "rentals": "New Rentals Available",
-        "tour": "Virtual Tour"
+        "tour": "Virtual Tour",
+        "radio": "Holanbra Radio"
       },
       "properties": {
         "title": "Available",
@@ -362,7 +365,8 @@ const resources = {
           "covenant": "Covenants",
           "links": "Site Links",
           "faqs": "FAQs & Help",
-          "settings": "Portal Settings"
+          "settings": "Portal Settings",
+          "administrator": "Marie Whitfield"
         },
         "faqs": {
           "title": "FAQ & Help Management",
@@ -577,7 +581,7 @@ const resources = {
   pt: {
     translation: {
       "nav": {
-        "home": "Bem-vindo",
+        "home": "Início",
         "properties": "Propriedades",
         "gallery": "Galeria",
         "about": "Sobre Nós",
@@ -586,11 +590,14 @@ const resources = {
         "covenant": "Regras",
         "portfolio": "Portfólio",
         "decoration": "Decoração",
-        "resident_portal": "Portal do Residente"
+        "resident_portal": "Portal do Residente",
+        "radio_open": "Abrir Rádio",
+        "radio_close": "Fechar Rádio"
       },
       "hero": {
         "rentals": "Novos Aluguéis Disponíveis",
-        "tour": "Tour Virtual"
+        "tour": "Tour Virtual",
+        "radio": "Rádio Holanbra"
       },
       "properties": {
         "title": "Disponíveis",
@@ -932,7 +939,8 @@ const resources = {
           "covenant": "Regras/Termos",
           "links": "Links do Site",
           "faqs": "FAQs e Ajuda",
-          "settings": "Configurações do Portal"
+          "settings": "Configurações do Portal",
+          "administrator": "Marie Whitfield"
         },
         "faqs": {
           "title": "Gerenciamento de FAQs",
@@ -1149,7 +1157,7 @@ const resources = {
   es: {
     translation: {
       "nav": {
-        "home": "Bienvenido",
+        "home": "Inicio",
         "properties": "Propiedades",
         "gallery": "Galería",
         "about": "Nosotros",
@@ -1609,7 +1617,8 @@ const resources = {
           "add_property": "Añadir Nueva Propiedad",
           "covenant": "Convenios",
           "links": "Enlaces del Sitio",
-          "settings": "Configuración del Portal"
+          "settings": "Configuración del Portal",
+          "administrator": "Marie Whitfield"
         },
         "fields": {
           "price": "Precio",
@@ -1674,7 +1683,7 @@ const resources = {
   nl: {
     translation: {
       "nav": {
-        "home": "Welkom",
+        "home": "Home",
         "properties": "Woningen",
         "gallery": "Galerij",
         "about": "Over Ons",
@@ -1940,7 +1949,8 @@ const resources = {
           "edit_property": "Woning Bewerken",
           "add_property": "Nieuwe Woning Toevoegen",
           "covenant": "Voorschriften",
-          "settings": "Instellingen"
+          "settings": "Instellingen",
+          "administrator": "Marie Whitfield"
         },
         "property": {
           "edit_config": "Woningconfiguratie Bewerken",

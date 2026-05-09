@@ -80,8 +80,9 @@ export default function Navbar() {
 
   return (
     <nav className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-6 py-4",
-      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent"
+      "fixed top-0 left-0 right-0 transition-all duration-300 px-6 py-4",
+      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent",
+      mobileMenuOpen ? "z-[9999]" : "z-50"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
@@ -178,109 +179,148 @@ export default function Navbar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] md:hidden"
+              className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9000] md:hidden"
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div 
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-zinc-950 border-l border-white/10 p-8 shadow-2xl md:hidden flex flex-col z-[90] overflow-y-auto"
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed inset-y-0 right-0 w-[85%] max-w-[320px] bg-zinc-950 border-l border-white/10 shadow-2xl md:hidden flex flex-col z-[9999] overflow-hidden"
             >
-              <div className="flex justify-between items-center mb-12">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center -rotate-6">
-                    <span className="text-black font-black text-lg">H</span>
+              <div className="p-8 flex flex-col h-full">
+                <div className="flex justify-between items-center mb-10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center -rotate-6 shadow-lg shadow-amber-500/20">
+                      <span className="text-black font-black text-xl">H</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold tracking-tighter text-white uppercase leading-none">HOLANBRA</span>
+                      <span className="text-[7px] font-mono tracking-[0.2em] text-white/30 uppercase">Virtual Estates</span>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">HOLANBRA</span>
-                </div>
-                <button 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-white/40 hover:text-white"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-1 flex-grow">
-                <p className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.3em] mb-4 ml-1">{t('nav.navigation', 'Navigation')}</p>
-                {navLinks.map((link, idx) => (
-                  <motion.div
-                    key={link.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 + idx * 0.05 }}
+                  <button 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+                    aria-label="Close menu"
                   >
-                    <Link 
-                      to={link.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={cn(
-                        "group py-4 px-1 flex items-center justify-between transition-all border-b border-white/5",
-                        isActive(link.path) ? "text-amber-500" : "text-white hover:text-amber-400"
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={cn(
-                          "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                          isActive(link.path) ? "bg-amber-500/20 text-amber-500" : "bg-white/5 text-white/40 group-hover:bg-white/10"
-                        )}>
-                          <link.icon size={18} />
-                        </div>
-                        <span className="text-lg font-bold tracking-tight">{link.label}</span>
-                      </div>
-                      {isActive(link.path) && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                    <X size={20} />
+                  </button>
+                </div>
 
-              <div className="mt-auto space-y-6 pt-8 border-t border-white/10">
-                {/* Mobile Language Selector */}
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
-                    <Globe size={10} /> {t('nav.language', 'Language')}
-                  </p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {languages.map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          changeLanguage(lang.code);
-                          setMobileMenuOpen(false);
-                        }}
+                <div className="flex-grow overflow-y-auto pr-4 -mr-4 scrollbar-hide">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] mb-4 ml-1">{t('nav.navigation', 'Navigation')}</p>
+                    
+                    {/* Explicit Home Link for Mobile */}
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <Link 
+                        to="/"
+                        onClick={() => setMobileMenuOpen(false)}
                         className={cn(
-                          "py-3 rounded-xl text-xs font-black transition-all border",
-                          i18n.language.startsWith(lang.code) 
-                            ? "bg-amber-500 border-amber-500 text-black" 
-                            : "bg-white/5 border-white/5 text-white/40 hover:text-white"
+                          "group py-4 px-1 flex items-center justify-between transition-all border-b border-white/5",
+                          isActive('/') ? "text-amber-500" : "text-white hover:text-amber-400"
                         )}
                       >
-                        {lang.label}
-                      </button>
-                    ))}
+                        <div className="flex items-center gap-4">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                            isActive('/') ? "bg-amber-500/20 text-amber-500 shadow-inner" : "bg-white/5 text-white/40 group-hover:bg-white/10"
+                          )}>
+                            <Home size={18} />
+                          </div>
+                          <span className="text-lg font-bold tracking-tight">{t('nav.home', 'Home')}</span>
+                        </div>
+                        {isActive('/') && <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
+                      </Link>
+                    </motion.div>
+
+                    {navLinks.map((link: any, idx: number) => {
+                      const Icon = link.icon;
+                      return (
+                        <motion.div
+                          key={link.name}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.15 + idx * 0.05 }}
+                        >
+                          <Link 
+                            to={link.path}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={cn(
+                              "group py-4 px-1 flex items-center justify-between transition-all border-b border-white/5",
+                              isActive(link.path) ? "text-amber-500" : "text-white hover:text-amber-400"
+                            )}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                                isActive(link.path) ? "bg-amber-500/20 text-amber-500 shadow-inner" : "bg-white/5 text-white/40 group-hover:bg-white/10"
+                              )}>
+                                <Icon size={18} />
+                              </div>
+                              <span className="text-lg font-bold tracking-tight">{link.label}</span>
+                            </div>
+                            {isActive(link.path) && <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />}
+                          </Link>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {isAdmin && (
+                <div className="mt-8 pt-8 border-t border-white/10 space-y-6">
+                  {/* Mobile Language Selector */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
+                      <Globe size={10} /> {t('nav.language', 'Language')}
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            changeLanguage(lang.code);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={cn(
+                            "py-3 rounded-xl text-[10px] font-black transition-all border",
+                            i18n.language.startsWith(lang.code) 
+                              ? "bg-amber-500 border-amber-500 text-black shadow-lg shadow-amber-500/10" 
+                              : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                          )}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    {isAdmin && (
+                      <Link 
+                        to="/admin" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full py-4 rounded-2xl bg-white/5 text-white text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 border border-white/10 transition-all hover:bg-white/10"
+                      >
+                        <LayoutDashboard size={16} className="text-amber-500" />
+                        {t('admin.navigation', 'Admin Area')}
+                      </Link>
+                    )}
                     <Link 
-                      to="/admin" 
+                      to="/resident" 
                       onClick={() => setMobileMenuOpen(false)}
-                      className="w-full py-4 rounded-2xl bg-white/5 text-white text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 border border-white/10 transition-all hover:bg-white/10"
+                      className="w-full py-5 rounded-2xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 active:scale-[0.98] transition-all"
                     >
-                      <LayoutDashboard size={16} className="text-amber-500" />
-                      {t('admin.navigation', 'Admin Area')}
+                      <ShieldCheck size={18} />
+                      {t('nav.resident_portal')}
                     </Link>
-                  )}
-                  <Link 
-                    to="/resident" 
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-5 rounded-2xl bg-amber-500 text-black text-xs font-black cursor-pointer uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 active:scale-[0.98] transition-all"
-                  >
-                    <ShieldCheck size={18} />
-                    {t('nav.resident_portal')}
-                  </Link>
+                  </div>
                 </div>
               </div>
             </motion.div>
