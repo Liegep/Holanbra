@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+import Editor from 'react-simple-wysiwyg';
 
 interface FAQ {
   id: string;
@@ -225,13 +226,13 @@ export const AdminFAQManager: React.FC = () => {
               <label className="text-[10px] font-black uppercase text-amber-500 ml-1">
                 {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
               </label>
-              <textarea
-                rows={4}
-                value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
-                onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none"
-                placeholder={t('admin.faqs.answer_placeholder')}
-              />
+              <div className="bg-black rounded-xl border border-white/10 overflow-hidden min-h-[200px]">
+                <Editor
+                  value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
+                  onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
+                  placeholder={t('admin.faqs.answer_placeholder')}
+                />
+              </div>
             </div>
           </div>
 
@@ -290,21 +291,44 @@ export const AdminFAQManager: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-white/20 px-2 py-0.5 bg-white/5 rounded border border-white/5">
+                    <span className={cn(
+                      "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+                      faq.category === 'technical' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                      faq.category === 'land' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                      faq.category === 'billing' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                      "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    )}>
                       {t(`admin.faqs.categories.${faq.category}`)}
                     </span>
                   </div>
                   <h4 className="text-lg font-bold text-white mb-2">{faq.question_en}</h4>
-                  <div className="flex gap-2">
-                    {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
-                      <div 
-                        key={lang}
-                        className={cn(
-                          "w-1 h-1 rounded-full",
-                          faq[`question_${lang}`] ? "bg-amber-500" : "bg-white/10"
-                        )}
-                      />
-                    ))}
+                  <div className="flex flex-col gap-1 mt-2">
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[6px] font-black uppercase text-white/20 w-4">Q:</span>
+                      {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
+                        <div 
+                          key={lang}
+                          title={`Question ${lang.toUpperCase()}`}
+                          className={cn(
+                            "w-1 h-1 rounded-full",
+                            faq[`question_${lang}`] ? "bg-amber-500" : "bg-white/10"
+                          )}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-[6px] font-black uppercase text-white/20 w-4">A:</span>
+                      {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
+                        <div 
+                          key={lang}
+                          title={`Answer ${lang.toUpperCase()}`}
+                          className={cn(
+                            "w-1 h-1 rounded-full",
+                            faq[`answer_${lang}`] ? "bg-amber-500" : "bg-white/10"
+                          )}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
