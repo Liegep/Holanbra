@@ -84,8 +84,8 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
               <Music size={14} className="text-amber-500 animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-white">Holanbra Radio</span>
-              {state === 'modal' && <span className="text-[7px] font-medium text-white/40 uppercase tracking-widest">Resident Selection</span>}
+              <span className="text-[9px] font-black uppercase tracking-[0.1em] text-white">{t('hero.radio')}</span>
+              {state === 'modal' && <span className="text-[7px] font-medium text-white/40 uppercase tracking-widest">{t('resident.radio_selection', 'Resident Selection')}</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         <div className="flex-grow bg-black/20">
           <iframe 
             title="Spotify Player Persistent"
-            src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0`} 
+            src={`https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&v=${Date.now()}`} 
             width="100%" 
             height={state === 'modal' ? "400" : "80"} 
             frameBorder="0" 
