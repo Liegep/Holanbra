@@ -303,63 +303,65 @@ export default function Properties() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex gap-2 flex-wrap justify-start">
-              {[
-                { id: 'All', label: t('properties.filter_all') },
-                { id: 'Land', label: t('properties.filter_land') },
-                { id: 'Furnished', label: t('properties.filter_furnished') },
-                { id: 'Not Furnished', label: t('properties.filter_not_furnished') },
-                { id: 'Skybox', label: t('properties.filter_skybox') },
-                { id: 'Shop', label: t('properties.filter_shop') },
-                { id: 'House', label: t('properties.filter_house') }
-              ].map((type) => (
-                <button 
-                  key={type.id}
-                  onClick={() => setFilter({ ...filter, type: type.id })}
-                  className={cn(
-                    "px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all mb-2",
-                    filter.type === type.id ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-black/5 border-black/5 text-black/60 hover:text-black"
-                  )}
+          <div className="w-full lg:w-auto overflow-x-auto pb-4 lg:pb-0 hide-scrollbar">
+            <div className="flex flex-nowrap lg:flex-wrap gap-4 items-center min-w-max lg:min-w-0 px-1">
+              <div className="flex gap-2 flex-nowrap lg:flex-wrap shrink-0">
+                {[
+                  { id: 'All', label: t('properties.filter_all') },
+                  { id: 'Land', label: t('properties.filter_land') },
+                  { id: 'Furnished', label: t('properties.filter_furnished') },
+                  { id: 'Not Furnished', label: t('properties.filter_not_furnished') },
+                  { id: 'Skybox', label: t('properties.filter_skybox') },
+                  { id: 'Shop', label: t('properties.filter_shop') },
+                  { id: 'House', label: t('properties.filter_house') }
+                ].map((type) => (
+                  <button 
+                    key={type.id}
+                    onClick={() => setFilter({ ...filter, type: type.id })}
+                    className={cn(
+                      "px-4 py-2 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap",
+                      filter.type === type.id ? "bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/20" : "bg-black/5 border-black/5 text-black/60 hover:text-black"
+                    )}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-4 shrink-0">
+                <select 
+                  value={filter.status}
+                  onChange={(e) => setFilter({ ...filter, status: e.target.value })}
+                  className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer whitespace-nowrap"
                 >
-                  {type.label}
-                </button>
-              ))}
-            </div>
+                  <option value="all">{t('properties.status_all')}</option>
+                  <option value="available">{t('properties.status_available')}</option>
+                </select>
 
-            <div className="flex gap-4">
-              <select 
-                value={filter.status}
-                onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-                className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
-              >
-                <option value="all">{t('properties.status_all')}</option>
-                <option value="available">{t('properties.status_available')}</option>
-              </select>
+                <select 
+                  value={filter.sortBy}
+                  onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
+                  className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer whitespace-nowrap"
+                >
+                  <option value="price-low">{t('properties.sort_price_low')}</option>
+                  <option value="price-high">{t('properties.sort_price_high')}</option>
+                  <option value="name-az">{t('properties.sort_name_az')}</option>
+                  <option value="name-za">{t('properties.sort_name_za')}</option>
+                </select>
+              </div>
 
-              <select 
-                value={filter.sortBy}
-                onChange={(e) => setFilter({ ...filter, sortBy: e.target.value })}
-                className="px-6 py-2 rounded-full bg-black/5 border-black/5 text-[10px] font-bold uppercase tracking-widest text-black/60 outline-none focus:border-amber-500/50 appearance-none cursor-pointer"
-              >
-                <option value="price-low">{t('properties.sort_price_low')}</option>
-                <option value="price-high">{t('properties.sort_price_high')}</option>
-                <option value="name-az">{t('properties.sort_name_az')}</option>
-                <option value="name-za">{t('properties.sort_name_za')}</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-3 bg-black/5 border-black/5 rounded-full px-6 py-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">{t('properties.up_to')} L$ {filter.maxPrice}</span>
-              <input 
-                type="range" 
-                min="500" 
-                max="50000" 
-                step="500"
-                value={filter.maxPrice}
-                onChange={(e) => setFilter({ ...filter, maxPrice: parseInt(e.target.value) })}
-                className="w-24 accent-amber-500"
-              />
+              <div className="flex items-center gap-3 bg-black/5 border-black/5 rounded-full px-6 py-2 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-black/40 min-w-max">{t('properties.up_to')} L$ {filter.maxPrice}</span>
+                <input 
+                  type="range" 
+                  min="500" 
+                  max="50000" 
+                  step="500"
+                  value={filter.maxPrice}
+                  onChange={(e) => setFilter({ ...filter, maxPrice: parseInt(e.target.value) })}
+                  className="w-24 accent-amber-500"
+                />
+              </div>
             </div>
           </div>
         </div>

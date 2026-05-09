@@ -81,7 +81,7 @@ export default function Navbar() {
   return (
     <nav className={cn(
       "fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-6 py-4",
-      isScrolled ? "bg-background-dark/80 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent"
+      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
@@ -156,26 +156,16 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex items-center gap-4 md:hidden">
-          <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10 mr-2">
-            {languages.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => changeLanguage(lang.code)}
-                className={cn(
-                  "px-2 py-1 rounded-full text-[8px] font-black transition-all",
-                  i18n.language.startsWith(lang.code) ? "bg-amber-500 text-black" : "text-white/40 hover:text-white"
-                )}
-              >
-                {lang.code.toUpperCase()}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-2 md:hidden">
           <button 
-            className="p-2 text-gray-400"
+            className={cn(
+              "p-3 rounded-xl transition-all duration-300",
+              mobileMenuOpen ? "bg-amber-500 text-black scale-90" : "bg-white/5 text-gray-400"
+            )}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X /> : <Menu />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
@@ -183,48 +173,118 @@ export default function Navbar() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="absolute top-full left-0 right-0 bg-black/95 backdrop-blur-2xl border-b border-white/10 p-6 md:hidden"
-          >
-            <div className="flex flex-col gap-6">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.name} 
-                  to={link.path}
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 bottom-0 w-[85%] max-w-sm bg-zinc-950 border-l border-white/10 p-8 shadow-2xl md:hidden flex flex-col z-[90] overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-12">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center -rotate-6">
+                    <span className="text-black font-black text-lg">H</span>
+                  </div>
+                  <span className="text-xs font-bold tracking-widest text-white/40 uppercase">HOLANBRA</span>
+                </div>
+                <button 
                   onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    "text-lg font-medium flex items-center gap-3 transition-colors",
-                    isActive(link.path) ? "text-amber-500" : "text-gray-400 hover:text-white"
-                  )}
+                  className="p-2 text-white/40 hover:text-white"
                 >
-                  <link.icon size={20} className={cn(isActive(link.path) ? "text-amber-500" : "text-gray-500")} />
-                  {link.label}
-                </Link>
-              ))}
+                  <X size={24} />
+                </button>
+              </div>
 
-              {isAdmin && (
-                <Link 
-                  to="/admin" 
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold flex items-center justify-center gap-3 border border-white/10"
-                >
-                  <LayoutDashboard size={20} className="text-amber-500" />
-                  {t('admin.navigation')}
-                </Link>
-              )}
-              <Link 
-                to="/resident" 
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-4 rounded-2xl bg-amber-500 text-black font-bold flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20"
-              >
-                <ShieldCheck size={20} />
-                {t('nav.resident_portal')}
-              </Link>
-            </div>
-          </motion.div>
+              <div className="flex flex-col gap-1 flex-grow">
+                <p className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.3em] mb-4 ml-1">{t('nav.navigation', 'Navigation')}</p>
+                {navLinks.map((link, idx) => (
+                  <motion.div
+                    key={link.name}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + idx * 0.05 }}
+                  >
+                    <Link 
+                      to={link.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "group py-4 px-1 flex items-center justify-between transition-all border-b border-white/5",
+                        isActive(link.path) ? "text-amber-500" : "text-white hover:text-amber-400"
+                      )}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                          isActive(link.path) ? "bg-amber-500/20 text-amber-500" : "bg-white/5 text-white/40 group-hover:bg-white/10"
+                        )}>
+                          <link.icon size={18} />
+                        </div>
+                        <span className="text-lg font-bold tracking-tight">{link.label}</span>
+                      </div>
+                      {isActive(link.path) && <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="mt-auto space-y-6 pt-8 border-t border-white/10">
+                {/* Mobile Language Selector */}
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] ml-1 flex items-center gap-2">
+                    <Globe size={10} /> {t('nav.language', 'Language')}
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          changeLanguage(lang.code);
+                          setMobileMenuOpen(false);
+                        }}
+                        className={cn(
+                          "py-3 rounded-xl text-xs font-black transition-all border",
+                          i18n.language.startsWith(lang.code) 
+                            ? "bg-amber-500 border-amber-500 text-black" 
+                            : "bg-white/5 border-white/5 text-white/40 hover:text-white"
+                        )}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-4 rounded-2xl bg-white/5 text-white text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 border border-white/10 transition-all hover:bg-white/10"
+                    >
+                      <LayoutDashboard size={16} className="text-amber-500" />
+                      {t('admin.navigation', 'Admin Area')}
+                    </Link>
+                  )}
+                  <Link 
+                    to="/resident" 
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-5 rounded-2xl bg-amber-500 text-black text-xs font-black cursor-pointer uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-xl shadow-amber-500/20 active:scale-[0.98] transition-all"
+                  >
+                    <ShieldCheck size={18} />
+                    {t('nav.resident_portal')}
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </nav>

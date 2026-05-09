@@ -200,23 +200,24 @@ export default function Team() {
                     alt={member.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0 opacity-80 group-hover:opacity-100"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 lg:grayscale group-hover:grayscale-0 lg:opacity-80 group-hover:opacity-100"
                     referrerPolicy="no-referrer"
                   />
                   
                   {/* SL Profile Button */}
-                  <div className="absolute top-6 right-6 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                  <div className="absolute top-6 right-6 lg:translate-x-12 lg:opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500 z-20">
                     <a 
                       href="#" 
                       onClick={(e) => handleIMClick(e, member)}
                       className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-full font-black uppercase text-[10px] tracking-widest shadow-xl shadow-amber-500/30 hover:bg-black hover:text-white transition-all group/btn"
                     >
                       <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      {t('team.send_message')}
+                      <span className="hidden sm:inline">{t('team.send_message')}</span>
+                      <span className="sm:hidden">IM</span>
                     </a>
                   </div>
 
-                  <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/80 backdrop-blur-xl border border-white/20 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 rounded-3xl shadow-lg">
+                  <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/90 backdrop-blur-xl border border-white/20 lg:translate-y-4 group-hover:translate-y-0 transition-transform duration-500 rounded-3xl shadow-lg z-10">
                      <div className="flex items-center gap-2 text-amber-600 mb-2">
                         <IconComponent size={14} />
                         <span className="text-[8px] font-black uppercase tracking-widest">{member.role}</span>

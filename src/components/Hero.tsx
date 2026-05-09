@@ -109,10 +109,10 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center gap-8 mb-4">
             <div className="flex flex-col items-center">
-              <h2 className="text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
-                <span className="text-amber-500">{content.title1}</span>
-                <span className="italic font-light flex items-center gap-4">
-                  {content.title2} <ArrowRight size={48} className="text-white/20" />
+              <h2 className="text-4xl sm:text-6xl md:text-8xl font-display font-bold tracking-tight text-white flex flex-col items-center">
+                <span className="text-amber-500 whitespace-nowrap leading-tight">{content.title1}</span>
+                <span className="italic font-light flex items-center gap-4 text-3xl sm:text-5xl md:text-8xl">
+                  {content.title2} <ArrowRight className="text-white/20 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12" />
                 </span>
               </h2>
             </div>
