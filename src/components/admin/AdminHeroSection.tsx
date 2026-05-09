@@ -195,7 +195,7 @@ export function AdminHeroSection({
                     </div>
                   )}
                   
-                  <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">Slot {idx + 1}</div>
+                  <div className="absolute bottom-2 left-2 text-[8px] font-black text-white/20 uppercase tracking-tighter">{t('admin.hero.slot')} {idx + 1}</div>
                 </div>
               ))}
             </div>

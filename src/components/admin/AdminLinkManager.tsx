@@ -121,7 +121,7 @@ export const AdminLinkManager = ({ showToast }: { showToast: (msg: string, type:
                value={settings.logo_url}
                onChange={(e) => setSettings(prev => ({ ...prev, logo_url: e.target.value }))}
                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] text-white/40 outline-none"
-               placeholder="URL do Logo"
+               placeholder={t('admin.fields.logo_url_placeholder', 'Logo URL')}
              />
           </div>
         </div>

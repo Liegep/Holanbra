@@ -14,7 +14,8 @@ import {
   MessageSquare,
   FileText,
   AlertCircle,
-  DollarSign
+  DollarSign,
+  HelpCircle
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase, signOut } from '../lib/supabase';
@@ -38,6 +39,7 @@ import { AdminPropertyListings } from './admin/AdminPropertyListings';
 import { AdminPortfolioManager } from './admin/AdminPortfolioManager';
 import { AdminPricingManager } from './admin/AdminPricingManager';
 import { AdminLinkManager } from './admin/AdminLinkManager';
+import { AdminFAQManager } from './admin/AdminFAQManager';
 
 const INITIAL_FORM_DATA = {
   name: '',
@@ -66,7 +68,7 @@ export default function AdminArea() {
   const { t } = useTranslation();
   
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links' | 'faqs'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -1074,6 +1076,7 @@ export default function AdminArea() {
             { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
             { id: 'links', name: t('admin.navigation.links'), icon: LinkIcon },
+            { id: 'faqs', name: t('admin.navigation.faqs'), icon: HelpCircle },
           ].map((item) => (
             <button
               key={item.id}
@@ -1202,6 +1205,10 @@ export default function AdminArea() {
 
           {activeTab === 'links' && (
             <AdminLinkManager showToast={showToast} />
+          )}
+
+          {activeTab === 'faqs' && (
+            <AdminFAQManager />
           )}
 
           {activeTab === 'listings' && (

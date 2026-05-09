@@ -21,11 +21,13 @@ import {
   History,
   CheckCircle2,
   AlertCircle,
-  Tag
+  Tag,
+  HelpCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import Toast, { ToastType } from './Toast';
+import { FAQDisplay } from './FAQDisplay';
 
 const ResidentDashboard:FC = () => {
   const { t, i18n } = useTranslation();
@@ -46,7 +48,7 @@ const ResidentDashboard:FC = () => {
   const [residentData, setResidentData] = useState<any>(null);
   const [properties, setProperties] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'rentals' | 'support'>('rentals');
+  const [activeTab, setActiveTab] = useState<'rentals' | 'support' | 'help'>('rentals');
   const [hasNewReply, setHasNewReply] = useState(false);
   const [error, setError] = useState('');
   const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
@@ -526,6 +528,15 @@ const ResidentDashboard:FC = () => {
             )}
             {t('resident.support')} ({tickets.length})
           </button>
+          <button 
+            onClick={() => setActiveTab('help')}
+            className={cn(
+              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'help' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
+            )}
+          >
+            <HelpCircle size={14} /> {t('resident.self_help')}
+          </button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -659,7 +670,7 @@ const ResidentDashboard:FC = () => {
                 </div>
               )}
             </motion.div>
-          ) : (
+          ) : activeTab === 'support' ? (
             <motion.div 
               key="support"
               initial={{ opacity: 0, y: 20 }}
@@ -887,6 +898,15 @@ const ResidentDashboard:FC = () => {
                   )}
                 </div>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="help"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <FAQDisplay />
             </motion.div>
           )}
         </AnimatePresence>
