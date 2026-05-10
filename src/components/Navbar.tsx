@@ -80,9 +80,9 @@ export default function Navbar() {
 
   return (
     <nav className={cn(
-      "fixed top-0 left-0 right-0 transition-all duration-300 px-6 py-4",
+      "fixed top-0 left-0 right-0 transition-[background-color,padding,border-color,z-index] duration-300 px-6 py-4",
       isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent",
-      mobileMenuOpen ? "z-[9999]" : "z-50"
+      mobileMenuOpen ? "z-[9999]" : "z-[1000]"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
@@ -160,10 +160,13 @@ export default function Navbar() {
         <div className="flex items-center gap-2 md:hidden">
           <button 
             className={cn(
-              "p-3 rounded-xl transition-all duration-300",
+              "p-3 rounded-xl transition-all duration-300 relative z-[10002] touch-manipulation",
               mobileMenuOpen ? "bg-amber-500 text-black scale-90" : "bg-white/5 text-gray-400"
             )}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMobileMenuOpen(!mobileMenuOpen);
+            }}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -171,15 +174,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Content - Moved inside the nav but ensured global fixed overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
+          <div className="md:hidden">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9000] md:hidden"
+              className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[9000]"
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div 
@@ -187,7 +190,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed inset-y-0 right-0 w-[85%] max-w-[320px] bg-zinc-950 border-l border-white/10 shadow-2xl md:hidden flex flex-col z-[9999] overflow-hidden"
+              className="fixed inset-y-0 right-0 w-[85%] max-w-[320px] h-screen h-[100dvh] bg-zinc-950 border-l border-white/10 shadow-2xl flex flex-col z-[9999] overflow-hidden"
             >
               <div className="p-8 flex flex-col h-full">
                 <div className="flex justify-between items-center mb-10">
@@ -324,7 +327,7 @@ export default function Navbar() {
                 </div>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
     </nav>
