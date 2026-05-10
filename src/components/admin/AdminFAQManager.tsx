@@ -56,6 +56,27 @@ const BLANK_STRUCTURE = {
   }
 };
 
+interface GuideStep {
+  title: string;
+  content: string;
+}
+
+interface StructuredAnswer {
+  type: 'structured';
+  intro: string;
+  steps: GuideStep[];
+  footer: string;
+  expertTip: string;
+}
+
+const INITIAL_STRUCTURED: StructuredAnswer = {
+  type: 'structured',
+  intro: '',
+  steps: [{ title: '', content: '' }],
+  footer: '',
+  expertTip: ''
+};
+
 interface FAQ {
   id: string;
   category: string;
@@ -91,6 +112,27 @@ export const AdminFAQManager: React.FC = () => {
   const [formData, setFormData] = useState<Omit<FAQ, 'id'>>(INITIAL_FAQ);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeLang, setActiveLang] = useState<'en' | 'pt' | 'es' | 'nl'>('en');
+  const [useStructured, setUseStructured] = useState<Record<string, boolean>>({
+    en: false, pt: false, es: false, nl: false
+  });
+
+  const getStructuredData = (lang: string): StructuredAnswer => {
+    const raw = formData[`answer_${lang}` as keyof typeof formData] as string;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.type === 'structured') return parsed;
+    } catch (e) {}
+    return { ...INITIAL_STRUCTURED };
+  };
+
+  const updateStructuredData = (lang: string, data: Partial<StructuredAnswer>) => {
+    const current = getStructuredData(lang);
+    const updated = { ...current, ...data };
+    setFormData({
+      ...formData,
+      [`answer_${lang}`]: JSON.stringify(updated)
+    });
+  };
 
   const fetchFAQs = async () => {
     try {
@@ -114,6 +156,24 @@ export const AdminFAQManager: React.FC = () => {
 
   const handleEdit = (faq: FAQ) => {
     setEditingId(faq.id);
+    
+    // Auto-detect structured mode for each language
+    const structuredState = {
+      en: false, pt: false, es: false, nl: false
+    };
+    
+    (['en', 'pt', 'es', 'nl'] as const).forEach(lang => {
+      try {
+        const val = faq[`answer_${lang}`];
+        const parsed = JSON.parse(val);
+        if (parsed && parsed.type === 'structured') {
+          structuredState[lang] = true;
+        }
+      } catch (e) {}
+    });
+    
+    setUseStructured(structuredState);
+
     setFormData({
       category: faq.category,
       display_order: faq.display_order,
@@ -251,6 +311,47 @@ export const AdminFAQManager: React.FC = () => {
 
           <div className="space-y-6">
             <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
+                <label className="text-[10px] font-black uppercase text-white/40">
+                  {t('admin.faqs.editor_mode', 'Editor Mode')}
+                </label>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    className="sr-only peer" 
+                    checked={useStructured[activeLang]}
+                    onChange={(e) => {
+                      const enabled = e.target.checked;
+                      setUseStructured(prev => ({ ...prev, [activeLang]: enabled }));
+                      
+                      // If switching to structured, initialize it with current content if possible or blank
+                      if (enabled) {
+                        const current = formData[`answer_${activeLang}` as keyof typeof formData] as string;
+                        try {
+                          const parsed = JSON.parse(current);
+                          if (!parsed || parsed.type !== 'structured') throw new Error();
+                        } catch (e) {
+                          // Only set default structured if it wasn't already structured JSON
+                          setFormData({
+                            ...formData,
+                            [`answer_${activeLang}`]: JSON.stringify({
+                              ...INITIAL_STRUCTURED,
+                              intro: current // keep old content as intro
+                            })
+                          });
+                        }
+                      }
+                    }}
+                  />
+                  <div className="w-11 h-6 bg-white/5 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                  <span className="ml-3 text-[10px] font-black uppercase tracking-widest text-white/40">
+                    {useStructured[activeLang] ? t('admin.faqs.structured_mode', 'Guide Builder') : t('admin.faqs.simple_mode', 'Rich Text')}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-[10px] font-black uppercase text-amber-500 ml-1">
                 {t('admin.faqs.question_label')} ({activeLang.toUpperCase()})
               </label>
@@ -262,70 +363,179 @@ export const AdminFAQManager: React.FC = () => {
                 placeholder={t('admin.faqs.question_placeholder')}
               />
             </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-[10px] font-black uppercase text-amber-500">
                   {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
                 </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const template = BLANK_STRUCTURE[activeLang as keyof typeof BLANK_STRUCTURE];
-                      if (template) {
-                        setFormData({
-                          ...formData,
-                          [`question_${activeLang}`]: template.question,
-                          [`answer_${activeLang}`]: template.answer
-                        });
-                      }
-                    }}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase text-amber-500/70 hover:text-amber-500 transition-colors"
-                  >
-                    <Plus size={12} /> {t('admin.faqs.use_blank_template')}
-                  </button>
-                  <div className="w-[1px] h-3 bg-white/10" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
-                      if (template) {
-                        setFormData({
-                          ...formData,
-                          [`question_${activeLang}`]: template.question,
-                          [`answer_${activeLang}`]: template.answer
-                        });
-                      }
-                    }}
-                    className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
-                  >
-                    <BookOpen size={12} /> {t('admin.faqs.load_land_guide')}
-                  </button>
+                {!useStructured[activeLang] && (
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const template = BLANK_STRUCTURE[activeLang as keyof typeof BLANK_STRUCTURE];
+                        if (template) {
+                          setFormData({
+                            ...formData,
+                            [`question_${activeLang}`]: template.question,
+                            [`answer_${activeLang}`]: template.answer
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-2 text-[10px] font-black uppercase text-amber-500/70 hover:text-amber-500 transition-colors"
+                    >
+                      <Plus size={12} /> {t('admin.faqs.use_blank_template')}
+                    </button>
+                    <div className="w-[1px] h-3 bg-white/10" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
+                        if (template) {
+                          setFormData({
+                            ...formData,
+                            [`question_${activeLang}`]: template.question,
+                            [`answer_${activeLang}`]: template.answer
+                          });
+                        }
+                      }}
+                      className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
+                    >
+                      <BookOpen size={12} /> {t('admin.faqs.load_land_guide')}
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {useStructured[activeLang] ? (
+                <div className="space-y-8 p-8 bg-black/40 rounded-3xl border border-white/5 shadow-2xl">
+                  {/* Structured Builder UI */}
+                  <div className="space-y-4">
+                    <label className="text-[10px] font-black uppercase text-white/40 ml-1">Introduction</label>
+                    <textarea
+                      value={getStructuredData(activeLang).intro}
+                      onChange={(e) => updateStructuredData(activeLang, { intro: e.target.value })}
+                      rows={3}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
+                      placeholder="Write a short introduction..."
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase text-white/40 ml-1">Steps / Instructions</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const current = getStructuredData(activeLang);
+                          updateStructuredData(activeLang, {
+                            steps: [...current.steps, { title: '', content: '' }]
+                          });
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 text-black rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
+                      >
+                        <Plus size={12} /> Add Step
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      {getStructuredData(activeLang).steps.map((step, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
+                            {getStructuredData(activeLang).steps.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const current = getStructuredData(activeLang);
+                                  updateStructuredData(activeLang, {
+                                    steps: current.steps.filter((_, i) => i !== idx)
+                                  });
+                                }}
+                                className="text-white/10 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            type="text"
+                            value={step.title}
+                            onChange={(e) => {
+                              const current = getStructuredData(activeLang);
+                              const newSteps = [...current.steps];
+                              newSteps[idx].title = e.target.value;
+                              updateStructuredData(activeLang, { steps: newSteps });
+                            }}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 text-sm font-bold"
+                            placeholder={`Step ${idx + 1} Title`}
+                          />
+                          <textarea
+                            value={step.content}
+                            onChange={(e) => {
+                              const current = getStructuredData(activeLang);
+                              const newSteps = [...current.steps];
+                              newSteps[idx].content = e.target.value;
+                              updateStructuredData(activeLang, { steps: newSteps });
+                            }}
+                            rows={3}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
+                            placeholder="Describe what needs to be done..."
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-white/5">
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-amber-500 ml-1">Important Notices (Footer)</label>
+                      <textarea
+                        value={getStructuredData(activeLang).footer}
+                        onChange={(e) => updateStructuredData(activeLang, { footer: e.target.value })}
+                        rows={4}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
+                        placeholder="General warnings or additional info..."
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase text-emerald-500 ml-1">Expert Tip (Bubble)</label>
+                      <textarea
+                        value={getStructuredData(activeLang).expertTip}
+                        onChange={(e) => updateStructuredData(activeLang, { expertTip: e.target.value })}
+                        rows={4}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm italic"
+                        placeholder="Specific advice to highlight..."
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-zinc-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
-                <EditorProvider>
-                  <Editor
-                    value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
-                    onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
-                    placeholder={t('admin.faqs.answer_placeholder')}
-                    className="min-h-[300px] text-white"
-                  >
-                    <Toolbar>
-                      <BtnUndo />
-                      <BtnRedo />
-                      <BtnStyles />
-                      <BtnBold />
-                      <BtnItalic />
-                      <BtnUnderline />
-                      <BtnLink />
-                      <BtnBulletList />
-                      <BtnNumberedList />
-                      <BtnClearFormatting />
-                    </Toolbar>
-                  </Editor>
-                </EditorProvider>
-              </div>
+              ) : (
+                <div className="bg-zinc-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                  <EditorProvider>
+                    <Editor
+                      value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
+                      onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
+                      placeholder={t('admin.faqs.answer_placeholder')}
+                      className="min-h-[300px] text-white"
+                    >
+                      <Toolbar>
+                        <BtnUndo />
+                        <BtnRedo />
+                        <BtnStyles />
+                        <BtnBold />
+                        <BtnItalic />
+                        <BtnUnderline />
+                        <BtnLink />
+                        <BtnBulletList />
+                        <BtnNumberedList />
+                        <BtnClearFormatting />
+                      </Toolbar>
+                    </Editor>
+                  </EditorProvider>
+                </div>
+              )}
             </div>
           </div>
 

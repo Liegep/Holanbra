@@ -339,6 +339,15 @@ const ResidentDashboard:FC = () => {
     }
   };
 
+  const handleSupportTabClick = () => {
+    setActiveTab('support');
+    setHasNewReply(false);
+    const uuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+    if (uuid) {
+      localStorage.setItem(`sl_last_support_view_${uuid}`, new Date().toISOString());
+    }
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setResidentData(null);
@@ -511,14 +520,7 @@ const ResidentDashboard:FC = () => {
             <Home size={14} /> {t('resident.my_rentals')} ({properties.length})
           </button>
           <button 
-            onClick={() => {
-              setActiveTab('support');
-              setHasNewReply(false);
-              const uuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
-              if (uuid) {
-                localStorage.setItem(`sl_last_support_view_${uuid}`, new Date().toISOString());
-              }
-            }}
+            onClick={handleSupportTabClick}
             className={cn(
               "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 relative group",
               activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
@@ -924,7 +926,7 @@ const ResidentDashboard:FC = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <FAQDisplay />
+              <FAQDisplay onSupportClick={handleSupportTabClick} />
             </motion.div>
           )}
         </AnimatePresence>

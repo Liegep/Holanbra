@@ -387,6 +387,9 @@ const resources = {
           "delete_confirm": "Delete this FAQ?",
           "use_blank_template": "Use Blank Template",
           "load_land_guide": "Load Land Guide Template",
+          "editor_mode": "Editor Mode",
+          "structured_mode": "Guide Builder",
+          "simple_mode": "Rich Text",
           "categories": {
             "technical": "Technical",
             "land": "Land & Group",
@@ -964,6 +967,9 @@ const resources = {
           "delete_confirm": "Excluir esta FAQ?",
           "use_blank_template": "Usar Template Padrão",
           "load_land_guide": "Carregar Guia de Terreno",
+          "editor_mode": "Modo de Edição",
+          "structured_mode": "Construtor de Guia",
+          "simple_mode": "Texto Rico",
           "categories": {
             "technical": "Técnico",
             "land": "Terreno e Grupo",

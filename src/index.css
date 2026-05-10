@@ -177,6 +177,12 @@
   color: #ffffff !important;
 }
 
+/* Force pasted text to be visible by overriding inline styles */
+.rsw-content * {
+  color: inherit !important;
+  background-color: transparent !important;
+}
+
 /* Force rich-content preview inside editor */
 .rsw-content h1, 
 .rsw-content h2, 

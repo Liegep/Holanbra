@@ -36,7 +36,11 @@ const CATEGORY_INFO: Record<string, { icon: any; color: string; border: string; 
   others: { icon: HelpCircle, color: 'from-amber-500/20 to-yellow-500/10', border: 'border-amber-500/20', text: 'text-amber-400', bg: 'bg-amber-500/10', glow: 'shadow-amber-500/20' },
 };
 
-export const FAQDisplay: React.FC = () => {
+interface FAQDisplayProps {
+  onSupportClick?: () => void;
+}
+
+export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
   const { t, i18n } = useTranslation();
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,11 +258,64 @@ export const FAQDisplay: React.FC = () => {
                               transition={{ delay: 0.2 }}
                               className="text-white/80 rich-content faq-rich-content"
                             >
-                              {answer ? (
-                                <div dangerouslySetInnerHTML={{ __html: answer }} />
-                              ) : (
-                                <span className="text-white/30 italic">No answer available for this language</span>
-                              )}
+                              {(() => {
+                                if (!answer) return <span className="text-white/30 italic">No answer available for this language</span>;
+                                
+                                try {
+                                  const structured = JSON.parse(answer);
+                                  if (structured && structured.type === 'structured') {
+                                    return (
+                                      <div className="space-y-10">
+                                        {structured.intro && (
+                                          <p className="text-xl leading-relaxed text-white/90 mb-8 border-l-2 border-amber-500/30 pl-6">
+                                            {structured.intro}
+                                          </p>
+                                        )}
+                                        
+                                        <div className="space-y-8">
+                                          {structured.steps.map((step: any, sIdx: number) => (
+                                            <div key={sIdx} className="relative pl-12 group/step">
+                                              <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-black text-xs group-hover/step:bg-amber-500 group-hover/step:text-black transition-all">
+                                                {sIdx + 1}
+                                              </div>
+                                              <div className="space-y-2">
+                                                <h5 className="text-lg font-bold text-amber-500 tracking-tight">{step.title}</h5>
+                                                <p className="text-white/70 leading-relaxed">{step.content}</p>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+
+                                        {(structured.footer || structured.expertTip) && (
+                                          <div className="pt-8 border-t border-white/5 space-y-6">
+                                            {structured.footer && (
+                                              <div className="text-white/50 text-sm italic leading-relaxed">
+                                                {structured.footer}
+                                              </div>
+                                            )}
+                                            {structured.expertTip && (
+                                              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-6 relative overflow-hidden">
+                                                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl rounded-full translate-x-12 -translate-y-12" />
+                                                <div className="flex items-start gap-4 relative z-10">
+                                                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                                                    <ArrowUpRight size={18} />
+                                                  </div>
+                                                  <div className="space-y-1">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/70">Expert Tip</span>
+                                                    <p className="text-emerald-500/90 font-medium italic">{structured.expertTip}</p>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                } catch (e) {}
+
+                                return <div dangerouslySetInnerHTML={{ __html: answer }} />;
+                              })()}
                             </motion.div>
                             
                             <motion.div 
@@ -321,9 +378,11 @@ export const FAQDisplay: React.FC = () => {
         </div>
         <button 
            onClick={() => {
-             // We can pass a prop to ResidentDashboard to switch tabs, 
-             // but for now, we'll just advise using the support tab or wait for parent integration
-             window.scrollTo({ top: 300, behavior: 'smooth' });
+             if (onSupportClick) {
+               onSupportClick();
+             } else {
+               window.scrollTo({ top: 300, behavior: 'smooth' });
+             }
            }}
            className="px-8 py-5 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-zinc-900 transition-all shadow-2xl relative z-10"
         >
