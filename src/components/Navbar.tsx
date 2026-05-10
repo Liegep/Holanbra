@@ -80,9 +80,11 @@ export default function Navbar() {
 
   return (
     <nav className={cn(
-      "fixed top-0 left-0 right-0 transition-[background-color,padding,border-color,z-index] duration-300 px-6 py-4",
-      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent",
-      mobileMenuOpen ? "z-[9999]" : "z-[1000]"
+      "fixed top-0 left-0 right-0 transition-[background-color,padding,border-color] duration-300 px-6 py-4",
+      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent sm:bg-transparent",
+      // On mobile, even if not scrolled, having a tiny bit of background can help touch events
+      !isScrolled && "md:bg-transparent max-md:bg-black/5",
+      mobileMenuOpen ? "z-[25000]" : "z-[20000]"
     )}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3 group">
@@ -159,17 +161,19 @@ export default function Navbar() {
         {/* Mobile Toggle */}
         <div className="flex items-center gap-2 md:hidden">
           <button 
+            type="button"
             className={cn(
-              "p-3 rounded-xl transition-all duration-300 relative z-[10002] touch-manipulation",
-              mobileMenuOpen ? "bg-amber-500 text-black scale-90" : "bg-white/5 text-gray-400"
+              "p-4 rounded-xl transition-all duration-200 relative z-[10002] touch-manipulation active:bg-amber-500/20",
+              mobileMenuOpen ? "bg-amber-500 text-black" : "bg-white/5 text-gray-400"
             )}
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               setMobileMenuOpen(!mobileMenuOpen);
             }}
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
