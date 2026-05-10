@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import Editor from 'react-simple-wysiwyg';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
 
 interface FAQ {
   id: string;
@@ -226,12 +226,29 @@ export const AdminFAQManager: React.FC = () => {
               <label className="text-[10px] font-black uppercase text-amber-500 ml-1">
                 {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
               </label>
-              <div className="bg-black rounded-xl border border-white/10 overflow-hidden min-h-[200px]">
-                <Editor
-                  value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
-                  onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
-                  placeholder={t('admin.faqs.answer_placeholder')}
-                />
+              <div className="bg-black rounded-xl border border-white/10 overflow-hidden min-h-[250px] text-left">
+                <EditorProvider>
+                  <Editor
+                    value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
+                    onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
+                    placeholder={t('admin.faqs.answer_placeholder')}
+                    className="min-h-[200px] text-sm text-white"
+                  >
+                    <Toolbar>
+                      <BtnUndo />
+                      <BtnRedo />
+                      <BtnStyles />
+                      <BtnBold />
+                      <BtnItalic />
+                      <BtnUnderline />
+                      <BtnStrikeThrough />
+                      <BtnLink />
+                      <BtnBulletList />
+                      <BtnNumberedList />
+                      <BtnClearFormatting />
+                    </Toolbar>
+                  </Editor>
+                </EditorProvider>
               </div>
             </div>
           </div>

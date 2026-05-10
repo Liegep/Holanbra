@@ -131,12 +131,12 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
                 )}
               >
                 <motion.div
-                  animate={isMobile && state === 'minimized' ? {
+                  animate={state === 'minimized' ? {
                     y: [0, -4, 0],
                     scale: [1, 1.1, 1]
                   } : {}}
                   transition={{
-                    duration: 0.6,
+                    duration: 0.8,
                     repeat: Infinity,
                     ease: "easeInOut"
                   }}

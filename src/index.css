@@ -205,37 +205,45 @@
 .faq-rich-content h1, 
 .faq-rich-content h2, 
 .faq-rich-content h3 {
-  @apply font-display font-bold text-amber-500 mb-4 mt-6;
+  @apply font-display font-bold text-amber-500 mb-6 mt-12 tracking-tight;
 }
-.faq-rich-content h1 { @apply text-3xl; }
-.faq-rich-content h2 { @apply text-2xl; }
-.faq-rich-content h3 { @apply text-xl; }
+.faq-rich-content h1 { @apply text-4xl md:text-5xl; }
+.faq-rich-content h2 { @apply text-3xl md:text-4xl border-b border-white/5 pb-4; }
+.faq-rich-content h3 { @apply text-2xl md:text-3xl text-amber-400; }
 
 .faq-rich-content p {
-  @apply mb-4;
+  @apply mb-8 leading-relaxed text-white/80 text-lg md:text-xl;
 }
 
 .faq-rich-content ul {
-  @apply mb-6 pl-4 list-disc space-y-2 marker:text-amber-500;
+  @apply mb-10 pl-6 list-disc space-y-4 marker:text-amber-500;
 }
 
 .faq-rich-content ol {
-  @apply mb-6 pl-4 list-decimal space-y-2 marker:text-amber-500 marker:font-bold;
+  @apply mb-10 pl-6 list-decimal space-y-4 marker:text-amber-500 marker:font-black;
 }
 
 .faq-rich-content li {
-  @apply pl-2;
+  @apply pl-4 text-white/80 text-lg md:text-xl;
 }
 
 .faq-rich-content b, 
 .faq-rich-content strong {
-  @apply font-bold text-white;
+  @apply font-black text-amber-200;
+}
+
+.faq-rich-content u {
+  @apply decoration-amber-500/50 decoration-2 underline-offset-4;
 }
 
 .faq-rich-content hr {
-  @apply border-white/10 my-8;
+  @apply border-white/10 my-16 shadow-[0_0_20px_rgba(255,255,255,0.05)];
 }
 
 .faq-rich-content blockquote {
-  @apply border-l-2 border-amber-500/50 pl-4 italic text-white/60 mb-4;
+  @apply border-l-4 border-amber-500 pl-10 italic text-white/60 my-12 py-4 bg-white/[0.03] rounded-r-[32px] text-2xl md:text-3xl font-light leading-relaxed;
+}
+
+.faq-rich-content a {
+  @apply text-amber-400 underline decoration-amber-400/30 hover:text-amber-300 transition-colors;
 }
