@@ -25,7 +25,7 @@ const GUIDE_TEMPLATES = {
   },
   en: {
     question: "How to set a group on your land",
-    answer: `<h3><b>How to set a group on your land</b></h3><p>When you purchase land in Second Life, you can assign a group to your property.</p><h4><b>This is important for:</b></h4><ul><li>sharing the land with friends</li><li>allowing object rezzing</li><li>configuring security systems</li><li>using group tags</li><li>managing permissions</li><li>avoiding auto-return issues</li></ul><hr /><h3>✨ <b>Simple step-by-step</b></h3><h4><b>1. Activate the desired group</b></h4><p>First:</p><ul><li>Open your Groups panel</li><li>Select the group you want to use</li><li>Click “Activate”</li></ul><blockquote><i>👉 The group must be active before it can be assigned to the land.</i></blockquote><h4><b>2. Open land settings</b></h4><p>While standing on your land:</p><ul><li>Right-click the ground</li><li>Select <b>About Land</b></li></ul><h4><b>3. Go to the “General” tab</b></h4><p>Inside About Land:<ul><li>Find the <b>Group</b> option</li><li>Click <b>Set</b></li></ul><h4><b>4. Choose the group</b></h4><p>Select the desired group and confirm. <b>Done ✨</b></p><p>Your land is now assigned to that group.</p><hr /><h4>🔐 <b>Why is this important?</b></h4><p>Without a group configured:<ul><li>friends may not be able to rez objects</li><li>security systems may not work properly</li><li>scripts may have restrictions</li><li>partners or collaborators may not have proper permissions</li></ul><h4>👥 <b>Want to share the land with someone?</b></h4><p>You can:<ul><li>add people to the group</li><li>assign specific permissions</li><li>allow group members to rez objects</li><li>share access without transferring ownership</li></ul><blockquote><b>⚠️ Important tip</b><br>Always check:<ul><li>if the correct group is <b>ACTIVE</b></li><li>if land permissions are configured properly</li><li>if “Allow Group Object Entry” is enabled when needed</li></ul></blockquote>`
+    answer: `<h3><b>How to set a group on your land</b></h3><p>When you purchase land in Second Life, you can assign a group to your property.</p><h4><b>This is important for:</b></h4><ul><li>sharing the land with friends</li><li>allowing object rezzing</li><li>configuring security systems</li><li>using group tags</li><li>managing permissions</li><li>avoiding auto-return issues</li></ul><hr /><h3>✨ <b>Simple step-by-step</b></h3><h4><b>1. Activate the desired group</b></h4><p>First:</p><ul><li>Open your Groups panel</li><li>Select the group you want to use</li><li>Click “Activate”</li></ul><blockquote><i>👉 The group must be active before it can be assigned to the land.</i></blockquote><h4><b>2. Open land settings</b></h4><p>While standing on your land:</p><ul><li>Right-click the ground</li><li>Select <b>About Land</b></li></ul><h4><b>3. Go to the “General” tab</b></h4><p>Inside About Land:<ul><li>Find the <b>Group</b> option</li><li>Click <b>Set</b></li></ul><h4><b>4. Choose the group</b></h4><p>Select the desired group and confirm. <b>Done ✨</b></p><p>Your land is now assigned to that group.</p><hr /><h4>🔐 <b>Why is this important?</b></h4><p>Without a group configured:<ul><li>friends may not be able to rez objects</li><li>security systems may not work properly</li><li>scripts may have restrictions</li><li>partners or collaborators may not have proper permissions</li></ul><h4>👥 <b>Want to share the land with someone?</b></h4><p>You can:<ul><li>add people to the group</li><li>assign specific permissions</li><li>allow group members to rez objects</li><li>share access without transferring ownership</li></ul><blockquote><b>⚠️ Important tip</b><br>Always check:<ul><li>if the correct group is <b>ACTIVE</b></li><li>if land permissions are configured properly</li><li>if “Allow Group Object Entry” is enabled when enabled</li></ul></blockquote>`
   },
   es: {
     question: "Cómo colocar un grupo en tu terreno",
@@ -33,7 +33,26 @@ const GUIDE_TEMPLATES = {
   },
   nl: {
     question: "Hoe stel je een groep in op je terrein",
-    answer: `<h3><b>Hoe stel je een groep in op je terrein</b></h3><p>Wanneer je een terrein koopt in Second Life, kun je een groep koppelen aan je perceel.</p><h4><b>Dit is belangrijk om:</b></h4><ul><li>het terrein met vrienden te delen</li><li>objecten te kunnen rezz’en</li><li>beveiligingssystemen in te stellen</li><li>groepstags te gebruiken</li><li>rechten te beheren</li><li>problemen met auto-return te voorkomen</li></ul><hr /><h3>✨ <b>Eenvoudige stap-voor-stap uitleg</b></h3><h4><b>1. Activeer de gewenste groep</b></h4><p>Eerst:</p><ul><li>Open je Groups-venster</li><li>Selecteer de groep die je wilt gebruiken</li><li>Klik op “Activate”</li></ul><blockquote><i>👉 De groep moet actief zijn voordat je deze aan het terrein kunt koppelen.</i></blockquote><h4><b>2. Open de terreininstellingen</b></h4><p>Terwijl je op het terrein staat:</p><ul><li>Klik met de rechtermuisknop op de grond</li><li>Kies <b>About Land</b></li></ul><h4><b>3. Ga naar het tabblad “General”</b></h4><p>Binnen About Land:<ul><li>Zoek de optie <b>Group</b></li><li>Klik op <b>Set</b></li></ul><h4><b>4. Kies de groep</b></h4><p>Selecteer de gewenste groep en bevestig. <b>Klaar ✨</b></p><p>Je terrein is nu gekoppeld aan die groep.</p><hr /><h4>🔐 <b>Waarom is dit belangrijk?</b></h4><p>Zonder een groep ingesteld:<ul><li>vrienden kunnen mogelijk geen objecten rezz’en</li><li>beveiligingssystemen werken mogelijk niet correct</li><li>scripts kunnen beperkt zijn</li><li>partners of medewerkers hebben mogelijk geen juiste rechten</li></ul><h4>👥 <b>Wil je het terrein delen met iemand?</b></h4><p>Je kunt:<ul><li>mensen toevoegen aan de groep</li><li>specifieke rechten geven</li><li>groepsleden toestaan objecten te rezz’en</li><li>toegang delen zonder eigendom over te dragen</li></ul><blockquote><b>⚠️ Belangrijke tip</b><br>Controleer altijd:<ul><li>of de juiste groep ACTIEF staat</li><li>of de terreinrechten correct zijn ingesteld</li><li>of “Allow Group Object Entry” is ingeschakeld indien nodig</li></ul></blockquote>`
+    answer: `<h3><b>Hoe stel je een groep in op je terrein</b></h3><p>Wanneer je een terrein koopt in Second Life, kun je een groep koppelen aan je perceel.</p><h4><b>Dit is belangrijk om:</b></h4><ul><li>het terrein met vrienden te delen</li><li>objecten te kunnen rezz’en</li><li>beveiligingssystemen in te stellen</li><li>groepstags te gebruiken</li><li>rechten te beheren</li><li>problemen met auto-return te voorkomen</li></ul><hr /><h3>✨ <b>Eenvoudige stap-voor-stap uitleg</b></h3><h4><b>1. Activeer de gewenste groep</b></h4><p>Eerst:</p><ul><li>Open je Groups-venster</li><li>Selecteer de groep die je wilt gebruiken</li><li>Klik op “Activate”</li></ul><blockquote><i>👉 De groep moet actief zijn voordat je deze aan het terrein kunt koppelen.</i></blockquote><h4><b>2. Open de terreininstellingen</b></h4><p>Terwijl je op het terrein staat:</p><ul><li>Klik met de rechtermuisknop op de grond</li><li>Kies <b>About Land</b></li></ul><h4><b>3. Ga naar het tabblad “General”</b></h4><p>Binnen About Land:<ul><li>Zoek de optie <b>Group</b></li><li>Klik op <b>Set</b></li></ul><h4><b>4. Kies de groep</b></h4><p>Selecteer de gewenste groep en bevestig. <b>Klaar ✨</b></p><p>Je terrein is nu gekoppeld aan die groep.</p><hr /><h4>🔐 <b>Waarom is dit belangrijk?</b></h4><p>Zonder een groep ingesteld:<ul><li>vrienden kunnen mogelijk geen objecten rezz’en</li><li>beveiligingssystemen werken mogelijk niet correct</li><li>scripts kunnen beperkt zijn</li><li>partners of medewerkers hebben mogelijk geen juiste rechten</li></ul><h4>👥 <b>Wil je het terrein delen met iemand?</b></h4><p>Zonder een groep ingesteld:<ul><li>mensen toevoegen aan de groep</li><li>specifieke rechten geven</li><li>groepsleden toestaan objecten te rezz’en</li><li>toegang delen zonder eigendom over te dragen</li></ul><blockquote><b>⚠️ Belangrijke tip</b><br>Controleer altijd:<ul><li>of de juiste groep ACTIEF staat</li><li>of de terreinrechten correct zijn ingesteld</li><li>of “Allow Group Object Entry” is ingeschakeld indien nodig</li></ul></blockquote>`
+  }
+};
+
+const BLANK_STRUCTURE = {
+  pt: {
+    question: "Título do Novo Guia",
+    answer: `<h3><b>Título do Assunto Principal</b></h3><p>Introdução curta explicando do que se trata este guia.</p><hr /><h3>✨ <b>Instruções Passo a Passo</b></h3><h4><b>1. Primeira Etapa</b></h4><ul><li>Ação um</li><li>Ação dois</li></ul><h4><b>2. Segunda Etapa</b></h4><p>Detalhes sobre a segunda fase do processo.</p><hr /><h4>🔐 <b>Avisos Importantes e Segurança</b></h4><blockquote><b>⚠️ Dica de Especialista:</b> Um conselho contextual ou aviso importante vai aqui dentro do balão.</blockquote><ul><li>Ponto de verificação</li><li>Erro comum a evitar</li></ul>`
+  },
+  en: {
+    question: "New Guide Title",
+    answer: `<h3><b>Main Topic Title</b></h3><p>Short intro explaining what this guide is about.</p><hr /><h3>✨ <b>Step-by-Step Instructions</b></h3><h4><b>1. First Step</b></h4><ul><li>Action one</li><li>Action two</li></ul><h4><b>2. Second Step</b></h4><p>Details about the second stage of the process.</p><hr /><h4>🔐 <b>Important Notices & Security</b></h4><blockquote><b>⚠️ Pro Tip:</b> Contextual advice or important warning goes inside this bubble.</blockquote><ul><li>Check point</li><li>Common pitfall to avoid</li></ul>`
+  },
+  es: {
+    question: "Título del Nuevo Guía",
+    answer: `<h3><b>Título del Tema Principal</b></h3><p>Introducción breve explicando de qué se trata esta guía.</p><hr /><h3>✨ <b>Instrucciones Paso a Paso</b></h3><h4><b>1. Primer Paso</b></h4><ul><li>Acción uno</li><li>Acción dos</li></ul><h4><b>2. Segundo Paso</b></h4><p>Detalles sobre la segunda etapa del proceso.</p><hr /><h4>🔐 <b>Avisos Importantes y Seguridad</b></h4><blockquote><b>⚠️ Consejo de Experto:</b> Un consejo contextual o aviso importante va aquí dentro del globo.</blockquote><ul><li>Punto de verificación</li><li>Error común a evitar</li></ul>`
+  },
+  nl: {
+    question: "Nieuwe Gidstitel",
+    answer: `<h3><b>Hoofdonderwerp Titel</b></h3><p>Korte inleiding die uitlegt waar deze gids over gaat.</p><hr /><h3>✨ <b>Stap-voor-stap Instructies</b></h3><h4><b>1. Eerste Stap</b></h4><ul><li>Actie één</li><li>Actie twee</li></ul><h4><b>2. Tweede Stap</b></h4><p>Details over de tweede fase van het proces.</p><hr /><h4>🔐 <b>Belangrijke Mededelingen & Veiligheid</b></h4><blockquote><b>⚠️ Pro Tip:</b> Contextueel advies of een belangrijke waarschuwing komt hier in deze tekstballon.</blockquote><ul><li>Controlepunt</li><li>Veelvoorkomende valkuil om te vermijden</li></ul>`
   }
 };
 
@@ -248,22 +267,41 @@ export const AdminFAQManager: React.FC = () => {
                 <label className="text-[10px] font-black uppercase text-amber-500">
                   {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
-                    if (template) {
-                      setFormData({
-                        ...formData,
-                        [`question_${activeLang}`]: template.question,
-                        [`answer_${activeLang}`]: template.answer
-                      });
-                    }
-                  }}
-                  className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
-                >
-                  <BookOpen size={12} /> Load Land Guide Template
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const template = BLANK_STRUCTURE[activeLang as keyof typeof BLANK_STRUCTURE];
+                      if (template) {
+                        setFormData({
+                          ...formData,
+                          [`question_${activeLang}`]: template.question,
+                          [`answer_${activeLang}`]: template.answer
+                        });
+                      }
+                    }}
+                    className="flex items-center gap-2 text-[10px] font-black uppercase text-amber-500/70 hover:text-amber-500 transition-colors"
+                  >
+                    <Plus size={12} /> {t('admin.faqs.use_blank_template')}
+                  </button>
+                  <div className="w-[1px] h-3 bg-white/10" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
+                      if (template) {
+                        setFormData({
+                          ...formData,
+                          [`question_${activeLang}`]: template.question,
+                          [`answer_${activeLang}`]: template.answer
+                        });
+                      }
+                    }}
+                    className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
+                  >
+                    <BookOpen size={12} /> {t('admin.faqs.load_land_guide')}
+                  </button>
+                </div>
               </div>
               <div className="bg-zinc-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
                 <EditorProvider>

@@ -385,6 +385,8 @@ const resources = {
           "support_cta": "Our support staff is ready to help you with any specific issue.",
           "save_success": "FAQ updated",
           "delete_confirm": "Delete this FAQ?",
+          "use_blank_template": "Use Blank Template",
+          "load_land_guide": "Load Land Guide Template",
           "categories": {
             "technical": "Technical",
             "land": "Land & Group",
@@ -960,6 +962,8 @@ const resources = {
           "support_cta": "Nossa equipe de suporte está pronta para ajudar com qualquer problema específico.",
           "save_success": "FAQ atualizada",
           "delete_confirm": "Excluir esta FAQ?",
+          "use_blank_template": "Usar Template Padrão",
+          "load_land_guide": "Carregar Guia de Terreno",
           "categories": {
             "technical": "Técnico",
             "land": "Terreno e Grupo",

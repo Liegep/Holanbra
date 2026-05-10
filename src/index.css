@@ -148,109 +148,82 @@
 
 /* Dark mode Editor fixes (react-simple-wysiwyg) */
 .rsw-editor {
-  background-color: #000000 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 1.5rem !important;
-  overflow: visible !important;
+  @apply !bg-[#0a0a0a] !border-white/10 !rounded-2xl !overflow-hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
 
 .rsw-toolbar {
-  @apply bg-zinc-900 border-b border-white/10 p-2 flex items-center gap-1 flex-wrap;
+  @apply !bg-[#151515] !border-b !border-white/10 !p-3 !flex !items-center !gap-2 !flex-wrap;
 }
 
-.rsw-toolbar button {
-  @apply bg-transparent border-none text-white/70 hover:text-white hover:bg-white/10 rounded p-2 transition-all cursor-pointer flex items-center justify-center;
-}
-
-.rsw-toolbar select {
-  @apply bg-zinc-800 text-amber-500 border border-white/10 rounded px-2 py-1 text-[10px] font-black uppercase outline-none cursor-pointer hover:border-amber-500/30 transition-colors;
-}
-
-.rsw-editor {
-  @apply border-none bg-zinc-950 text-white rounded-xl overflow-hidden;
-}
-
-.rsw-content {
-  @apply min-h-[300px] p-6 text-white/90 focus:outline-none leading-relaxed bg-zinc-950;
-}
-
-/* Fix for buttons being invisible or weirdly styled by default */
 .rsw-btn {
-  @apply !w-8 !h-8 !p-0 !inline-flex !items-center !justify-center !rounded-md !text-white/60 hover:!text-white hover:!bg-white/10 !transition-colors;
-}
-
-.rsw-btn svg {
-  @apply !w-4 !h-4;
+  @apply !bg-white/5 !border-none !text-white/80 hover:!text-white hover:!bg-white/20 !rounded-lg !p-2 !transition-all !cursor-pointer !flex !items-center !justify-center !w-9 !h-9;
 }
 
 .rsw-btn[data-active="true"] {
-  @apply !text-amber-500 !bg-amber-500/10;
-}
-.floating-toolbar {
-  @apply fixed z-[100] bg-zinc-900/95 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] transition-all duration-200;
+  @apply !text-amber-500 !bg-amber-500/20 !border-amber-500/30;
 }
 
-.floating-toolbar button {
-  @apply p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white flex items-center justify-center;
+.rsw-btn svg {
+  @apply !w-5 !h-5 !fill-current;
 }
 
-.floating-toolbar select {
-  @apply bg-transparent text-[10px] bg-zinc-800 rounded-md py-1 uppercase font-black text-amber-500 outline-none cursor-pointer px-3 border border-white/5;
-}
-
-.floating-toolbar select option {
-  @apply bg-zinc-900 text-white;
-}
-
-.floating-toolbar svg {
-  @apply w-4 h-4 fill-amber-500;
-}
-
-/* Fix selection color */
-.rsw-content ::selection {
-  background: #fbbf24 !important;
-  color: #000000 !important;
+.rsw-toolbar select {
+  @apply !bg-[#1a1a1a] !text-amber-500 !border !border-white/10 !rounded-lg !px-3 !py-1.5 !text-[11px] !font-black !uppercase !outline-none !cursor-pointer hover:!border-amber-500/30 !transition-colors;
 }
 
 .rsw-content {
-  background-color: #000000 !important;
+  @apply !bg-black !p-10 !min-h-[400px] !text-white focus:!outline-none !leading-relaxed !font-sans !text-lg;
   color: #ffffff !important;
-  padding: 40px !important;
-  min-height: 400px !important;
-  font-family: inherit !important;
-  font-size: 1rem !important;
-  line-height: 1.8 !important;
-  outline: none !important;
 }
 
-/* CRITICAL: Force visible text color and remove background from pasted content */
-.rsw-content, 
-.rsw-content *, 
-.rsw-content span, 
-.rsw-content p, 
-.rsw-content li {
-  color: #ffffff !important;
-  background-color: transparent !important;
+/* Force rich-content preview inside editor */
+.rsw-content h1, 
+.rsw-content h2, 
+.rsw-content h3 {
+  @apply !font-display !font-bold !text-amber-500 !mb-6 !mt-10 !tracking-tight;
+}
+.rsw-content h1 { @apply !text-4xl; }
+.rsw-content h2 { @apply !text-3xl !border-b !border-white/10 !pb-2; }
+.rsw-content h3 { @apply !text-2xl !text-amber-400; }
+
+.rsw-content p { @apply !mb-6 !leading-relaxed !text-white/90; }
+
+.rsw-content ul, 
+.rsw-content ol { @apply !mb-8 !pl-10 !space-y-3; }
+.rsw-content ul { @apply !list-disc; }
+.rsw-content ol { @apply !list-decimal; }
+
+.rsw-content b, 
+.rsw-content strong { @apply !font-bold !text-amber-500; }
+
+.rsw-content blockquote {
+  @apply !border-l-4 !border-amber-500 !pl-6 !italic !my-8 !py-2 !bg-white/5 !rounded-r-xl !text-white/80;
 }
 
-/* Also apply to the public display of covenants */
-.covenant-rich-content,
-.covenant-rich-content *,
-.covenant-rich-content span,
-.covenant-rich-content p,
-.covenant-rich-content li {
-  color: #fef3c7 !important; /* Amber-100/70 equivalent approx */
-  background-color: transparent !important;
+.rsw-content hr { @apply !border-white/10 !my-10; }
+
+/* Placeholder fix */
+.rsw-editor [data-placeholder]:empty:before {
+  @apply !text-white/20 !italic;
 }
 
-.rsw-content h1, .rsw-content h2, .rsw-content h3,
-.covenant-rich-content h1, .covenant-rich-content h2, .covenant-rich-content h3 {
-  color: #fbbf24 !important;
-  font-weight: 700 !important;
-  margin-top: 2rem !important;
-  margin-bottom: 1rem !important;
+/* Selection color */
+::selection {
+  @apply bg-amber-500 text-black;
 }
 
-/* Property Modal Rich Content (Light Background) */
+/* Covenant visibility fix */
+.covenant-rich-content {
+  color: #fef3c7 !important;
+}
+.covenant-rich-content * {
+  color: inherit !important;
+}
+.covenant-rich-content h1, 
+.covenant-rich-content h2, 
+.covenant-rich-content h3 {
+  @apply !text-amber-500;
+}
 /* FAQ Rich Text Content Styles */
 
