@@ -369,47 +369,10 @@ export const AdminFAQManager: React.FC = () => {
                 <label className="text-[10px] font-black uppercase text-amber-500">
                   {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
                 </label>
-                {!useStructured[activeLang] && (
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const template = BLANK_STRUCTURE[activeLang as keyof typeof BLANK_STRUCTURE];
-                        if (template) {
-                          setFormData({
-                            ...formData,
-                            [`question_${activeLang}`]: template.question,
-                            [`answer_${activeLang}`]: template.answer
-                          });
-                        }
-                      }}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase text-amber-500/70 hover:text-amber-500 transition-colors"
-                    >
-                      <Plus size={12} /> {t('admin.faqs.use_blank_template')}
-                    </button>
-                    <div className="w-[1px] h-3 bg-white/10" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
-                        if (template) {
-                          setFormData({
-                            ...formData,
-                            [`question_${activeLang}`]: template.question,
-                            [`answer_${activeLang}`]: template.answer
-                          });
-                        }
-                      }}
-                      className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
-                    >
-                      <BookOpen size={12} /> {t('admin.faqs.load_land_guide')}
-                    </button>
-                  </div>
-                )}
               </div>
               
               {useStructured[activeLang] ? (
-                <div className="space-y-8 p-8 bg-black/40 rounded-3xl border border-white/5 shadow-2xl">
+                <div className="space-y-8 p-8 bg-black/40 rounded-3xl border border-white/5 shadow-2xl relative">
                   {/* Structured Builder UI */}
                   <div className="space-y-4">
                     <label className="text-[10px] font-black uppercase text-white/40 ml-1">Introduction</label>
@@ -423,7 +386,7 @@ export const AdminFAQManager: React.FC = () => {
                   </div>
 
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
+                    <div className="sticky top-0 z-30 py-4 mb-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5 -mx-8 px-8 flex items-center justify-between">
                       <label className="text-[10px] font-black uppercase text-white/40 ml-1">Steps / Instructions</label>
                       <button
                         type="button"
@@ -433,9 +396,9 @@ export const AdminFAQManager: React.FC = () => {
                             steps: [...current.steps, { title: '', content: '' }]
                           });
                         }}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-amber-500 text-black rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
                       >
-                        <Plus size={12} /> Add Step
+                        <Plus size={14} /> Add Step
                       </button>
                     </div>
 
