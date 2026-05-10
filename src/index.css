@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+@import 'react-quill/dist/quill.snow.css';
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -214,6 +215,54 @@
 }
 
 /* FAQ Rich Text Content Styles */
+.faq-rich-content {
+  @apply text-white/90;
+}
+
+/* Quill Editor Overrides */
+.ql-toolbar.ql-snow {
+  @apply bg-zinc-900 border-white/10 rounded-t-xl border-x-0 border-t-0 p-3;
+}
+
+.ql-container.ql-snow {
+  @apply border-none font-sans text-lg bg-zinc-950;
+}
+
+.ql-editor {
+  @apply min-h-[300px] p-6 text-white leading-relaxed;
+}
+
+.ql-editor.ql-blank::before {
+  @apply text-white/30 italic;
+}
+
+.ql-snow .ql-stroke {
+  @apply stroke-white/60;
+}
+
+.ql-snow .ql-fill {
+  @apply fill-white/60;
+}
+
+.ql-snow .ql-picker {
+  @apply text-white/60;
+}
+
+.ql-snow .ql-picker-options {
+  @apply bg-zinc-900 border-white/10 rounded-xl shadow-2xl;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-fill {
+  @apply stroke-amber-500 fill-amber-500;
+}
+
+.ql-snow.ql-toolbar .ql-picker-label:hover,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active {
+  @apply text-amber-500;
+}
 .faq-rich-content h1, 
 .faq-rich-content h2, 
 .faq-rich-content h3 {

@@ -10,11 +10,32 @@ import {
   HelpCircle,
   GripVertical,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  BookOpen,
+  Languages
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
+import ReactQuill from 'react-quill';
+
+const GUIDE_TEMPLATES = {
+  pt: {
+    question: "Como colocar seu grupo no terreno",
+    answer: `<h3><b>Como colocar seu grupo no terreno</b></h3><p>Quando você compra um terreno em Second Life, você pode definir qual grupo terá controle sobre aquele espaço.</p><h4><b>Isso é importante para:</b></h4><ul><li>Usar o terreno com amigos</li><li>Permitir rez objects</li><li>Configurar segurança</li><li>Usar tags de grupo</li><li>Dividir permissões</li><li>Evitar problemas com auto return</li></ul><hr /><h3>✨ <b>Passo a passo simples</b></h3><h4><b>1. Ative o grupo desejado</b></h4><p>Antes de tudo:</p><ul><li>Abra seu perfil de grupos</li><li>Escolha o grupo que deseja usar</li><li>Clique em “Activate”</li></ul><blockquote><i>👉 O grupo precisa estar ativo para aparecer nas opções do terreno.</i></blockquote><h4><b>2. Abra as configurações do terreno</b></h4><p>No terreno:</p><ul><li>Clique com o botão direito no chão</li><li>Vá em <b>About Land</b></li></ul><h4><b>3. Vá até a aba “General”</b></h4><p>Dentro de About Land:</p><ul><li>Procure a opção <b>Group</b></li><li>Clique em <b>Set</b></li></ul><h4><b>4. Escolha o grupo</b></h4><p>Selecione o grupo desejado e confirme. <b>Pronto ✨</b></p><p>Seu terreno agora está associado ao grupo escolhido.</p><hr /><h4>🔐 <b>Por que isso é importante?</b></h4><p>Sem configurar um grupo:</p><ul><li>Amigos podem não conseguir rezar objetos</li><li>Sistemas de segurança podem não funcionar corretamente</li><li>Scripts podem ter limitações</li><li>Parceiros/colegas não terão permissões adequadas</li></ul><h4>👥 <b>Quero dividir o terreno com alguém. Como faço?</b></h4><p>Você pode:</p><ul><li>Adicionar pessoas ao grupo</li><li>Dar permissões específicas</li><li>Permitir que membros do grupo rezem objetos</li><li>Compartilhar acesso sem precisar transferir o terreno</li></ul><blockquote><b>⚠️ Dica importante</b><br>Sempre confira:<ul><li>se o grupo está <b>ATIVO</b> antes de configurar</li><li>se as permissões do terreno estão corretas</li><li>se o “Allow Group Object Entry” está habilitado quando necessário</li></ul></blockquote>`
+  },
+  en: {
+    question: "How to set a group on your land",
+    answer: `<h3><b>How to set a group on your land</b></h3><p>When you purchase land in Second Life, you can assign a group to your property.</p><h4><b>This is important for:</b></h4><ul><li>sharing the land with friends</li><li>allowing object rezzing</li><li>configuring security systems</li><li>using group tags</li><li>managing permissions</li><li>avoiding auto-return issues</li></ul><hr /><h3>✨ <b>Simple step-by-step</b></h3><h4><b>1. Activate the desired group</b></h4><p>First:</p><ul><li>Open your Groups panel</li><li>Select the group you want to use</li><li>Click “Activate”</li></ul><blockquote><i>👉 The group must be active before it can be assigned to the land.</i></blockquote><h4><b>2. Open land settings</b></h4><p>While standing on your land:</p><ul><li>Right-click the ground</li><li>Select <b>About Land</b></li></ul><h4><b>3. Go to the “General” tab</b></h4><p>Inside About Land:<ul><li>Find the <b>Group</b> option</li><li>Click <b>Set</b></li></ul><h4><b>4. Choose the group</b></h4><p>Select the desired group and confirm. <b>Done ✨</b></p><p>Your land is now assigned to that group.</p><hr /><h4>🔐 <b>Why is this important?</b></h4><p>Without a group configured:<ul><li>friends may not be able to rez objects</li><li>security systems may not work properly</li><li>scripts may have restrictions</li><li>partners or collaborators may not have proper permissions</li></ul><h4>👥 <b>Want to share the land with someone?</b></h4><p>You can:<ul><li>add people to the group</li><li>assign specific permissions</li><li>allow group members to rez objects</li><li>share access without transferring ownership</li></ul><blockquote><b>⚠️ Important tip</b><br>Always check:<ul><li>if the correct group is <b>ACTIVE</b></li><li>if land permissions are configured properly</li><li>if “Allow Group Object Entry” is enabled when needed</li></ul></blockquote>`
+  },
+  es: {
+    question: "Cómo colocar un grupo en tu terreno",
+    answer: `<h3><b>Cómo colocar un grupo en tu terreno</b></h3><p>Cuando compras un terreno en Second Life, puedes asignar un grupo a tu propiedad.</p><h4><b>Esto es importante para:</b></h4><ul><li>compartir el terreno con amigos</li><li>permitir rez de objetos</li><li>configurar sistemas de seguridad</li><li>usar etiquetas de grupo</li><li>administrar permisos</li><li>evitar problemas de auto return</li></ul><hr /><h3>✨ <b>Paso a paso sencillo</b></h3><h4><b>1. Activa el grupo deseado</b></h4><p>Primero:</p><ul><li>Abre tu panel de grupos</li><li>Selecciona el grupo que deseas usar</li><li>Haz clic en “Activate”</li></ul><blockquote><i>👉 El grupo debe estar activo antes de asignarlo al terreno.</i></blockquote><h4><b>2. Abre la configuración del terreno</b></h4><p>Estando sobre el terreno:</p><ul><li>Haz clic derecho sobre el suelo</li><li>Selecciona <b>About Land</b></li></ul><h4><b>3. Ve a la pestaña “General”</b></h4><p>Dentro de About Land:<ul><li>Busca la opción <b>Group</b></li><li>Haz clic en <b>Set</b></li></ul><h4><b>4. Elige el grupo</b></h4><p>Selecciona el grupo deseado y confirma. <b>Listo ✨</b></p><p>Tu terreno ahora está asignado a ese grupo.</p><hr /><h4>🔐 <b>¿Por qué es importante?</b></h4><p>Sin un grupo configurado:<ul><li>tus amigos pueden no poder rezar objetos</li><li>los sistemas de seguridad pueden no funcionar correctamente</li><li>algunos scripts pueden tener restricciones</li><li>socios o colaboradores pueden no tener permisos adecuados</li></ul><h4>👥 <b>¿Quieres compartir el terreno con alguien?</b></h4><p>Puedes:<ul><li>agregar personas al grupo</li><li>asignar permisos específicos</li><li>permitir que miembros del grupo rezen objetos</li><li>compartir acceso sin transferir la propiedad</li></ul><blockquote><b>⚠️ Consejo importante</b><br>Siempre verifica:<ul><li>que el grupo correcto esté <b>ACTIVO</b></li><li>que los permisos del terreno estén bien configurados</li><li>que “Allow Group Object Entry” esté habilitado cuando sea necesario</li></ul></blockquote>`
+  },
+  nl: {
+    question: "Hoe stel je een groep in op je terrein",
+    answer: `<h3><b>Hoe stel je een groep in op je terrein</b></h3><p>Wanneer je een terrein koopt in Second Life, kun je een groep koppelen aan je perceel.</p><h4><b>Dit is belangrijk om:</b></h4><ul><li>het terrein met vrienden te delen</li><li>objecten te kunnen rezz’en</li><li>beveiligingssystemen in te stellen</li><li>groepstags te gebruiken</li><li>rechten te beheren</li><li>problemen met auto-return te voorkomen</li></ul><hr /><h3>✨ <b>Eenvoudige stap-voor-stap uitleg</b></h3><h4><b>1. Activeer de gewenste groep</b></h4><p>Eerst:</p><ul><li>Open je Groups-venster</li><li>Selecteer de groep die je wilt gebruiken</li><li>Klik op “Activate”</li></ul><blockquote><i>👉 De groep moet actief zijn voordat je deze aan het terrein kunt koppelen.</i></blockquote><h4><b>2. Open de terreininstellingen</b></h4><p>Terwijl je op het terrein staat:</p><ul><li>Klik met de rechtermuisknop op de grond</li><li>Kies <b>About Land</b></li></ul><h4><b>3. Ga naar het tabblad “General”</b></h4><p>Binnen About Land:<ul><li>Zoek de optie <b>Group</b></li><li>Klik op <b>Set</b></li></ul><h4><b>4. Kies de groep</b></h4><p>Selecteer de gewenste groep en bevestig. <b>Klaar ✨</b></p><p>Je terrein is nu gekoppeld aan die groep.</p><hr /><h4>🔐 <b>Waarom is dit belangrijk?</b></h4><p>Zonder een groep ingesteld:<ul><li>vrienden kunnen mogelijk geen objecten rezz’en</li><li>beveiligingssystemen werken mogelijk niet correct</li><li>scripts kunnen beperkt zijn</li><li>partners of medewerkers hebben mogelijk geen juiste rechten</li></ul><h4>👥 <b>Wil je het terrein delen met iemand?</b></h4><p>Je kunt:<ul><li>mensen toevoegen aan de groep</li><li>specifieke rechten geven</li><li>groepsleden toestaan objecten te rezz’en</li><li>toegang delen zonder eigendom over te dragen</li></ul><blockquote><b>⚠️ Belangrijke tip</b><br>Controleer altijd:<ul><li>of de juiste groep ACTIEF staat</li><li>of de terreinrechten correct zijn ingesteld</li><li>of “Allow Group Object Entry” is ingeschakeld indien nodig</li></ul></blockquote>`
+  }
+};
 
 interface FAQ {
   id: string;
@@ -223,32 +244,43 @@ export const AdminFAQManager: React.FC = () => {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-amber-500 ml-1">
-                {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
-              </label>
-              <div className="bg-black rounded-xl border border-white/10 overflow-hidden min-h-[250px] text-left">
-                <EditorProvider>
-                  <Editor
-                    value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
-                    onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
-                    placeholder={t('admin.faqs.answer_placeholder')}
-                    className="min-h-[200px] text-sm text-white"
-                  >
-                    <Toolbar>
-                      <BtnUndo />
-                      <BtnRedo />
-                      <BtnStyles />
-                      <BtnBold />
-                      <BtnItalic />
-                      <BtnUnderline />
-                      <BtnStrikeThrough />
-                      <BtnLink />
-                      <BtnBulletList />
-                      <BtnNumberedList />
-                      <BtnClearFormatting />
-                    </Toolbar>
-                  </Editor>
-                </EditorProvider>
+              <div className="flex items-center justify-between ml-1">
+                <label className="text-[10px] font-black uppercase text-amber-500">
+                  {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const template = GUIDE_TEMPLATES[activeLang as keyof typeof GUIDE_TEMPLATES];
+                    if (template) {
+                      setFormData({
+                        ...formData,
+                        [`question_${activeLang}`]: template.question,
+                        [`answer_${activeLang}`]: template.answer
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-2 text-[10px] font-black uppercase text-white/40 hover:text-amber-500 transition-colors"
+                >
+                  <BookOpen size={12} /> Load Land Guide Template
+                </button>
+              </div>
+              <div className="bg-zinc-900/50 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                <ReactQuill
+                  theme="snow"
+                  value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
+                  onChange={(content) => setFormData({ ...formData, [`answer_${activeLang}`]: content })}
+                  placeholder={t('admin.faqs.answer_placeholder')}
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, 3, false] }],
+                      ['bold', 'italic', 'underline', 'strike'],
+                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                      ['link', 'blockquote', 'clean'],
+                      ['undo', 'redo']
+                    ],
+                  }}
+                />
               </div>
             </div>
           </div>
