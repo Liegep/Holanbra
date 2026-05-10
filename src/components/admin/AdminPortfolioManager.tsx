@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Image as ImageIcon, Loader2, Plus, X, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
 import { supabase } from '../../lib/supabase';
 import { ToastType } from '../Toast';
 import imageCompression from 'browser-image-compression';
@@ -138,38 +139,54 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
         </div>
       </div>
 
-      <div className="glass-card p-8 rounded-2xl border border-white/5 space-y-8">
+      <div className="glass-card p-8 rounded-2xl border border-white/5 bg-zinc-900/50 space-y-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 text-left">
                 <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.title')} *</label>
                     <input 
                         type="text" 
                         value={formData.title}
                         onChange={(e) => setFormData({...formData, title: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-amber-500/50 outline-none"
+                        className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-amber-500/50 outline-none"
                         required
                     />
                 </div>
                 <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.property.description')}</label>
-                    <input 
-                        type="text" 
-                        value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-amber-500/50 outline-none"
-                    />
+                    <div className="bg-zinc-950 rounded-xl border border-white/10 overflow-hidden">
+                      <EditorProvider>
+                        <Editor 
+                          value={formData.description}
+                          onChange={(e) => setFormData({...formData, description: e.target.value})}
+                          className="min-h-[200px] text-white"
+                        >
+                          <Toolbar>
+                            <BtnUndo />
+                            <BtnRedo />
+                            <BtnStyles />
+                            <BtnBold />
+                            <BtnItalic />
+                            <BtnUnderline />
+                            <BtnLink />
+                            <BtnBulletList />
+                            <BtnNumberedList />
+                            <BtnClearFormatting />
+                          </Toolbar>
+                        </Editor>
+                      </EditorProvider>
+                    </div>
                 </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">{t('admin.fields.photo')} *</label>
                 <div className="flex gap-4">
                     <input 
                         type="text" 
                         value={formData.image_url} 
                         readOnly 
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-sm opacity-50 outline-none" 
+                        className="flex-1 bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white text-sm opacity-50 outline-none" 
                         placeholder={t('admin.portfolio.placeholder_url')}
                     />
                     <label className="shrink-0 flex items-center justify-center px-6 bg-amber-500 text-black font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-white transition-all cursor-pointer">
@@ -187,17 +204,18 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
                 {formData.image_url && (
                     <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 max-w-sm">
                         <img src={formData.image_url} className="w-full h-full object-cover" />
-                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="absolute top-2 right-2 p-2 inset-auto bg-red-500 text-white rounded-full"><X size={12} /></button>
+                        <button type="button" onClick={() => setFormData({...formData, image_url: ''})} className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full"><X size={12} /></button>
                     </div>
                 )}
             </div>
 
-            <button type="submit" disabled={isUploading || !formData.image_url || !formData.title} className="px-8 py-4 bg-amber-500 text-black rounded-lg text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all w-full flex justify-center gap-2 items-center">
+            <button type="submit" disabled={isUploading || !formData.image_url || !formData.title} className="px-8 py-5 bg-amber-500 text-black rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all w-full flex justify-center gap-2 items-center shadow-xl shadow-amber-500/10">
                 <Plus size={16} />
                 {t('admin.portfolio.add_button')}
             </button>
         </form>
       </div>
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {portfolioItems.map(item => (
@@ -205,11 +223,16 @@ export const AdminPortfolioManager = ({ showToast }: { showToast: (msg: string, 
                 <img src={item.image_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 <div className="absolute inset-x-0 bottom-0 p-6 flex justify-between items-end">
-                    <div>
+                    <div className="overflow-hidden pr-4 text-left">
                         <h3 className="text-lg font-bold text-white leading-tight">{item.title}</h3>
-                        {item.description && <p className="text-white/60 text-xs mt-1 truncate max-w-[200px]">{item.description}</p>}
+                        {item.description && (
+                          <div 
+                            className="text-white/60 text-[10px] mt-1 line-clamp-2"
+                            dangerouslySetInnerHTML={{ __html: item.description }}
+                          />
+                        )}
                     </div>
-                    <button onClick={() => deleteItem(item.id, item.image_url)} className="p-3 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-xl backdrop-blur-md transition-all">
+                    <button onClick={() => deleteItem(item.id, item.image_url)} className="shrink-0 p-3 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-xl backdrop-blur-md transition-all">
                         <Trash2 size={16} />
                     </button>
                 </div>

@@ -70,28 +70,81 @@
   scrollbar-width: none;
 }
 
-/* Covenant Rich Text Styles */
-.covenant-rich-content h1, 
-.covenant-rich-content h2, 
-.covenant-rich-content h3 {
-  @apply font-display font-bold text-amber-500 mb-6 mt-12;
-}
-.covenant-rich-content h1 { @apply text-4xl md:text-5xl; }
-.covenant-rich-content h2 { @apply text-3xl md:text-4xl; }
-.covenant-rich-content h3 { @apply text-2xl md:text-3xl; }
+/* Shared Rich Content Styles */
+.rich-content {
+  h1, h2, h3 {
+    @apply font-display font-bold text-amber-500 mb-6 mt-12 tracking-tight;
+  }
+  h1 { @apply text-4xl md:text-5xl; }
+  h2 { @apply text-3xl md:text-4xl border-b border-white/5 pb-4; }
+  h3 { @apply text-2xl md:text-3xl text-amber-400; }
 
-.covenant-rich-content p {
-  @apply mb-6;
+  p {
+    @apply mb-8 leading-relaxed text-lg md:text-xl;
+  }
+
+  ul {
+    @apply mb-10 pl-6 list-disc space-y-4 marker:text-amber-500;
+  }
+
+  ol {
+    @apply mb-10 pl-6 list-decimal space-y-4 marker:text-amber-500 marker:font-black;
+  }
+
+  li {
+    @apply pl-4 text-lg md:text-xl;
+  }
+
+  b, strong {
+    @apply font-black text-amber-500;
+  }
+
+  u {
+    @apply decoration-amber-500/50 decoration-2 underline-offset-4;
+  }
+
+  hr {
+    @apply border-white/10 my-16 shadow-[0_0_20px_rgba(255,255,255,0.05)];
+  }
+
+  blockquote {
+    @apply border-l-4 border-amber-500 pl-10 italic my-12 py-4 bg-white/[0.03] rounded-r-[32px] text-2xl md:text-3xl font-light leading-relaxed;
+  }
+
+  a {
+    @apply text-amber-400 underline decoration-amber-400/30 hover:text-amber-300 transition-colors;
+  }
 }
 
-.covenant-rich-content ul, 
-.covenant-rich-content ol {
-  @apply mb-6 pl-6 list-disc space-y-2;
+/* Context Overrides (Applied along with .rich-content) */
+.faq-rich-content {
+  @apply text-white/80;
 }
 
-.covenant-rich-content a {
-  @apply text-amber-500 underline;
+.covenant-rich-content {
+  @apply text-[#fef3c7];
 }
+
+.property-rich-content {
+  @apply text-zinc-600;
+
+  h1, h2, h3 {
+    @apply text-zinc-900 border-zinc-100;
+  }
+
+  b, strong {
+    @apply text-zinc-900 font-bold;
+  }
+
+  li, p {
+    @apply text-zinc-600;
+  }
+
+  blockquote {
+    @apply bg-zinc-50 border-zinc-200 text-zinc-500;
+  }
+}
+
 
 /* Dark mode Editor fixes (react-simple-wysiwyg) */
 .rsw-editor {
@@ -199,78 +252,5 @@
 }
 
 /* Property Modal Rich Content (Light Background) */
-.property-rich-content {
-  color: #52525b !important; /* zinc-600 */
-}
-
-.property-rich-content p {
-  margin-bottom: 1rem;
-}
-
-.property-rich-content b, 
-.property-rich-content strong {
-  font-weight: 700;
-  color: #18181b; /* zinc-900 */
-}
-
-.property-rich-content ul, 
-.property-rich-content ol {
-  margin-bottom: 1rem;
-  padding-left: 1.5rem;
-  list-style-type: disc;
-}
-
-.property-rich-content li {
-  margin-bottom: 0.25rem;
-}
-
 /* FAQ Rich Text Content Styles */
-.faq-rich-content {
-  @apply text-white/90;
-}
 
-.faq-rich-content h1, 
-.faq-rich-content h2, 
-.faq-rich-content h3 {
-  @apply font-display font-bold text-amber-500 mb-6 mt-12 tracking-tight;
-}
-.faq-rich-content h1 { @apply text-4xl md:text-5xl; }
-.faq-rich-content h2 { @apply text-3xl md:text-4xl border-b border-white/5 pb-4; }
-.faq-rich-content h3 { @apply text-2xl md:text-3xl text-amber-400; }
-
-.faq-rich-content p {
-  @apply mb-8 leading-relaxed text-white/80 text-lg md:text-xl;
-}
-
-.faq-rich-content ul {
-  @apply mb-10 pl-6 list-disc space-y-4 marker:text-amber-500;
-}
-
-.faq-rich-content ol {
-  @apply mb-10 pl-6 list-decimal space-y-4 marker:text-amber-500 marker:font-black;
-}
-
-.faq-rich-content li {
-  @apply pl-4 text-white/80 text-lg md:text-xl;
-}
-
-.faq-rich-content b, 
-.faq-rich-content strong {
-  @apply font-black text-amber-200;
-}
-
-.faq-rich-content u {
-  @apply decoration-amber-500/50 decoration-2 underline-offset-4;
-}
-
-.faq-rich-content hr {
-  @apply border-white/10 my-16 shadow-[0_0_20px_rgba(255,255,255,0.05)];
-}
-
-.faq-rich-content blockquote {
-  @apply border-l-4 border-amber-500 pl-10 italic text-white/60 my-12 py-4 bg-white/[0.03] rounded-r-[32px] text-2xl md:text-3xl font-light leading-relaxed;
-}
-
-.faq-rich-content a {
-  @apply text-amber-400 underline decoration-amber-400/30 hover:text-amber-300 transition-colors;
-}

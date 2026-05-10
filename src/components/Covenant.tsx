@@ -108,7 +108,7 @@ const Covenant: React.FC = () => {
           <div className="relative z-10">
             <div className="prose prose-invert max-w-none">
               <div 
-                className="covenant-rich-content text-amber-100/70 leading-relaxed font-light text-lg md:text-xl"
+                className="rich-content covenant-rich-content text-amber-100/70"
                 dangerouslySetInnerHTML={{ __html: content }}
               />
             </div>

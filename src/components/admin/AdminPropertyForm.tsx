@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, ContentEditable } from 'react-simple-wysiwyg';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, ContentEditable } from 'react-simple-wysiwyg';
 import { cn } from '../../lib/utils';
 
 interface AdminPropertyFormProps {
@@ -220,8 +220,10 @@ export function AdminPropertyForm({
                 <Toolbar>
                   <BtnUndo />
                   <BtnRedo />
+                  <BtnStyles />
                   <BtnBold />
                   <BtnItalic />
+                  <BtnUnderline />
                   <BtnStrikeThrough />
                   <BtnLink />
                   <BtnBulletList />

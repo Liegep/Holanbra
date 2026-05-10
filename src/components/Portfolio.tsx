@@ -120,7 +120,10 @@ export default function Portfolio() {
                 
                 <div className="absolute inset-0 flex flex-col justify-end p-8 text-left translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                   <h3 className="text-2xl font-bold text-white mb-2 leading-tight">{item.title}</h3>
-                  <p className="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">{item.description}</p>
+                  <div 
+                    className="text-white/70 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 rich-content"
+                    dangerouslySetInnerHTML={{ __html: item.description }}
+                  />
                 </div>
               </motion.div>
             ))}

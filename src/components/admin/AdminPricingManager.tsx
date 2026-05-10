@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DollarSign, Plus, X, Trash2, CheckCircle, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
 import { supabase } from '../../lib/supabase';
 import { ToastType } from '../Toast';
 
@@ -9,7 +10,7 @@ interface PricingPackage {
   id: string;
   name: string;
   price: string;
-  features: string[];
+  features: string | string[]; // Can be either for backward compatibility
   is_popular: boolean;
   order_idx: number;
 }
@@ -25,7 +26,7 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
     id: '',
     name: '',
     price: '',
-    features: [''],
+    features: '',
     is_popular: false,
     order_idx: 1
   });
@@ -46,7 +47,12 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
         console.warn('Pricing table error:', error);
         setPackages([]);
       } else {
-        setPackages(data || []);
+        // Ensure features is a string for the editor
+        const normalizedData = (data || []).map(pkg => ({
+          ...pkg,
+          features: Array.isArray(pkg.features) ? `<ul>${pkg.features.map(f => `<li>${f}</li>`).join('')}</ul>` : (pkg.features || '')
+        }));
+        setPackages(normalizedData);
       }
     } catch (err) {
       console.error(err);
@@ -55,27 +61,12 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
     }
   };
 
-  const handleFeatureChange = (index: number, val: string) => {
-    const newFeatures = [...formData.features];
-    newFeatures[index] = val;
-    setFormData({ ...formData, features: newFeatures });
-  };
-
-  const addFeature = () => {
-    setFormData({ ...formData, features: [...formData.features, ''] });
-  };
-
-  const removeFeature = (index: number) => {
-    const newFeatures = formData.features.filter((_, i) => i !== index);
-    setFormData({ ...formData, features: newFeatures });
-  };
-
   const resetForm = () => {
     setFormData({
       id: '',
       name: '',
       price: '',
-      features: [''],
+      features: '',
       is_popular: false,
       order_idx: packages.length + 1
     });
@@ -84,17 +75,16 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || formData.features.filter(f => f.trim()).length === 0) {
+    if (!formData.name || !formData.price || !formData.features) {
       showToast(t('admin.pricing.error_required'), "error");
       return;
     }
 
     try {
-      const cleanFeatures = formData.features.filter(f => f.trim() !== '');
       const payload = {
         name: formData.name.trim(),
         price: formData.price.trim(),
-        features: cleanFeatures,
+        features: formData.features,
         is_popular: formData.is_popular,
         order_idx: formData.order_idx
       };
@@ -221,42 +211,31 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500 flex items-center justify-between">
+            <div className="space-y-4 text-left">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
                     <span>{t('admin.pricing.features_list')} *</span>
-                    <button type="button" onClick={addFeature} className="text-amber-500/70 hover:text-amber-500 flex items-center gap-1">
-                        <Plus size={12} /> {t('admin.pricing.add_row')}
-                    </button>
                 </label>
-                <div className="space-y-3">
-                    <AnimatePresence>
-                        {formData.features.map((feature, idx) => (
-                            <motion.div 
-                                key={idx} 
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="flex gap-2"
-                            >
-                                <input 
-                                    type="text" 
-                                    value={feature}
-                                    onChange={(e) => handleFeatureChange(idx, e.target.value)}
-                                    className="flex-1 bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-white text-sm focus:border-amber-500/50 outline-none"
-                                    placeholder={`${t('admin.pricing.feature_placeholder')} ${idx + 1}`}
-                                />
-                                {formData.features.length > 1 && (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => removeFeature(idx)}
-                                        className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                )}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                <div className="bg-zinc-950 rounded-xl border border-white/10 overflow-hidden">
+                  <EditorProvider>
+                    <Editor 
+                      value={formData.features as string}
+                      onChange={(e) => setFormData({...formData, features: e.target.value})}
+                      className="min-h-[250px] text-white"
+                    >
+                      <Toolbar>
+                        <BtnUndo />
+                        <BtnRedo />
+                        <BtnStyles />
+                        <BtnBold />
+                        <BtnItalic />
+                        <BtnUnderline />
+                        <BtnLink />
+                        <BtnBulletList />
+                        <BtnNumberedList />
+                        <BtnClearFormatting />
+                      </Toolbar>
+                    </Editor>
+                  </EditorProvider>
                 </div>
             </div>
 
@@ -306,11 +285,9 @@ export const AdminPricingManager = ({ showToast }: { showToast: (msg: string, ty
                     <h4 className="text-lg font-bold mt-2 text-white">{pkg.name}</h4>
                     <p className="text-2xl font-black mb-4 text-white">{pkg.price}</p>
                     
-                    <ul className="text-xs text-white/60 space-y-2 mb-6 flex-1">
-                        {pkg.features.map((f, i) => (
-                            <li key={i} className="flex gap-2 items-start"><span className="text-amber-500 mt-0.5">•</span> <span>{f}</span></li>
-                        ))}
-                    </ul>
+                    <div className="rich-content text-left text-xs mb-6 flex-1 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10">
+                        <div dangerouslySetInnerHTML={{ __html: pkg.features as string }} />
+                    </div>
 
                     <div className="flex gap-2 mt-auto pt-4 border-t border-white/10">
                         <button onClick={() => handleEdit(pkg)} className="flex-1 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all">{t('admin.common.edit')}</button>

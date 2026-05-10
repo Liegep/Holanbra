@@ -252,7 +252,7 @@ export const FAQDisplay: React.FC = () => {
                               initial={{ y: 20, opacity: 0 }}
                               animate={{ y: 0, opacity: 1 }}
                               transition={{ delay: 0.2 }}
-                              className="text-white/80 faq-rich-content"
+                              className="text-white/80 rich-content faq-rich-content"
                             >
                               {answer ? (
                                 <div dangerouslySetInnerHTML={{ __html: answer }} />

@@ -10,7 +10,7 @@ interface PricingPackage {
   id: string;
   name: string;
   price: string;
-  features: string[];
+  features: string | string[];
   is_popular: boolean;
   order_idx: number;
 }
@@ -29,7 +29,7 @@ export default function Pricing() {
       id: '1',
       name: t('pricing.packages.basic.name'),
       price: 'L$ 2,500',
-      features: t('pricing.packages.basic.features', { returnObjects: true }) as string[],
+      features: `<ul>${(t('pricing.packages.basic.features', { returnObjects: true }) as string[]).map(f => `<li>${f}</li>`).join('')}</ul>`,
       is_popular: false,
       order_idx: 1
     },
@@ -37,7 +37,7 @@ export default function Pricing() {
       id: '2',
       name: t('pricing.packages.standard.name'),
       price: 'L$ 7,500',
-      features: t('pricing.packages.standard.features', { returnObjects: true }) as string[],
+      features: `<ul>${(t('pricing.packages.standard.features', { returnObjects: true }) as string[]).map(f => `<li>${f}</li>`).join('')}</ul>`,
       is_popular: true,
       order_idx: 2
     },
@@ -45,7 +45,7 @@ export default function Pricing() {
       id: '3',
       name: t('pricing.packages.premium.name'),
       price: 'L$ 15,000+',
-      features: t('pricing.packages.premium.features', { returnObjects: true }) as string[],
+      features: `<ul>${(t('pricing.packages.premium.features', { returnObjects: true }) as string[]).map(f => `<li>${f}</li>`).join('')}</ul>`,
       is_popular: false,
       order_idx: 3
     }
@@ -152,16 +152,22 @@ export default function Pricing() {
                 
                 <div className="h-px w-full bg-white/10 mb-8" />
                 
-                <ul className="space-y-4 flex-1 mb-8">
-                  {pkg.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm text-white/70">
-                      <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
-                        <Check size={10} className="text-amber-500" />
-                      </div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="rich-content text-left mb-8 flex-1">
+                  {typeof pkg.features === 'string' ? (
+                    <div dangerouslySetInnerHTML={{ __html: pkg.features }} className="text-white/70" />
+                  ) : (
+                    <ul className="space-y-4">
+                      {pkg.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3 text-sm text-white/70">
+                          <div className="mt-0.5 shrink-0 w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/30">
+                            <Check size={10} className="text-amber-500" />
+                          </div>
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
 
                 <button 
                   onClick={() => handleOrder(pkg.name)}

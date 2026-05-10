@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import Editor from 'react-simple-wysiwyg';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
 import { useTranslation } from 'react-i18next';
 import { 
   Save, 
-  Bold, 
-  Italic, 
-  Underline, 
-  List as ListIcon, 
-  Link as LinkIcon 
+  Languages 
 } from 'lucide-react';
 
 interface AdminLandCovenantProps {
@@ -27,69 +23,7 @@ export function AdminLandCovenant({
   handleSaveCovenant
 }: AdminLandCovenantProps) {
   const { t } = useTranslation();
-  const [selectionRect, setSelectionRect] = useState<DOMRect | null>(null);
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  };
-
-  const handleSelection = () => {
-    setTimeout(() => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        setSelectionRect(rect);
-      } else {
-        setSelectionRect(null);
-      }
-    }, 10);
-  };
-
-  const applyCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
-    setIsDirty(true);
-  };
-
-  const FloatingToolbar = () => {
-    if (!selectionRect) return null;
-
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="floating-toolbar fixed z-[10000] flex items-center gap-1 p-1 bg-zinc-900 border border-white/10 rounded-lg shadow-2xl"
-        style={{ 
-          top: selectionRect.top - 60, 
-          left: Math.max(10, Math.min(window.innerWidth - 320, selectionRect.left + (selectionRect.width / 2) - 160)) 
-        }}
-      >
-        <button onClick={() => applyCommand('bold')} className="p-2 hover:bg-white/5 rounded text-white" title="Bold"><Bold size={14} /></button>
-        <button onClick={() => applyCommand('italic')} className="p-2 hover:bg-white/5 rounded text-white" title="Italic"><Italic size={14} /></button>
-        <button onClick={() => applyCommand('underline')} className="p-2 hover:bg-white/5 rounded text-white" title="Underline"><Underline size={14} /></button>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <button onClick={() => applyCommand('insertUnorderedList')} className="p-2 hover:bg-white/5 rounded text-white" title="List"><ListIcon size={14} /></button>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <select 
-          className="bg-zinc-800 text-white text-[10px] p-1 rounded outline-none"
-          onChange={(e) => applyCommand('formatBlock', e.target.value)}
-          defaultValue="P"
-        >
-          <option value="P">{t('admin.covenant.type_text')}</option>
-          <option value="H1">H1</option>
-          <option value="H2">H2</option>
-          <option value="H3">H3</option>
-        </select>
-        <div className="w-[1px] h-4 bg-white/10 mx-1" />
-        <button onClick={() => {
-          const url = prompt(t('admin.covenant.link_prompt'));
-          if (url) applyCommand('createLink', url);
-        }} className="p-2 hover:bg-white/5 rounded text-white" title="Link"><LinkIcon size={14} /></button>
-      </motion.div>
-    );
-  };
+  const [activeLang, setActiveLang] = useState<'en' | 'pt' | 'es' | 'nl'>('en');
 
   return (
     <div className="space-y-12 max-w-4xl mx-auto pb-32">
@@ -98,61 +32,55 @@ export function AdminLandCovenant({
           <h2 className="text-4xl font-bold font-display text-amber-500 tracking-tighter">{t('admin.covenant.title')}</h2>
           <p className="text-white/40 uppercase tracking-[0.3em] text-[10px]">{t('admin.covenant.subtitle')}</p>
         </div>
+        <div className="flex bg-white/5 rounded-xl p-1 border border-white/10">
+          {(['en', 'pt', 'es', 'nl'] as const).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setActiveLang(lang)}
+              className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all ${
+                activeLang === lang 
+                  ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
+                  : 'text-white/40 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {lang}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <FloatingToolbar />
-
-      <div className="grid grid-cols-1 gap-12">
+      <div className="space-y-6">
         <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (EN)</label>
-          <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-            <Editor 
-              value={covenants.en}
-              onChange={(e: any) => {
-                setCovenants((prev: any) => ({ ...prev, en: e.target.value }));
-                setIsDirty(true);
-              }}
-              placeholder={t('admin.covenant.placeholder_en')}
-            />
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest flex items-center gap-2">
+              <Languages size={14} /> {t('admin.fields.language')} ({activeLang.toUpperCase()})
+            </label>
           </div>
-        </div>
-        <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (PT)</label>
-          <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-            <Editor 
-              value={covenants.pt}
-              onChange={(e: any) => {
-                setCovenants((prev: any) => ({ ...prev, pt: e.target.value }));
-                setIsDirty(true);
-              }}
-              placeholder={t('admin.covenant.placeholder_pt')}
-            />
-          </div>
-        </div>
-        <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (ES)</label>
-          <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-            <Editor 
-              value={covenants.es}
-              onChange={(e: any) => {
-                setCovenants((prev: any) => ({ ...prev, es: e.target.value }));
-                setIsDirty(true);
-              }}
-              placeholder={t('admin.covenant.placeholder_es')}
-            />
-          </div>
-        </div>
-        <div className="space-y-4 text-left">
-          <label className="text-xs font-bold text-amber-500/70 uppercase tracking-widest">{t('admin.fields.language')} (NL)</label>
-          <div className="editor-container" onPaste={handlePaste} onMouseUp={handleSelection} onKeyUp={handleSelection}>
-            <Editor 
-              value={covenants.nl}
-              onChange={(e: any) => {
-                setCovenants((prev: any) => ({ ...prev, nl: e.target.value }));
-                setIsDirty(true);
-              }}
-              placeholder={t('admin.covenant.placeholder_nl')}
-            />
+          <div className="bg-zinc-900 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <EditorProvider>
+              <Editor 
+                value={covenants[activeLang]}
+                onChange={(e) => {
+                  setCovenants((prev: any) => ({ ...prev, [activeLang]: e.target.value }));
+                  setIsDirty(true);
+                }}
+                placeholder={t(`admin.covenant.placeholder_${activeLang}`)}
+                className="min-h-[400px] text-white"
+              >
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <BtnStyles />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnLink />
+                  <BtnBulletList />
+                  <BtnNumberedList />
+                  <BtnClearFormatting />
+                </Toolbar>
+              </Editor>
+            </EditorProvider>
           </div>
         </div>
       </div>
