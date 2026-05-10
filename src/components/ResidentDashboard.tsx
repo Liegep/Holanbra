@@ -12,7 +12,6 @@ import {
   LogOut, 
   LogIn,
   Loader2,
-  ShieldCheck,
   User,
   Lock,
   MessageSquare,

@@ -15,7 +15,8 @@ import {
   FileText,
   AlertCircle,
   DollarSign,
-  HelpCircle
+  HelpCircle,
+  Box
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase, signOut } from '../lib/supabase';
