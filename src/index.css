@@ -102,14 +102,26 @@
 }
 
 .rsw-toolbar {
-  display: none !important; /* Hide default toolbar for Adobe style */
+  @apply bg-zinc-900 border-b border-white/10 p-2 flex items-center gap-1 flex-wrap;
 }
 
-.editor-container {
-  position: relative;
+.rsw-toolbar button {
+  @apply bg-transparent border-none text-white/70 hover:text-white hover:bg-white/10 rounded p-2 transition-all cursor-pointer flex items-center justify-center;
 }
 
-/* Custom Floating Toolbar */
+.rsw-toolbar select {
+  @apply bg-zinc-800 text-amber-500 border border-white/10 rounded px-2 py-1 text-[10px] font-black uppercase outline-none cursor-pointer hover:border-amber-500/30 transition-colors;
+}
+
+.rsw-editor {
+  @apply border-none bg-black text-white;
+}
+
+.rsw-content {
+  @apply min-h-[300px] p-6 text-white/90 focus:outline-none leading-relaxed;
+}
+
+/* Custom Floating Toolbar - keeping for other parts but fixing class name if needed */
 .floating-toolbar {
   @apply fixed z-[100] bg-zinc-900/95 backdrop-blur-xl border border-white/20 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] transition-all duration-200;
 }
