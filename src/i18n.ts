@@ -365,6 +365,7 @@ const resources = {
           "covenant": "Covenants",
           "links": "Site Links",
           "faqs": "FAQs & Help",
+          "prims": "Prim Counter",
           "settings": "Portal Settings",
           "administrator": "Marie Whitfield"
         },
@@ -578,6 +579,11 @@ const resources = {
         "expires_in": "Expires in {{days}} days and {{hours}} hours",
         "date_at_time": "{{date}} at {{time}}",
         "logged_out": "Logged out successfully",
+        "prim_usage": "Object / Prim Usage",
+        "over_limit": "Over Limit",
+        "within_limit": "Within Limit",
+        "prim_tip_title": "Real-time Sync Active",
+        "prim_tip_desc": "Your prim count is synchronized every time you touch the counter on your parcel.",
         "search_help": "Search help guides...",
         "still_need_help": "Still need assistance?",
         "search_results_none": "No matching guides found"
@@ -945,6 +951,7 @@ const resources = {
           "covenant": "Regras/Termos",
           "links": "Links do Site",
           "faqs": "FAQs e Ajuda",
+          "prims": "Contador de Prims",
           "settings": "Configurações do Portal",
           "administrator": "Marie Whitfield"
         },
@@ -1160,6 +1167,11 @@ const resources = {
         "expires_in": "Expira em {{days}} dias e {{hours}} horas",
         "date_at_time": "{{date}} às {{time}}",
         "logged_out": "Sessão encerrada com sucesso",
+        "prim_usage": "Uso de Objetos / Prims",
+        "over_limit": "Acima do Limite",
+        "within_limit": "Dentro do Limite",
+        "prim_tip_title": "Sincronização Ativa",
+        "prim_tip_desc": "Sua contagem de prims é atualizada sempre que você toca no totem em seu terreno.",
         "search_help": "Buscar guias de ajuda...",
         "still_need_help": "Ainda precisa de assistência?",
         "search_results_none": "Nenhum guia correspondente encontrado"
