@@ -24,7 +24,8 @@ import {
   Tag,
   HelpCircle,
   Music,
-  Box
+  Box,
+  ShieldCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';

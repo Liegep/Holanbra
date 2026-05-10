@@ -291,7 +291,7 @@ export const AdminPrimManager: React.FC = () => {
                         <td className="py-8 px-8">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40">
-                              <UserIcon size={18} />
+                              <Users size={18} />
                             </div>
                             <div>
                               <p className="font-bold text-white mb-1">{res.resident_name}</p>
