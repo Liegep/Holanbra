@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import ReactQuill from 'react-quill';
+import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
 
 const GUIDE_TEMPLATES = {
   pt: {
@@ -265,22 +265,28 @@ export const AdminFAQManager: React.FC = () => {
                   <BookOpen size={12} /> Load Land Guide Template
                 </button>
               </div>
-              <div className="bg-zinc-900/50 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
-                <ReactQuill
-                  theme="snow"
-                  value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
-                  onChange={(content) => setFormData({ ...formData, [`answer_${activeLang}`]: content })}
-                  placeholder={t('admin.faqs.answer_placeholder')}
-                  modules={{
-                    toolbar: [
-                      [{ 'header': [1, 2, 3, false] }],
-                      ['bold', 'italic', 'underline', 'strike'],
-                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                      ['link', 'blockquote', 'clean'],
-                      ['undo', 'redo']
-                    ],
-                  }}
-                />
+              <div className="bg-zinc-900 rounded-xl border border-white/10 overflow-hidden shadow-2xl">
+                <EditorProvider>
+                  <Editor
+                    value={formData[`answer_${activeLang}` as keyof typeof formData] as string}
+                    onChange={(e) => setFormData({ ...formData, [`answer_${activeLang}`]: e.target.value })}
+                    placeholder={t('admin.faqs.answer_placeholder')}
+                    className="min-h-[300px] text-white"
+                  >
+                    <Toolbar>
+                      <BtnUndo />
+                      <BtnRedo />
+                      <BtnStyles />
+                      <BtnBold />
+                      <BtnItalic />
+                      <BtnUnderline />
+                      <BtnLink />
+                      <BtnBulletList />
+                      <BtnNumberedList />
+                      <BtnClearFormatting />
+                    </Toolbar>
+                  </Editor>
+                </EditorProvider>
               </div>
             </div>
           </div>
