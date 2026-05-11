@@ -478,8 +478,40 @@ export const AdminPrimManager: React.FC = () => {
             </p>
             <div className="flex gap-4">
               <button 
-                onClick={() => window.open('https://github.com/your-repo/prim-checker', '_blank')}
-                className="px-8 py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:translate-y-[-2px] transition-all shadow-2xl"
+                onClick={() => {
+                  const script = `// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.0
+string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/api/prim-update";
+string API_TOKEN = "holanbra_secret_token";
+
+default {
+    state_entry() {
+        llSetText("📦 Prim Counter\\nTouch to Sync", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("✅ Prim Checker initialized. URL: " + WEB_URL);
+    }
+    touch_start(integer total_number) {
+        if(llDetectedKey(0) == llGetOwner()) {
+            llOwnerSay("🔄 Counting prims and syncing...");
+            integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
+            string name = llKey2Name(llGetOwner());
+            string key = (string)llGetOwner();
+            string body = "resident_key=" + key + "&resident_name=" + llEscapeURL(name) + "&prims_used=" + (string)used + "&token=" + API_TOKEN;
+            llHTTPRequest(WEB_URL, [HTTP_METHOD, "POST", HTTP_MIME_TYPE, "application/x-www-form-urlencoded"], body);
+        }
+    }
+    http_response(key id, integer status, list meta, string body) {
+        if(status == 200) {
+            llOwnerSay("✅ Sync Successful: " + body);
+            llSetText("📦 Prim Counter\\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
+        } else {
+            llOwnerSay("❌ Sync Failed (" + (string)status + "): " + body);
+            llSetText("📦 Prim Counter\\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
+        }
+    }
+}`;
+                  navigator.clipboard.writeText(script);
+                  showToast("LSL Script copied to clipboard!");
+                }}
+                className="px-8 py-4 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:translate-y-[-2px] transition-all shadow-2xl active:scale-95"
               >
                 Copy LSL Script
               </button>

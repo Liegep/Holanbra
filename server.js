@@ -144,6 +144,57 @@ async function startServer() {
   // 3. DEPRECATED ROUTE
   app.all('/api/webhooks/casperlet', (req, res) => res.send("OK - Use /sl-update"));
 
+  // 4. PRIM CHECKER ROUTE
+  app.post('/api/prim-update', async (req, res) => {
+    const payload = { ...req.query, ...req.body };
+    const { resident_key, resident_name, prims_used, token } = payload;
+
+    console.log(`[Prim-Update] Requisição: Resident=${resident_name}, Prims=${prims_used}`);
+
+    if (token !== 'holanbra_secret_token') {
+      return res.status(200).send('ERROR - Invalid Token');
+    }
+
+    if (!resident_key) return res.status(200).send('ERROR - Missing Resident Key');
+
+    try {
+      // 1. Update or Insert into prim_residents
+      const { data: resData, error: resError } = await supabase
+        .from('prim_residents')
+        .upsert({
+          resident_key,
+          resident_name,
+          prims_used: parseInt(prims_used) || 0,
+          last_seen: new Date().toISOString()
+        }, { onConflict: 'resident_key' })
+        .select();
+
+      if (resError) throw resError;
+
+      // 2. Record in history if over limit (optional, but keep it consistent with AdminPrimManager)
+      // We need the limit first
+      const limit = (resData && resData[0]) ? resData[0].prim_limit : 0;
+      
+      if (limit > 0) {
+        await supabase
+          .from('prim_history')
+          .insert({
+            resident_key,
+            resident_name,
+            prims_used: parseInt(prims_used) || 0,
+            prim_limit: limit,
+            over_limit: parseInt(prims_used) > limit,
+            recorded_at: new Date().toISOString()
+          });
+      }
+
+      return res.status(200).send('OK - Sync Succesful');
+    } catch (err) {
+      console.error('❌ PRIM SYNC ERROR:', err.message);
+      return res.status(200).send(`ERROR: ${err.message}`);
+    }
+  });
+
 
   // Logging and Health routes
   app.use((req, res, next) => {

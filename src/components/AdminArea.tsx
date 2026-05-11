@@ -1229,6 +1229,7 @@ export default function AdminArea() {
               handleEdit={handleEditProperty}
               handleDelete={handleDeleteProperty}
               showToast={showToast}
+              fetchData={fetchData}
             />
           )}
 

@@ -27,6 +27,7 @@ interface AdminPropertyListingsProps {
   handleEdit: (prop: any) => void;
   handleDelete: (id: string) => void;
   showToast: (msg: string, type?: any) => void;
+  fetchData: () => void;
 }
 
 export function AdminPropertyListings({
@@ -38,7 +39,8 @@ export function AdminPropertyListings({
   setActiveTab,
   handleEdit,
   handleDelete,
-  showToast
+  showToast,
+  fetchData
 }: AdminPropertyListingsProps) {
   const { t } = useTranslation();
 
@@ -50,10 +52,51 @@ export function AdminPropertyListings({
             <h3 className="text-4xl font-bold font-display tracking-tight text-white">{t('admin.dashboard')}</h3>
             <p className="text-white/30 text-[10px] uppercase font-black tracking-[0.3em] uppercase">{t('admin.operational_overview')}</p>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white">
-            <RefreshCw size={12} className="text-amber-500" />
-            {t('admin.sync')}
-          </button>
+          <div className="flex gap-4">
+            <button 
+              onClick={() => {
+                const script = `// HOLAMBRA REAL ESTATE - CASPERLET SYNC v1.1
+string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/sl-update";
+string API_TOKEN = "holanbra_secret_token";
+string CASPERLET_ID = ""; 
+
+default {
+    state_entry() {
+        if(CASPERLET_ID == "") CASPERLET_ID = llGetObjectName();
+        llOwnerSay("✅ Holanbra CasperLet Sync initialized for ID: " + CASPERLET_ID);
+    }
+    link_message(integer sender, integer num, string str, key id) {
+        list events = ["rented", "available", "expired", "occupied", "vacant", "payment"];
+        string lowerStr = llToLower(str);
+        if(~llListFindList(events, [lowerStr])) {
+            llOwnerSay("🔄 Event detected: " + str + ". Syncing...");
+            string status = "rented";
+            if(lowerStr == "available" || lowerStr == "expired" || lowerStr == "vacant") status = "available";
+            string body = "id=" + llEscapeURL(CASPERLET_ID) + "&status=" + status + "&tenant=" + (string)id + "&token=" + API_TOKEN;
+            llHTTPRequest(WEB_URL, [HTTP_METHOD, "POST", HTTP_MIME_TYPE, "application/x-www-form-urlencoded"], body);
+        }
+    }
+    http_response(key id, integer status, list meta, string body) {
+        if(status == 200) llOwnerSay("✅ Sync OK");
+        else llOwnerSay("❌ Sync Failed: " + (string)status);
+    }
+}`;
+                navigator.clipboard.writeText(script);
+                showToast("CasperLet Script copied!");
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-xl shadow-amber-500/20"
+            >
+              <FileText size={12} />
+              Copy CasperLet Script
+            </button>
+            <button 
+              onClick={() => fetchData()}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white"
+            >
+              <RefreshCw size={12} className="text-amber-500" />
+              {t('admin.sync')}
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 text-left">
