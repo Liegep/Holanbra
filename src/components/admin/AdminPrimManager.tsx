@@ -498,7 +498,7 @@ do_sync() {
 
     llHTTPRequest(WEB_URL, [
         HTTP_METHOD,    "POST",
-        HTTP_MIME_TYPE, "application/x-www-form-urlencoded"
+        HTTP_MIMETYPE, "application/x-www-form-urlencoded"
     ], body);
 }
 

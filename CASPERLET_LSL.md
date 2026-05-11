@@ -30,7 +30,7 @@ default {
             string status = "rented";
             if(lowerStr == "available" || lowerStr == "expired" || lowerStr == "vacant") status = "available";
             string body = "id=" + llEscapeURL(CASPERLET_ID) + "&status=" + status + "&tenant=" + (string)id + "&token=" + API_TOKEN;
-            llHTTPRequest(WEB_URL, [HTTP_METHOD, "POST", HTTP_MIME_TYPE, "application/x-www-form-urlencoded"], body);
+            llHTTPRequest(WEB_URL, [HTTP_METHOD, "POST", HTTP_MIMETYPE, "application/x-www-form-urlencoded"], body);
         }
     }
     http_response(key id, integer status, list meta, string body) {
