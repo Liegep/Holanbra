@@ -23,10 +23,20 @@ string target_name = "";
 do_sync() {
     if(target_res == NULL_KEY) return;
     
-    integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
+    list owners = llGetParcelPrimOwners(llGetPos());
+    integer count = 0;
+    integer i;
+    for(i = 0; i < llGetListLength(owners); i += 2) {
+        if(llList2Key(owners, i) == target_res) {
+            count = llList2Integer(owners, i + 1);
+            jump found_owner;
+        }
+    }
+    @found_owner;
+
     string body = "resident_key=" + (string)target_res + 
                  "&resident_name=" + llEscapeURL(target_name) + 
-                 "&prims_used=" + (string)used + 
+                 "&prims_used=" + (string)count + 
                  "&token=" + API_TOKEN;
 
     llHTTPRequest(WEB_URL, [
