@@ -150,13 +150,27 @@ export default function AdminArea() {
       if (sbUser) {
         try {
           const userEmail = sbUser.email?.toLowerCase();
-          const adminEmails = [
+          const hardcodedAdmins = [
             'hello@liegepaschoalini.design', 
             'slmariew@gmail.com', 
-            'victoriaholanbra@gmail.com'
+            'victoriaholanbra@gmail.com',
+            'meiga1975@gmail.com'
           ];
-          const isWhitelisted = userEmail && adminEmails.includes(userEmail);
-          setIsAdmin(isWhitelisted || !!sbUser.app_metadata?.is_admin);
+          
+          let isAuthorized = userEmail && hardcodedAdmins.includes(userEmail);
+
+          if (!isAuthorized && userEmail) {
+            // Check dynamic admins table
+            const { data: dbAdmin, error: dbError } = await supabase
+              .from('admins')
+              .select('email')
+              .eq('email', userEmail)
+              .maybeSingle();
+            
+            if (dbAdmin) isAuthorized = true;
+          }
+
+          setIsAdmin(isAuthorized || !!sbUser.app_metadata?.is_admin);
         } catch (error) {
           console.error("Error checking profile:", error);
           setIsAdmin(false);
