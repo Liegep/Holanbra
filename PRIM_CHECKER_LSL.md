@@ -12,33 +12,44 @@ Use this script to monitor object/prim usage on your land parcels.
 7. **Touch the object** to manually sync the prim count to the website.
 
 ```lsl
-// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.0
+// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.1 (Auto-Sync)
 string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
+float  TIMER_INTERVAL = 1800.0; // 30 minutos (em segundos)
+
+do_sync() {
+    llOwnerSay("🔄 Counting prims and syncing...");
+    integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
+    string  name = llKey2Name(llGetOwner());
+    string  k    = (string)llGetOwner();
+
+    string body = "resident_key=" + k
+                + "&resident_name=" + llEscapeURL(name)
+                + "&prims_used="    + (string)used
+                + "&token="         + API_TOKEN;
+
+    llHTTPRequest(WEB_URL, [
+        HTTP_METHOD,    "POST",
+        HTTP_MIME_TYPE, "application/x-www-form-urlencoded"
+    ], body);
+}
 
 default {
     state_entry() {
-        llSetText("Prim Counter\nTouch to Sync", <1.0, 1.0, 1.0>, 1.0);
-        llOwnerSay("Prim Checker initialized.");
+        llSetText("Prim Counter\nAuto-Sync Active", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("✅ Prim Checker initialized. Auto-sync every 30m.");
+        llSetTimerEvent(TIMER_INTERVAL);
+        do_sync(); // Sync inicial
+    }
+
+    timer() {
+        do_sync();
     }
 
     touch_start(integer total_number) {
         if (llDetectedKey(0) == llGetOwner()) {
-            llOwnerSay("Counting prims and syncing...");
-
-            integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
-            string  name = llKey2Name(llGetOwner());
-            string  k    = (string)llGetOwner();
-
-            string body = "resident_key=" + k
-                        + "&resident_name=" + llEscapeURL(name)
-                        + "&prims_used="    + (string)used
-                        + "&token="         + API_TOKEN;
-
-            llHTTPRequest(WEB_URL, [
-                HTTP_METHOD,    "POST",
-                HTTP_MIME_TYPE, "application/x-www-form-urlencoded"
-            ], body);
+            llOwnerSay("manual sync requested...");
+            do_sync();
         }
     }
 
