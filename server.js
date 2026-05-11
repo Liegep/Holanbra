@@ -170,22 +170,28 @@ async function startServer() {
         autoLimit = properties.reduce((acc, p) => acc + (p.prims_allowed || 0), 0);
       }
 
-      // 2. Primeiro, verificamos se o residente já existe para não sobrescrever um limite manual se preferir
+      // 2. Primeiro, verificamos se o residente já existe para não sobrescrever um limite manual ou nome real
       const { data: existingRes } = await supabase
         .from('prim_residents')
-        .select('prim_limit')
+        .select('prim_limit, resident_name')
         .eq('resident_key', resident_key)
         .single();
 
       // Se não existe ou o limite atual é 0, usamos o autoLimit
       const limitToSet = (existingRes && existingRes.prim_limit > 0) ? existingRes.prim_limit : autoLimit;
 
+      // Preserva o nome real se o novo vindo do script for apenas um placeholder (ex: "Resident (key)")
+      let finalName = resident_name;
+      if (existingRes && existingRes.resident_name && resident_name.includes("Resident (")) {
+        finalName = existingRes.resident_name;
+      }
+
       // 3. Update or Insert into prim_residents
       const { data: resData, error: resError } = await supabase
         .from('prim_residents')
         .upsert({
           resident_key,
-          resident_name,
+          resident_name: finalName,
           prims_used: parseInt(prims_used) || 0,
           prim_limit: limitToSet,
           last_seen: new Date().toISOString()
@@ -202,7 +208,7 @@ async function startServer() {
           .from('prim_history')
           .insert({
             resident_key,
-            resident_name,
+            resident_name: finalName,
             prims_used: parseInt(prims_used) || 0,
             prim_limit: finalLimit,
             over_limit: parseInt(prims_used) > finalLimit,

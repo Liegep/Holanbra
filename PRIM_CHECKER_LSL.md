@@ -12,71 +12,57 @@ Use this script to monitor object/prim usage on your land parcels.
 7. **Touch the object** to manually sync the prim count to the website.
 
 ```lsl
-// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.2 (Auto-Sync)
+// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.3 (Multi-User)
 string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
-float  TIMER_INTERVAL = 1800.0; // 30 minutos
+float  TIMER_INTERVAL = 3600.0; // 1 hora para sync automático total
 
-key    target_res = NULL_KEY;
-string target_name = "";
-
-do_sync() {
-    if(target_res == NULL_KEY) return;
-    
+do_sync_owners() {
     list owners = llGetParcelPrimOwners(llGetPos());
-    integer count = 0;
     integer i;
     for(i = 0; i < llGetListLength(owners); i += 2) {
-        if(llList2Key(owners, i) == target_res) {
-            count = llList2Integer(owners, i + 1);
-            jump found_owner;
-        }
+        key k = llList2Key(owners, i);
+        integer count = llList2Integer(owners, i + 1);
+        string name = llKey2Name(k);
+        if(name == "") name = "Resident (" + (string)k + ")";
+        
+        string body = "resident_key=" + (string)k + 
+                     "&resident_name=" + llEscapeURL(name) + 
+                     "&prims_used=" + (string)count + 
+                     "&token=" + API_TOKEN;
+        
+        llHTTPRequest(WEB_URL, [
+            HTTP_METHOD, "POST",
+            HTTP_MIMETYPE, "application/x-www-form-urlencoded"
+        ], body);
     }
-    @found_owner;
-
-    string body = "resident_key=" + (string)target_res + 
-                 "&resident_name=" + llEscapeURL(target_name) + 
-                 "&prims_used=" + (string)count + 
-                 "&token=" + API_TOKEN;
-
-    llHTTPRequest(WEB_URL, [
-        HTTP_METHOD, "POST",
-        HTTP_MIMETYPE, "application/x-www-form-urlencoded"
-    ], body);
 }
 
 default {
     state_entry() {
-        llSetText("Prim Counter\nWaiting for Sync", <1.0, 1.0, 1.0>, 1.0);
-        llOwnerSay("✅ Prim Checker initialized. URL: " + WEB_URL);
+        llSetText("Prim Counter\nMulti-User Active", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("✅ Prim Checker initialized. Monitoring all parcel residents.");
         llSetTimerEvent(TIMER_INTERVAL);
+        do_sync_owners();
     }
 
     timer() {
-        do_sync();
+        do_sync_owners();
     }
 
     touch_start(integer total_number) {
         key user = llDetectedKey(0);
-        
         if (user == llGetOwner() || llSameGroup(user)) {
-            target_res = user;
-            target_name = llKey2Name(user);
-            
-            llRegionSayTo(user, 0, "🔄 Syncing prims for " + target_name + "...");
-            do_sync();
+             llRegionSayTo(user, 0, "🔄 Full parcel sync started...");
+             do_sync_owners();
         } else {
-            llRegionSayTo(user, 0, "❌ Permission denied. Only owner or group members can sync.");
+             llRegionSayTo(user, 0, "❌ Permission denied. Only owner or group can sync.");
         }
     }
 
     http_response(key id, integer status, list meta, string body) {
-        if (status == 200) {
-            llSetText("Prim Counter\nResident: " + target_name + "\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
-            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "✅ Sync OK: " + body);
-        } else {
-            llSetText("Prim Counter\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
-            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "❌ Sync Failed! Status: " + (string)status);
+        if (status != 200) {
+            llOwnerSay("⚠️ Sync Error: " + (string)status + " - " + body);
         }
     }
 }
