@@ -480,12 +480,14 @@ export const AdminPrimManager: React.FC = () => {
               <button 
                 onClick={() => {
                   const origin = window.location.origin;
-                  const script = `// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.3 (Multi-User)
+                  const script = `// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.4 (Linked)
 string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
-float  TIMER_INTERVAL = 3600.0; // 1 hora para sync automático total
+string CASPERLET_ID = ""; // Deixe em branco para usar o nome do objeto ou preencha com o ID da Propriedade
+float  TIMER_INTERVAL = 3600.0; // 1 hora
 
 do_sync_owners() {
+    if(CASPERLET_ID == "") CASPERLET_ID = llGetObjectName();
     list owners = llGetParcelPrimOwners(llGetPos());
     integer i;
     for(i = 0; i < llGetListLength(owners); i += 2) {
@@ -497,6 +499,7 @@ do_sync_owners() {
         string body = "resident_key=" + (string)k + 
                      "&resident_name=" + llEscapeURL(name) + 
                      "&prims_used=" + (string)count + 
+                     "&casperlet_id=" + llEscapeURL(CASPERLET_ID) +
                      "&token=" + API_TOKEN;
         
         llHTTPRequest(WEB_URL, [

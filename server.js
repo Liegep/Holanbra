@@ -147,9 +147,9 @@ async function startServer() {
   // 4. PRIM CHECKER ROUTE
   app.post('/api/prim-update', async (req, res) => {
     const payload = { ...req.query, ...req.body };
-    const { resident_key, resident_name, prims_used, token } = payload;
+    const { resident_key, resident_name, prims_used, token, casperlet_id } = payload;
 
-    console.log(`[Prim-Update] Requisição: Resident=${resident_name}, Prims=${prims_used}`);
+    console.log(`[Prim-Update] Requisição: Resident=${resident_name}, Prims=${prims_used}, CasperletID=${casperlet_id}`);
 
     if (token !== 'holanbra_secret_token') {
       return res.status(200).send('ERROR - Invalid Token');
@@ -158,16 +158,28 @@ async function startServer() {
     if (!resident_key) return res.status(200).send('ERROR - Missing Resident Key');
 
     try {
-      // 1. Tentar buscar o limite padrão da tabela de propriedades se o residente for um locatário
-      const { data: properties } = await supabase
-        .from('properties')
-        .select('prims_allowed')
-        .eq('renter_uuid', resident_key);
-      
+      // 1. Vincular à propriedade se o id foi fornecido
       let autoLimit = 0;
-      if (properties && properties.length > 0) {
-        // Soma os prims de todas as propriedades que ele aluga (caso alugue mais de uma)
-        autoLimit = properties.reduce((acc, p) => acc + (p.prims_allowed || 0), 0);
+      if (casperlet_id) {
+        const { data: prop } = await supabase
+          .from('properties')
+          .select('prims_allowed')
+          .eq('name', casperlet_id)
+          .single();
+        
+        if (prop) autoLimit = prop.prims_allowed || 0;
+      }
+
+      // Se não enviou casperlet_id ou não achou, tenta o método antigo pelo renter_uuid
+      if (autoLimit === 0) {
+        const { data: properties } = await supabase
+          .from('properties')
+          .select('prims_allowed')
+          .eq('renter_uuid', resident_key);
+        
+        if (properties && properties.length > 0) {
+          autoLimit = properties.reduce((acc, p) => acc + (p.prims_allowed || 0), 0);
+        }
       }
 
       // 2. Primeiro, verificamos se o residente já existe para não sobrescrever um limite manual ou nome real
@@ -194,6 +206,7 @@ async function startServer() {
           resident_name: finalName,
           prims_used: parseInt(prims_used) || 0,
           prim_limit: limitToSet,
+          casperlet_id: casperlet_id || null, // Link para a propriedade
           last_seen: new Date().toISOString()
         }, { onConflict: 'resident_key' })
         .select();

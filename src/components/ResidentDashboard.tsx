@@ -55,7 +55,8 @@ const ResidentDashboard:FC = () => {
   const [hasNewReply, setHasNewReply] = useState(false);
   const [error, setError] = useState('');
   const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
-  const [primInfo, setPrimInfo] = useState<{ prims_used: number, prim_limit: number } | null>(null);
+  const [primInfo, setPrimInfo] = useState<{ prims_used: number, prim_limit: number, casperlet_id?: string } | null>(null);
+  const [groupPrims, setGroupPrims] = useState<any[]>([]);
 
   // Ticket Form State
   const [ticketForm, setTicketForm] = useState({
@@ -87,10 +88,21 @@ const ResidentDashboard:FC = () => {
         try {
           const { data: primData } = await supabase
             .from('prim_residents')
-            .select('prims_used, prim_limit')
+            .select('prims_used, prim_limit, casperlet_id')
             .eq('resident_key', residentId)
             .maybeSingle();
-          if (primData) setPrimInfo(primData);
+          
+          if (primData) {
+            setPrimInfo(primData);
+            if (primData.casperlet_id) {
+              const { data: others } = await supabase
+                .from('prim_residents')
+                .select('resident_name, prims_used')
+                .eq('casperlet_id', primData.casperlet_id)
+                .order('prims_used', { ascending: false });
+              if (others) setGroupPrims(others);
+            }
+          }
         } catch (e) {}
 
         // Fetch tickets strictly by avatar_uuid
@@ -579,35 +591,53 @@ const ResidentDashboard:FC = () => {
           >
             <div className="glass-card bg-white/5 p-8 rounded-[40px] border-white/5 relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl rounded-full translate-x-16 -translate-y-16" />
-              <div className="flex items-center gap-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                  <Box size={32} />
+              <div className="flex flex-col gap-6 relative z-10">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                    <Box size={32} />
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.prim_usage', 'Object / Prim Usage')}</span>
+                      <span className={cn(
+                        "text-[10px] font-black uppercase tracking-widest",
+                        !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
+                      )}>
+                        {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? t('resident.over_limit', 'Over Limit') : t('resident.within_limit', 'Within limit'))}
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <h4 className="text-4xl font-black text-white">
+                        {primInfo ? (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) : '--'}
+                      </h4>
+                      <span className="text-white/20 font-bold">/ {primInfo?.prim_limit || '---'}</span>
+                    </div>
+                    <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${primInfo && primInfo.prim_limit > 0 ? Math.min(((groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) / primInfo.prim_limit) * 100, 100) : 0}%` }}
+                        className={cn(
+                          "h-full rounded-full transition-all duration-1000",
+                          primInfo && primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
+                        )}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.prim_usage', 'Object / Prim Usage')}</span>
-                    <span className={cn(
-                      "text-[10px] font-black uppercase tracking-widest",
-                      !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
-                    )}>
-                      {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? t('resident.over_limit', 'Over Limit') : t('resident.within_limit', 'Within limit'))}
-                    </span>
+
+                {groupPrims.length > 1 && (
+                  <div className="pt-4 border-t border-white/5 space-y-3">
+                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{t('resident.usage_breakdown', 'Usage Breakdown')}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {groupPrims.map((p, idx) => (
+                        <div key={idx} className="flex items-center justify-between bg-white/5 p-3 rounded-2xl">
+                          <span className="text-xs font-bold text-white/70 truncate mr-2">{p.resident_name}</span>
+                          <span className="text-xs font-black text-white">{p.prims_used}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-2">
-                    <h4 className="text-4xl font-black text-white">{primInfo ? primInfo.prims_used : '--'}</h4>
-                    <span className="text-white/20 font-bold">/ {primInfo?.prim_limit || '---'}</span>
-                  </div>
-                  <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${primInfo && primInfo.prim_limit > 0 ? Math.min((primInfo.prims_used / primInfo.prim_limit) * 100, 100) : 0}%` }}
-                      className={cn(
-                        "h-full rounded-full transition-all duration-1000",
-                        primInfo && primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
-                      )}
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
