@@ -55,8 +55,9 @@ export function AdminPropertyListings({
           <div className="flex gap-4">
             <button 
               onClick={() => {
+                const origin = window.location.origin;
                 const script = `// HOLAMBRA REAL ESTATE - CASPERLET SYNC v1.1
-string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/sl-update";
+string WEB_URL = "${origin}/sl-update";
 string API_TOKEN = "holanbra_secret_token";
 string CASPERLET_ID = ""; 
 

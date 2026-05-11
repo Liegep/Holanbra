@@ -584,6 +584,8 @@ const resources = {
         "within_limit": "Within Limit",
         "prim_tip_title": "Real-time Sync Active",
         "prim_tip_desc": "Your prim count is synchronized every time you touch the counter on your parcel.",
+        "prim_not_synced": "Sync Pending",
+        "prim_not_synced_desc": "Visit your parcel in-world and touch the Prim Counter to synchronize your usage data.",
         "search_help": "Search help guides...",
         "still_need_help": "Still need assistance?",
         "search_results_none": "No matching guides found"
@@ -1172,6 +1174,8 @@ const resources = {
         "within_limit": "Dentro do Limite",
         "prim_tip_title": "Sincronização Ativa",
         "prim_tip_desc": "Sua contagem de prims é atualizada sempre que você toca no totem em seu terreno.",
+        "prim_not_synced": "Sincronia Pendente",
+        "prim_not_synced_desc": "Visite seu terreno e toque no Contador de Prims para sincronizar seus dados.",
         "search_help": "Buscar guias de ajuda...",
         "still_need_help": "Ainda precisa de assistência?",
         "search_results_none": "Nenhum guia correspondente encontrado"

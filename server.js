@@ -158,37 +158,59 @@ async function startServer() {
     if (!resident_key) return res.status(200).send('ERROR - Missing Resident Key');
 
     try {
-      // 1. Update or Insert into prim_residents
+      // 1. Tentar buscar o limite padrão da tabela de propriedades se o residente for um locatário
+      const { data: properties } = await supabase
+        .from('properties')
+        .select('prims_allowed')
+        .eq('renter_uuid', resident_key);
+      
+      let autoLimit = 0;
+      if (properties && properties.length > 0) {
+        // Soma os prims de todas as propriedades que ele aluga (caso alugue mais de uma)
+        autoLimit = properties.reduce((acc, p) => acc + (p.prims_allowed || 0), 0);
+      }
+
+      // 2. Primeiro, verificamos se o residente já existe para não sobrescrever um limite manual se preferir
+      const { data: existingRes } = await supabase
+        .from('prim_residents')
+        .select('prim_limit')
+        .eq('resident_key', resident_key)
+        .single();
+
+      // Se não existe ou o limite atual é 0, usamos o autoLimit
+      const limitToSet = (existingRes && existingRes.prim_limit > 0) ? existingRes.prim_limit : autoLimit;
+
+      // 3. Update or Insert into prim_residents
       const { data: resData, error: resError } = await supabase
         .from('prim_residents')
         .upsert({
           resident_key,
           resident_name,
           prims_used: parseInt(prims_used) || 0,
+          prim_limit: limitToSet,
           last_seen: new Date().toISOString()
         }, { onConflict: 'resident_key' })
         .select();
 
       if (resError) throw resError;
 
-      // 2. Record in history if over limit (optional, but keep it consistent with AdminPrimManager)
-      // We need the limit first
-      const limit = (resData && resData[0]) ? resData[0].prim_limit : 0;
+      // 4. Record in history if over limit
+      const finalLimit = limitToSet;
       
-      if (limit > 0) {
+      if (finalLimit > 0) {
         await supabase
           .from('prim_history')
           .insert({
             resident_key,
             resident_name,
             prims_used: parseInt(prims_used) || 0,
-            prim_limit: limit,
-            over_limit: parseInt(prims_used) > limit,
+            prim_limit: finalLimit,
+            over_limit: parseInt(prims_used) > finalLimit,
             recorded_at: new Date().toISOString()
           });
       }
 
-      return res.status(200).send('OK - Sync Succesful');
+      return res.status(200).send('OK - Sync Successful');
     } catch (err) {
       console.error('❌ PRIM SYNC ERROR:', err.message);
       return res.status(200).send(`ERROR: ${err.message}`);

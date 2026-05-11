@@ -571,7 +571,7 @@ const ResidentDashboard:FC = () => {
           </button>
         </div>
 
-        {isLoggedIn && primInfo && (
+        {isLoggedIn && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -588,22 +588,22 @@ const ResidentDashboard:FC = () => {
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.prim_usage', 'Object / Prim Usage')}</span>
                     <span className={cn(
                       "text-[10px] font-black uppercase tracking-widest",
-                      primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "text-red-500" : "text-emerald-500"
+                      !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
                     )}>
-                      {primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? t('resident.over_limit', 'Over Limit') : t('resident.within_limit', 'Within limit')}
+                      {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? t('resident.over_limit', 'Over Limit') : t('resident.within_limit', 'Within limit'))}
                     </span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <h4 className="text-4xl font-black text-white">{primInfo.prims_used}</h4>
-                    <span className="text-white/20 font-bold">/ {primInfo.prim_limit || '---'}</span>
+                    <h4 className="text-4xl font-black text-white">{primInfo ? primInfo.prims_used : '--'}</h4>
+                    <span className="text-white/20 font-bold">/ {primInfo?.prim_limit || '---'}</span>
                   </div>
                   <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
-                      animate={{ width: `${primInfo.prim_limit > 0 ? Math.min((primInfo.prims_used / primInfo.prim_limit) * 100, 100) : 0}%` }}
+                      animate={{ width: `${primInfo && primInfo.prim_limit > 0 ? Math.min((primInfo.prims_used / primInfo.prim_limit) * 100, 100) : 0}%` }}
                       className={cn(
                         "h-full rounded-full transition-all duration-1000",
-                        primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
+                        primInfo && primInfo.prim_limit > 0 && primInfo.prims_used > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
                       )}
                     />
                   </div>
@@ -611,15 +611,26 @@ const ResidentDashboard:FC = () => {
               </div>
             </div>
 
-            <div className="glass-card bg-emerald-500/5 p-8 rounded-[40px] border-emerald-500/10 flex items-center gap-6 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full translate-x-16 -translate-y-16" />
-               <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 shrink-0">
+            <div className={cn(
+              "glass-card p-8 rounded-[40px] border flex items-center gap-6 relative overflow-hidden group transition-all",
+              !primInfo ? "bg-amber-500/5 border-amber-500/10" : "bg-emerald-500/5 border-emerald-500/10"
+            )}>
+               <div className={cn(
+                 "absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full translate-x-16 -translate-y-16",
+                 !primInfo ? "bg-amber-500/5" : "bg-emerald-500/5"
+               )} />
+               <div className={cn(
+                 "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0",
+                 !primInfo ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
+               )}>
                   <ShieldCheck size={32} />
                </div>
                <div className="space-y-1 relative z-10">
-                  <h4 className="text-lg font-bold text-white tracking-tight">{t('resident.prim_tip_title', 'Real-time Sync Active')}</h4>
+                  <h4 className="text-lg font-bold text-white tracking-tight">
+                    {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : t('resident.prim_tip_title', 'Real-time Sync Active')}
+                  </h4>
                   <p className="text-sm text-white/50 leading-relaxed font-medium italic">
-                    {t('resident.prim_tip_desc', 'Your prim count is synchronized every time you touch the counter on your parcel.')}
+                    {!primInfo ? t('resident.prim_not_synced_desc', 'Visit your parcel and touch the Prim Counter to sync.') : t('resident.prim_tip_desc')}
                   </p>
                </div>
             </div>

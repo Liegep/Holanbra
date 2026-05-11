@@ -479,32 +479,44 @@ export const AdminPrimManager: React.FC = () => {
             <div className="flex gap-4">
               <button 
                 onClick={() => {
+                  const origin = window.location.origin;
                   const script = `// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.0
-string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/api/prim-update";
+string WEB_URL = "${origin}/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
 
 default {
     state_entry() {
-        llSetText("📦 Prim Counter\\nTouch to Sync", <1.0, 1.0, 1.0>, 1.0);
-        llOwnerSay("✅ Prim Checker initialized. URL: " + WEB_URL);
+        llSetText("Prim Counter\\nTouch to Sync", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("Prim Checker initialized.");
     }
+
     touch_start(integer total_number) {
-        if(llDetectedKey(0) == llGetOwner()) {
-            llOwnerSay("🔄 Counting prims and syncing...");
+        if (llDetectedKey(0) == llGetOwner()) {
+            llOwnerSay("Counting prims and syncing...");
+
             integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
-            string name = llKey2Name(llGetOwner());
-            string key = (string)llGetOwner();
-            string body = "resident_key=" + key + "&resident_name=" + llEscapeURL(name) + "&prims_used=" + (string)used + "&token=" + API_TOKEN;
-            llHTTPRequest(WEB_URL, [HTTP_METHOD, "POST", HTTP_MIME_TYPE, "application/x-www-form-urlencoded"], body);
+            string  name = llKey2Name(llGetOwner());
+            string  k    = (string)llGetOwner();
+
+            string body = "resident_key=" + k
+                        + "&resident_name=" + llEscapeURL(name)
+                        + "&prims_used="    + (string)used
+                        + "&token="         + API_TOKEN;
+
+            llHTTPRequest(WEB_URL, [
+                HTTP_METHOD,    "POST",
+                HTTP_MIME_TYPE, "application/x-www-form-urlencoded"
+            ], body);
         }
     }
+
     http_response(key id, integer status, list meta, string body) {
-        if(status == 200) {
-            llOwnerSay("✅ Sync Successful: " + body);
-            llSetText("📦 Prim Counter\\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
+        if (status == 200) {
+            llOwnerSay("Sync OK: " + body);
+            llSetText("Prim Counter\\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
         } else {
-            llOwnerSay("❌ Sync Failed (" + (string)status + "): " + body);
-            llSetText("📦 Prim Counter\\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
+            llOwnerSay("Sync Failed. Status: " + (string)status + " Body: " + body);
+            llSetText("Prim Counter\\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
         }
     }
 }`;
