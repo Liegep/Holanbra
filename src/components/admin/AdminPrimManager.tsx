@@ -515,9 +515,12 @@ default {
     }
 
     touch_start(integer total_number) {
-        if (llDetectedKey(0) == llGetOwner()) {
-            llOwnerSay("manual sync requested...");
+        key user = llDetectedKey(0);
+        if (user == llGetOwner() || llSameGroup(user)) {
+            llOwnerSay("manual sync requested by " + llKey2Name(user));
             do_sync();
+        } else {
+            llWhisper(0, "Permission denied. Only owner or group members can sync.");
         }
     }
 
