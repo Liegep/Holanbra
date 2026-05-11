@@ -603,7 +603,7 @@ const ResidentDashboard:FC = () => {
                         "text-[10px] font-black uppercase tracking-widest",
                         !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
                       )}>
-                        {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? t('resident.over_limit', 'Over Limit') : t('resident.within_limit', 'Within limit'))}
+                        {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? t('resident.over_limit', 'FORA DO LIMITE') : t('resident.within_limit', 'DENTRO DO LIMITE'))}
                       </span>
                     </div>
                     <div className="flex items-baseline gap-2">

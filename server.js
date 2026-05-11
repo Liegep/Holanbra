@@ -182,15 +182,16 @@ async function startServer() {
         }
       }
 
-      // 2. Primeiro, verificamos se o residente já existe para não sobrescrever um limite manual ou nome real
+      // 2. Primeiro, verificamos se o residente já existe
       const { data: existingRes } = await supabase
         .from('prim_residents')
         .select('prim_limit, resident_name')
         .eq('resident_key', resident_key)
         .single();
 
-      // Se não existe ou o limite atual é 0, usamos o autoLimit
-      const limitToSet = (existingRes && existingRes.prim_limit > 0) ? existingRes.prim_limit : autoLimit;
+      // PRIORIDADE: Se temos um limite vindo de uma propriedade vinculada (autoLimit), usamos ele.
+      // Caso contrário, mantemos o limite manual que já existia (se for maior que 0).
+      const limitToSet = (casperlet_id && autoLimit > 0) ? autoLimit : ((existingRes && existingRes.prim_limit > 0) ? existingRes.prim_limit : autoLimit);
 
       // Preserva o nome real se o novo vindo do script for apenas um placeholder (ex: "Resident (key)")
       let finalName = resident_name;
