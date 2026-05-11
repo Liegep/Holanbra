@@ -12,34 +12,34 @@ Use this script to monitor object/prim usage on your land parcels.
 7. **Touch the object** to manually sync the prim count to the website.
 
 ```lsl
-// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.1 (Auto-Sync)
+// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.2 (Auto-Sync)
 string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
-float  TIMER_INTERVAL = 1800.0; // 30 minutos (em segundos)
+float  TIMER_INTERVAL = 1800.0; // 30 minutos
+
+key    target_res = NULL_KEY;
+string target_name = "";
 
 do_sync() {
-    llOwnerSay("🔄 Counting prims and syncing...");
+    if(target_res == NULL_KEY) return;
+    
     integer used = llGetParcelPrimCount(llGetPos(), PARCEL_COUNT_TOTAL, FALSE);
-    string  name = llKey2Name(llGetOwner());
-    string  k    = (string)llGetOwner();
-
-    string body = "resident_key=" + k
-                + "&resident_name=" + llEscapeURL(name)
-                + "&prims_used="    + (string)used
-                + "&token="         + API_TOKEN;
+    string body = "resident_key=" + (string)target_res + 
+                 "&resident_name=" + llEscapeURL(target_name) + 
+                 "&prims_used=" + (string)used + 
+                 "&token=" + API_TOKEN;
 
     llHTTPRequest(WEB_URL, [
-        HTTP_METHOD,    "POST",
+        HTTP_METHOD, "POST",
         HTTP_MIMETYPE, "application/x-www-form-urlencoded"
     ], body);
 }
 
 default {
     state_entry() {
-        llSetText("Prim Counter\nAuto-Sync Active", <1.0, 1.0, 1.0>, 1.0);
-        llOwnerSay("✅ Prim Checker initialized. Auto-sync every 30m.");
+        llSetText("Prim Counter\nWaiting for Sync", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("✅ Prim Checker initialized. URL: " + WEB_URL);
         llSetTimerEvent(TIMER_INTERVAL);
-        do_sync(); // Sync inicial
     }
 
     timer() {
@@ -48,13 +48,28 @@ default {
 
     touch_start(integer total_number) {
         key user = llDetectedKey(0);
+        
         if (user == llGetOwner() || llSameGroup(user)) {
-            llOwnerSay("manual sync requested by " + llKey2Name(user));
+            target_res = user;
+            target_name = llKey2Name(user);
+            
+            llRegionSayTo(user, 0, "🔄 Syncing prims for " + target_name + "...");
             do_sync();
         } else {
-            llWhisper(0, "Permission denied. Only owner or group members can sync.");
+            llRegionSayTo(user, 0, "❌ Permission denied. Only owner or group members can sync.");
         }
     }
+
+    http_response(key id, integer status, list meta, string body) {
+        if (status == 200) {
+            llSetText("Prim Counter\nResident: " + target_name + "\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
+            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "✅ Sync OK: " + body);
+        } else {
+            llSetText("Prim Counter\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
+            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "❌ Sync Failed! Status: " + (string)status);
+        }
+    }
+}
 
     http_response(key id, integer status, list meta, string body) {
         if (status == 200) {

@@ -481,12 +481,12 @@ export const AdminPrimManager: React.FC = () => {
                 onClick={() => {
                   const origin = window.location.origin;
                   const script = `// HOLAMBRA REAL ESTATE - PRIM CHECKER v1.2 (Auto-Sync)
-string WEB_URL = "${origin}/api/prim-update";
+string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
 float  TIMER_INTERVAL = 1800.0; // 30 minutos
 
-key    target_res;
-string target_name;
+key    target_res = NULL_KEY;
+string target_name = "";
 
 do_sync() {
     if(target_res == NULL_KEY) return;
@@ -499,14 +499,14 @@ do_sync() {
 
     llHTTPRequest(WEB_URL, [
         HTTP_METHOD, "POST",
-        HTTP_MIME_TYPE, "application/x-www-form-urlencoded"
+        HTTP_MIMETYPE, "application/x-www-form-urlencoded"
     ], body);
 }
 
 default {
     state_entry() {
-        llSetText("Prim Counter\nWaiting for Sync", <1.0, 1.0, 1.0>, 1.0);
-        llOwnerSay("✅ Prim Checker initialized.");
+        llSetText("Prim Counter\\nWaiting for Sync", <1.0, 1.0, 1.0>, 1.0);
+        llOwnerSay("✅ Prim Checker initialized. URL: " + WEB_URL);
         llSetTimerEvent(TIMER_INTERVAL);
     }
 
@@ -517,7 +517,6 @@ default {
     touch_start(integer total_number) {
         key user = llDetectedKey(0);
         
-        // Dono ou pessoa do grupo podem ativar/sincronizar
         if (user == llGetOwner() || llSameGroup(user)) {
             target_res = user;
             target_name = llKey2Name(user);
@@ -531,11 +530,11 @@ default {
 
     http_response(key id, integer status, list meta, string body) {
         if (status == 200) {
-            llSetText("Prim Counter\nResident: " + target_name + "\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
+            llSetText("Prim Counter\\nResident: " + target_name + "\\nLast Sync: OK", <0.0, 1.0, 0.0>, 1.0);
             if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "✅ Sync OK: " + body);
         } else {
-            llSetText("Prim Counter\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
-            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "❌ Sync Failed! Check Admin Panel.");
+            llSetText("Prim Counter\\nSync Failed (" + (string)status + ")", <1.0, 0.0, 0.0>, 1.0);
+            if(target_res != NULL_KEY) llRegionSayTo(target_res, 0, "❌ Sync Failed! Status: " + (string)status);
         }
     }
 }`;
