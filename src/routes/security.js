@@ -215,7 +215,7 @@ router.post('/access', async (req, res) => {
   try {
     const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role, reason } = req.body;
     
-    if (action !== 'add' && action !== 'ban') {
+    if (!['add', 'ban', 'status'].includes(action)) {
       return res.status(400).json({ error: 'Invalid action' });
     }
 
@@ -230,16 +230,18 @@ router.post('/access', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Invalid Renter' });
     }
     
-    // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
-    const { data: property, error: propError } = await supabase
-      .from('properties')
-      .select('id')
-      .eq('casperlet_id', parcel_id)
-      .eq('tenant_id', resident_uuid)
-      .maybeSingle();
-      
-    if (propError || !property) {
-      return res.status(403).json({ error: 'Forbidden: Property access denied' });
+    if (action === 'add' || action === 'ban') {
+      // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
+      const { data: property, error: propError } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('casperlet_id', parcel_id)
+        .eq('tenant_id', resident_uuid)
+        .maybeSingle();
+        
+      if (propError || !property) {
+        return res.status(403).json({ error: 'Forbidden: Property access denied' });
+      }
     }
     
     if (action === 'add') {
@@ -281,6 +283,32 @@ router.post('/access', async (req, res) => {
         .eq('avatar_key', avatar_key);
         
       return res.json({ success: true, data });
+    } else if (action === 'status') {
+      const { parcel_ids } = req.body;
+      if (!parcel_ids || !Array.isArray(parcel_ids)) {
+        return res.status(400).json({ error: 'parcel_ids array required' });
+      }
+
+      // Check authorized properties
+      const { data: properties } = await supabase
+        .from('properties')
+        .select('casperlet_id')
+        .eq('tenant_id', resident_uuid)
+        .in('casperlet_id', parcel_ids);
+
+      if (!properties || properties.length === 0) {
+        return res.json({ success: true, data: [] });
+      }
+
+      const authorizedIds = properties.map(p => p.casperlet_id);
+
+      const { data: securityRecords, error: secError } = await supabase
+        .from('security_parcels')
+        .select('*')
+        .in('casperlet_id', authorizedIds);
+
+      if (secError) throw secError;
+      return res.json({ success: true, data: securityRecords });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -117,29 +117,41 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
             setSelectedParcelId(properties[0].casperlet_id);
             setSelectedParcelName(properties[0].name);
         }
-        loadSecurityParcels(properties.map((p: any) => p.casperlet_id));
+        if (residentUuid) {
+          loadSecurityParcels(properties.map((p: any) => p.casperlet_id));
+        }
     }
-  }, [properties]);
+  }, [properties, residentUuid]);
 
   useEffect(() => {
     fetchLogs();
   }, [selectedParcelId]);
 
     async function loadSecurityParcels(ids: string[]) {
-      if (ids.length === 0) return;
+      if (ids.length === 0 || !residentUuid) return;
       
-      const { data, error } = await supabase
-        .from('security_parcels')
-        .select('*')
-        .in('casperlet_id', ids);
-
-      if (data) {
-        const mapped = data.reduce((acc: any, item: any) => {
-          acc[item.casperlet_id] = item;
-          return acc;
-        }, {});
+      try {
+        const response = await fetch('/api/security/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: "status",
+            resident_uuid: residentUuid,
+            parcel_ids: ids
+          })
+        });
         
-        setSecurityData(prev => ({ ...prev, ...mapped }));
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const mapped = result.data.reduce((acc: any, item: any) => {
+            acc[item.casperlet_id] = item;
+            return acc;
+          }, {});
+          
+          setSecurityData(prev => ({ ...prev, ...mapped }));
+        }
+      } catch (err) {
+        console.error('Error loading security data:', err);
       }
     }
 
@@ -177,9 +189,10 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
       }
 
       if (response.ok) {
+        const updatedSecurity = result.data ?? result;
         setSecurityData(prev => ({
           ...prev,
-          [parcelId]: result.data
+          [parcelId]: updatedSecurity
         }));
       } else {
         console.error('Toggle error', {
@@ -494,7 +507,13 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                 <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
               )}
               {activeTab === 'settings' && (
-                <SettingsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                <SettingsTab 
+                  selectedParcelId={selectedParcelId} 
+                  properties={properties} 
+                  onParcelSelect={setSelectedParcelId} 
+                  residentUuid={residentUuid}
+                  currentSecurity={selectedParcelId ? securityData[selectedParcelId] : null}
+                />
               )}
             </div>
           )}

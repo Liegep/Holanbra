@@ -8,9 +8,11 @@ interface SettingsTabProps {
   selectedParcelId: string | null;
   properties: any[];
   onParcelSelect: (id: string) => void;
+  residentUuid?: string;
+  currentSecurity?: any;
 }
 
-export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: SettingsTabProps) {
+export function SettingsTab({ selectedParcelId, properties, onParcelSelect, residentUuid, currentSecurity }: SettingsTabProps) {
   const { t } = useTranslation();
   const [config, setConfig] = useState<any>(null);
   const [managers, setManagers] = useState<any[]>([]);
@@ -26,25 +28,44 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
 
     async function loadConfig() {
       setLoading(true);
-      const { data: configData } = await supabase
-        .from('security_parcels')
-        .select('*')
-        .eq('casperlet_id', selectedParcelId)
-        .single();
+      
+      // Prefer prop data if available and matches selected parcel
+      if (currentSecurity && currentSecurity.casperlet_id === selectedParcelId) {
+        setConfig(currentSecurity);
+      } else if (residentUuid) {
+        // Fetch via API for proper renter access
+        try {
+          const response = await fetch('/api/security/access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: "status",
+              resident_uuid: residentUuid,
+              parcel_ids: [selectedParcelId]
+            })
+          });
+          const result = await response.json();
+          if (response.ok && result.success && result.data.length > 0) {
+            setConfig(result.data[0]);
+          }
+        } catch (err) {
+          console.error("Error loading config:", err);
+        }
+      }
 
+      // Managers still loaded from access list (if RLS allows)
       const { data: managersData } = await supabase
         .from('security_access_list')
         .select('*')
         .eq('casperlet_id', selectedParcelId)
         .eq('role', 'manager');
 
-      if (configData) setConfig(configData);
       if (managersData) setManagers(managersData);
       setLoading(false);
     }
 
     loadConfig();
-  }, [selectedParcelId]);
+  }, [selectedParcelId, residentUuid, currentSecurity]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
