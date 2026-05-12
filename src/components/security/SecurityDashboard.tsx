@@ -14,9 +14,10 @@ import { SettingsTab } from './tabs/SettingsTab';
 
 interface SecurityDashboardProps {
   onClose: () => void;
+  residentUuid?: string;
 }
 
-export function SecurityDashboard({ onClose }: SecurityDashboardProps) {
+export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'access' | 'ban' | 'logs' | 'settings'>('dashboard');
   const [selectedParcelId, setSelectedParcelId] = useState<string | null>(null);
@@ -28,23 +29,39 @@ export function SecurityDashboard({ onClose }: SecurityDashboardProps) {
 
   useEffect(() => {
     async function loadProperties() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        let finalUuid = residentUuid;
 
-      const { data, error } = await supabase
-        .from('properties')
-        .select('casperlet_id, name')
-        .eq('user_id', user.id);
-
-      if (!error && data) {
-        setProperties(data);
-        if (data.length > 0) {
-          setSelectedParcelId(data[0].casperlet_id);
-          setSelectedParcelName(data[0].name);
-          loadSecurityParcels(data.map((p: any) => p.casperlet_id));
+        if (!finalUuid) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) finalUuid = user.id;
         }
+
+        if (!finalUuid) {
+          setLoading(false);
+          return;
+        }
+
+        // Try to fetch by tenant_id (resident) or user_id (admin)
+        const { data, error } = await supabase
+          .from('properties')
+          .select('casperlet_id, name, tenant_id, user_id')
+          .or(`tenant_id.eq.${finalUuid},user_id.eq.${finalUuid}`);
+
+        if (!error && data) {
+          const validProperties = data.filter(p => p.casperlet_id);
+          setProperties(validProperties);
+          if (validProperties.length > 0) {
+            setSelectedParcelId(validProperties[0].casperlet_id);
+            setSelectedParcelName(validProperties[0].name);
+            await loadSecurityParcels(validProperties.map((p: any) => p.casperlet_id));
+          }
+        }
+      } catch (err) {
+        console.error("Error loading security dashboard:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     async function loadSecurityParcels(ids: string[]) {
@@ -106,7 +123,7 @@ export function SecurityDashboard({ onClose }: SecurityDashboardProps) {
   };
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { id: 'dashboard', label: t('nav.home'), icon: LayoutGrid },
     { id: 'access', label: t('security.access_list'), icon: Users },
     { id: 'ban', label: t('security.ban_list'), icon: Ban },
     { id: 'logs', label: t('security.event_log'), icon: ScrollText },
@@ -114,6 +131,14 @@ export function SecurityDashboard({ onClose }: SecurityDashboardProps) {
   ] as const;
 
   const currentSecurity = selectedParcelId ? securityData[selectedParcelId] : null;
+
+  // Sync selected parcel if properties load but none selected
+  useEffect(() => {
+    if (properties.length > 0 && !selectedParcelId) {
+      setSelectedParcelId(properties[0].casperlet_id);
+      setSelectedParcelName(properties[0].name);
+    }
+  }, [properties]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
@@ -183,124 +208,202 @@ export function SecurityDashboard({ onClose }: SecurityDashboardProps) {
         </div>
 
         {/* Navigation Tabs - Glass Style */}
-        <div className="flex p-2 gap-2 bg-black/20 border-b border-white/5">
+        <div className="flex p-3 gap-3 bg-black/60 border-b border-white/10 shadow-inner">
           {navItems.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all group",
+                "flex-1 flex flex-col items-center justify-center gap-2 py-3.5 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all group relative overflow-hidden",
                 activeTab === tab.id
-                  ? "bg-white/[0.08] text-white shadow-inner border border-white/10"
-                  : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]"
+                  ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)] ring-1 ring-amber-400/50"
+                  : "bg-white/[0.03] text-white/40 hover:text-white hover:bg-white/[0.08] hover:border-white/10 border border-transparent"
               )}
             >
-              <tab.icon size={18} className={cn("transition-transform group-hover:scale-110", activeTab === tab.id ? "text-amber-500" : "text-white/20")} />
-              <span className="hidden sm:block">{tab.label}</span>
+              <tab.icon size={20} className={cn("transition-transform group-hover:scale-110 relative z-10", activeTab === tab.id ? "text-black" : "text-white/20")} />
+              <span className="text-[8px] sm:text-[10px] relative z-10 whitespace-nowrap">{tab.label}</span>
+              {activeTab === tab.id && (
+                <motion.div 
+                  layoutId="tab-active"
+                  className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 opacity-100"
+                />
+              )}
             </button>
           ))}
         </div>
 
         {/* Content Region */}
-        <div className="flex-1 overflow-y-auto min-h-0 p-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 sm:p-10 custom-scrollbar bg-black/20">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center gap-6">
               <div className="relative">
-                <div className="w-16 h-16 rounded-full border-4 border-white/5 border-t-amber-500 animate-spin" />
-                <Shield className="absolute inset-0 m-auto text-amber-500 animate-pulse" size={24} />
+                <div className="w-20 h-20 rounded-full border-4 border-white/5 border-t-amber-500 animate-spin" />
+                <Shield className="absolute inset-0 m-auto text-amber-500 animate-pulse" size={32} />
               </div>
-              <p className="text-[12px] font-black uppercase tracking-[0.5em] text-white/20 animate-pulse">
-                Encrypting Connection...
-              </p>
+              <div className="text-center space-y-2">
+                <p className="text-[14px] font-black uppercase tracking-[0.5em] text-amber-500 animate-pulse">
+                  ENCRYPTING CONNECTION
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/20">
+                  Establishing secure tunnel to Second Life...
+                </p>
+              </div>
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center gap-6 text-center px-10">
+              <div className="w-20 h-20 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center text-white/10">
+                <Shield size={40} />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-white font-black uppercase tracking-widest">No Security Nodes Found</h3>
+                <p className="text-xs text-white/30 leading-relaxed max-w-xs">
+                  We couldn't find any properties assigned to you with a valid Security Orb system.
+                </p>
+              </div>
             </div>
           ) : (
             <motion.div
-              key={activeTab + (selectedParcelId || '')}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              key={activeTab + (selectedParcelId || 'none')}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
               className="h-full"
             >
-              {activeTab === 'dashboard' && selectedParcelId && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full content-start">
-                  {/* MAIN ON/OFF BUTTON - GLASSMORPHISM */}
-                  <button
-                    onClick={() => handleToggle(selectedParcelId)}
-                    disabled={toggling === selectedParcelId}
-                    className={cn(
-                      "col-span-1 md:col-span-2 group relative p-12 rounded-[2.5rem] border transition-all overflow-hidden flex flex-col items-center justify-center gap-6",
-                      currentSecurity?.is_active
-                        ? "bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.1)]"
-                        : "bg-red-500/10 border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)]"
-                    )}
-                  >
-                    {/* Animated background glow */}
-                    <div className={cn(
-                      "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity blur-[80px]",
-                      currentSecurity?.is_active ? "bg-emerald-500/20" : "bg-red-500/20"
-                    )} />
-                    
-                    <div className={cn(
-                      "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl",
-                      currentSecurity?.is_active 
-                        ? "bg-emerald-500 text-white shadow-emerald-500/20 scale-110" 
-                        : "bg-zinc-800 text-white/20 scale-100"
-                    )}>
-                      <Power size={40} className={cn(toggling === selectedParcelId && "animate-spin")} />
-                    </div>
-
-                    <div className="text-center relative z-10">
-                      <h3 className="text-4xl font-black text-white uppercase tracking-[0.2em] mb-2">
-                        {currentSecurity?.is_active ? 'ENABLED' : 'DISABLED'}
-                      </h3>
-                      <p className="text-[12px] font-bold text-white/40 uppercase tracking-widest">
-                        {currentSecurity?.is_active ? 'Security Active in Region' : 'Automatic Defense Offline'}
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Navigation Cards */}
-                  {[
-                    { id: 'access', label: t('security.access_list'), icon: Users, color: 'blue', desc: 'White-list Management' },
-                    { id: 'ban', label: t('security.ban_list'), icon: Ban, color: 'red', desc: 'Active Trespasser Block' },
-                    { id: 'logs', label: t('security.event_log'), icon: ScrollText, color: 'amber', desc: 'Recent Security Incidents' },
-                    { id: 'settings', label: t('security.settings'), icon: Settings, color: 'zinc', desc: 'Calibration & Reset' }
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveTab(item.id as any)}
-                      className="group relative p-8 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all flex flex-col items-start gap-4 text-left overflow-hidden"
-                    >
-                      <div className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-lg",
-                        item.color === 'blue' && "bg-blue-500/10 text-blue-500 ring-1 ring-blue-500/20",
-                        item.color === 'red' && "bg-red-500/10 text-red-500 ring-1 ring-red-500/20",
-                        item.color === 'amber' && "bg-amber-500/10 text-amber-500 ring-1 ring-amber-500/20",
-                        item.color === 'zinc' && "bg-zinc-500/10 text-zinc-500 ring-1 ring-zinc-500/20"
-                      )}>
-                        <item.icon size={24} />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-black text-white uppercase tracking-widest">{item.label}</h4>
-                        <p className="text-[10px] text-white/30 uppercase tracking-wider font-bold mt-1">{item.desc}</p>
-                      </div>
-                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
-                        <ArrowRight size={16} className="text-white/40" />
-                      </div>
-                    </button>
-                  ))}
+              {!selectedParcelId ? (
+                <div className="h-full flex flex-col items-center justify-center gap-6 text-center">
+                  <div className="p-8 bg-zinc-900 rounded-full border border-white/10 animate-pulse">
+                    <LayoutGrid size={48} className="text-white/10" />
+                  </div>
+                  <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Select a parcel to begin management</p>
                 </div>
-              )}
-              {activeTab === 'access' && selectedParcelId && (
-                <AccessListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
-              )}
-              {activeTab === 'ban' && selectedParcelId && (
-                <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
-              )}
-              {activeTab === 'logs' && selectedParcelId && (
-                <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
-              )}
-              {activeTab === 'settings' && selectedParcelId && (
-                <SettingsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+              ) : (
+                <>
+                  {activeTab === 'dashboard' && (
+                    <div className="flex flex-col gap-10 h-full">
+                      {/* MAIN ON/OFF CONTROLLER */}
+                      <div className="flex flex-col items-center gap-8 p-10 sm:p-16 rounded-[4rem] bg-gradient-to-b from-white/[0.05] to-transparent border border-white/10 shadow-2xl relative overflow-hidden group">
+                         {/* Background Atmosphere */}
+                        <div className={cn(
+                          "absolute inset-0 transition-opacity duration-1000 blur-[120px] opacity-20 group-hover:opacity-40",
+                          currentSecurity?.is_active ? "bg-emerald-500" : "bg-zinc-800"
+                        )} />
+
+                        <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-md">
+                          <div className="text-center space-y-2">
+                            <h4 className="text-[11px] font-black text-white/30 uppercase tracking-[0.5em]">SYSTEM INTERFACE</h4>
+                            <p className="text-xl font-black text-white uppercase tracking-widest drop-shadow-lg">{selectedParcelName}</p>
+                          </div>
+
+                          <button
+                            onClick={() => handleToggle(selectedParcelId)}
+                            disabled={toggling === selectedParcelId}
+                            className={cn(
+                              "w-56 h-56 sm:w-64 sm:h-64 rounded-full border-8 transition-all duration-700 flex flex-col items-center justify-center gap-4 relative shadow-[0_0_100px_rgba(0,0,0,0.8)] group/btn active:scale-95",
+                              currentSecurity?.is_active 
+                                ? "bg-emerald-500 border-emerald-400/50 shadow-emerald-500/50" 
+                                : "bg-zinc-900 border-zinc-800 shadow-white/5"
+                            )}
+                          >
+                            <div className={cn(
+                              "absolute inset-0 rounded-full animate-ping opacity-30 bg-emerald-400 duration-[2s]",
+                              !currentSecurity?.is_active && "hidden"
+                            )} />
+                            
+                            <Power size={80} className={cn(
+                              "transition-all duration-700",
+                              currentSecurity?.is_active ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" : "text-white/10 scale-90",
+                              toggling === selectedParcelId && "animate-spin"
+                            )} />
+                            
+                            <div className="flex flex-col items-center">
+                              <span className={cn(
+                                "text-2xl font-black uppercase tracking-[0.3em] transition-all duration-700",
+                                currentSecurity?.is_active ? "text-white" : "text-white/20"
+                              )}>
+                                {currentSecurity?.is_active ? t('security.on') : t('security.off')}
+                              </span>
+                              <span className={cn(
+                                 "text-[10px] font-black uppercase tracking-widest mt-1",
+                                 currentSecurity?.is_active ? "text-emerald-200" : "text-white/10"
+                              )}>
+                                {currentSecurity?.is_active ? t('security.active').toUpperCase() : t('security.inactive').toUpperCase()}
+                              </span>
+                            </div>
+                          </button>
+
+                          {currentSecurity?.token && (
+                            <div className="w-full mt-4 p-4 bg-white/5 border border-white/10 rounded-2xl flex flex-col gap-2">
+                               <div className="flex items-center justify-between">
+                                 <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">Orb Token</span>
+                                 <button 
+                                   onClick={() => {
+                                     navigator.clipboard.writeText(currentSecurity.token);
+                                     alert(t('security.token_copied'));
+                                   }}
+                                   className="text-[10px] font-black text-amber-500 hover:text-amber-400 uppercase tracking-widest"
+                                 >
+                                   {t('security.copy_token')}
+                                 </button>
+                               </div>
+                               <div className="font-mono text-[10px] text-white/60 bg-black/40 px-3 py-2 rounded-lg border border-white/5 break-all">
+                                 {currentSecurity.token}
+                               </div>
+                            </div>
+                          )}
+
+                          <div className="flex gap-4">
+                            <div className={cn(
+                              "px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest border transition-all",
+                              currentSecurity?.is_active 
+                                ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" 
+                                : "bg-zinc-800 border-white/10 text-white/40"
+                            )}>
+                              {currentSecurity?.is_active ? 'DEFENSE ACTIVE' : 'SYSTEM STANDBY'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* QUICK ACCESS GRID */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                        {[
+                          { id: 'access', label: t('security.access_list'), icon: Users, color: 'blue' },
+                          { id: 'ban', label: t('security.ban_list'), icon: Ban, color: 'red' },
+                          { id: 'logs', label: t('security.event_log'), icon: ScrollText, color: 'amber' },
+                          { id: 'settings', label: t('security.settings'), icon: Settings, color: 'zinc' }
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id as any)}
+                            className="group relative p-8 rounded-[2.5rem] bg-white/[0.03] border border-white/10 hover:bg-white/[0.08] hover:border-white/20 transition-all flex flex-col items-center gap-4 text-center active:scale-95 shadow-xl"
+                          >
+                            <div className={cn(
+                              "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 shadow-inner",
+                              item.color === 'blue' && "bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20 shadow-blue-500/20",
+                              item.color === 'red' && "bg-red-500/10 text-red-400 ring-1 ring-red-500/20 shadow-red-500/20",
+                              item.color === 'amber' && "bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20 shadow-amber-500/20",
+                              item.color === 'zinc' && "bg-zinc-500/10 text-zinc-400 ring-1 ring-zinc-500/20 shadow-zinc-500/20"
+                            )}>
+                              <item.icon size={24} />
+                            </div>
+                            <span className="text-[10px] font-black text-white/40 group-hover:text-white uppercase tracking-[0.3em] transition-colors">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {activeTab === 'access' && (
+                    <AccessListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                  )}
+                  {activeTab === 'ban' && (
+                    <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                  )}
+                  {activeTab === 'logs' && (
+                    <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                  )}
+                  {activeTab === 'settings' && (
+                    <SettingsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                  )}
+                </>
               )}
             </motion.div>
           )}

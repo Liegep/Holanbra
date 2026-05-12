@@ -1256,7 +1256,14 @@ const resources = {
         "no_avatars": "Nenhum avatar na lista",
         "loading": "Carregando...",
         "confirm_delete_title": "Confirmação Dupla",
-        "confirm_delete_desc": "Você tem certeza absoluta? Esta ação é permanente."
+        "confirm_delete_desc": "Você tem certeza absoluta? Esta ação é permanente.",
+        "clear_all_lists": "Limpar tudo",
+        "purge_desc": "Deseja apagar as listas de acesso e ban deste terreno? Esta ação é permanente.",
+        "managers_display": "Gerentes (Somente Visualização)",
+        "timer_label": "Timer: 0, 10, 20, 30s",
+        "no_managers": "Nenhum gerente encontrado",
+        "execute_purge": "Executar Limpeza",
+        "system_purge": "Limpeza do Sistema"
       }
     }
   },

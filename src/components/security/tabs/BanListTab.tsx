@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserX, Trash2, Search, MapPin, Gavel } from 'lucide-react';
+import { UserX, Trash2, Search, MapPin, Gavel, Ban } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
@@ -85,53 +85,60 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect }: Ban
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="px-4 py-2.5 bg-red-500 text-white hover:bg-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-red-500/20"
+          className="px-10 py-5 bg-red-500 text-white hover:bg-red-600 rounded-[2rem] text-[12px] font-black uppercase tracking-widest flex items-center justify-center gap-4 transition-all active:scale-95 shadow-[0_0_30px_rgba(239,68,68,0.2)] hover:shadow-red-500/40 group shrink-0"
         >
-          <UserX size={14} />
-          {t('security.add_avatar')}
+          <UserX size={22} className="group-hover:rotate-12 transition-transform" />
+          BAN AVATAR
         </button>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-4">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-16 bg-white/5 animate-pulse rounded-xl" />
+            <div key={i} className="h-24 bg-white/5 animate-pulse rounded-[2rem]" />
           ))
         ) : filteredBans.length === 0 ? (
-          <div className="h-32 flex items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/10 uppercase font-black text-[10px] tracking-[0.3em]">
-            {t('security.no_avatars')}
+          <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-[3rem] text-white/10 gap-6 bg-white/[0.01]">
+            <div className="p-6 bg-white/5 rounded-full ring-1 ring-white/10">
+              <Ban size={48} className="opacity-20" />
+            </div>
+            <span className="uppercase font-black text-[11px] tracking-[0.4em]">No Entities Banned</span>
           </div>
         ) : (
-          filteredBans.map((ban) => (
-            <div
-              key={ban.id}
-              className="flex items-center justify-between p-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 rounded-xl transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center">
-                  <Gavel size={20} />
-                </div>
-                <div>
-                  <h4 className="text-[11px] font-black text-white uppercase tracking-wider">
-                    {ban.avatar_name}
-                  </h4>
-                  <div className="text-[8px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/30">
-                    {ban.avatar_uuid}
+          <div className="grid grid-cols-1 gap-4">
+            {filteredBans.map((ban) => (
+              <div
+                key={ban.id}
+                className="group flex items-center justify-between p-6 bg-white/[0.03] hover:bg-red-500/[0.06] border border-white/10 rounded-[2.5rem] transition-all hover:translate-x-1"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center ring-1 ring-red-500/20 shadow-inner transition-all group-hover:scale-110">
+                    <Gavel size={32} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-white uppercase tracking-widest group-hover:text-red-400 transition-colors">
+                      {ban.avatar_name}
+                    </h4>
+                    {ban.avatar_uuid && (
+                      <div className="text-[9px] font-mono text-white/20 uppercase tracking-widest mt-1.5 p-1 px-2 bg-black/40 rounded-lg border border-white/5">
+                        {ban.avatar_uuid}
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => removeBan(ban.id)}
-                  className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                  title={t('security.unban')}
-                >
-                  <Trash2 size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => removeBan(ban.id)}
+                    className="px-6 py-4 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 shadow-lg active:scale-95 flex items-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                    {t('security.unban')}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 

@@ -182,7 +182,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
 
               <div className="space-y-4">
                 <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1 flex justify-between">
-                  {t('security.warn_time')}
+                  {t('security.timer_label')}
                   <span className="text-amber-500 font-mono">{config.warn_time}s</span>
                 </label>
                 <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
@@ -207,12 +207,12 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
 
             <div className="space-y-4">
               <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
-                Authorized Managers (Display Only)
+                {t('security.managers_display')}
               </label>
               <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-wrap gap-2 min-h-[60px]">
                 {managers.length === 0 ? (
                   <div className="w-full flex items-center justify-center text-[9px] text-white/10 uppercase font-black tracking-widest">
-                    No Managers Registry Found
+                    {t('security.no_managers')}
                   </div>
                 ) : (
                   managers.map((m) => (
@@ -232,7 +232,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
                 className="flex-[0.4] py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 border border-red-500/20"
               >
                 <Trash2 className="w-4 h-4" />
-                Clear All Lists
+                {t('security.clear_all_lists')}
               </button>
               
               <button
@@ -256,9 +256,9 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
               <AlertCircle size={40} />
             </div>
             <div className="space-y-2">
-              <h3 className="text-white font-black uppercase tracking-[0.2em] text-lg">System Purge</h3>
+              <h3 className="text-white font-black uppercase tracking-[0.2em] text-lg">{t('security.system_purge')}</h3>
               <p className="text-[10px] text-white/40 uppercase leading-relaxed font-bold px-4">
-                This will permanently delete all Access and Ban entries for this parcel. This action cannot be undone.
+                {t('security.purge_desc')}
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -268,7 +268,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
                 className="w-full py-4 bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-red-600 shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
               >
                 {clearing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
-                Execute Purge
+                {t('security.execute_purge')}
               </button>
               <button
                 onClick={() => setShowConfirmClear(false)}

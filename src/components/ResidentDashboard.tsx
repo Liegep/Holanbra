@@ -517,7 +517,7 @@ const ResidentDashboard:FC = () => {
                 <LogOut size={14} /> {t('resident.logout')}
               </button>
 
-              <SecurityButton />
+              <SecurityButton residentUuid={residentData?.avatar_uuid} />
             </div>
           </div>
 

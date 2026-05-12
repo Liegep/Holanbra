@@ -4,9 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { SecurityDashboard } from './SecurityDashboard';
 
-export function SecurityButton() {
+export function SecurityButton({ residentUuid }: { residentUuid?: string }) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasNewReply, setHasNewReply] = useState(false);
 
   return (
     <>
@@ -20,7 +21,10 @@ export function SecurityButton() {
 
       <AnimatePresence>
         {isOpen && (
-          <SecurityDashboard onClose={() => setIsOpen(false)} />
+          <SecurityDashboard 
+            onClose={() => setIsOpen(false)} 
+            residentUuid={residentUuid}
+          />
         )}
       </AnimatePresence>
     </>
