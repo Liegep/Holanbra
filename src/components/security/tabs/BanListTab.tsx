@@ -9,9 +9,10 @@ interface BanListTabProps {
   selectedParcelId: string | null;
   properties: any[];
   onParcelSelect: (id: string) => void;
+  residentUuid?: string;
 }
 
-export function BanListTab({ selectedParcelId, properties, onParcelSelect }: BanListTabProps) {
+export function BanListTab({ selectedParcelId, properties, onParcelSelect, residentUuid }: BanListTabProps) {
   const { t } = useTranslation();
   const [bans, setBans] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,6 +146,7 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect }: Ban
       {showAddForm && (
         <AddBanForm
           casperletId={selectedParcelId!}
+          residentUuid={residentUuid!}
           onClose={() => setShowAddForm(false)}
           onSuccess={(newBan) => {
             setBans(prev => [newBan, ...prev]);

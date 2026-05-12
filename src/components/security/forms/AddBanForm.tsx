@@ -6,11 +6,12 @@ import { cn } from '../../../lib/utils';
 
 interface AddBanFormProps {
   casperletId: string;
+  residentUuid: string;
   onClose: () => void;
   onSuccess: (newBan: any) => void;
 }
 
-export function AddBanForm({ casperletId, onClose, onSuccess }: AddBanFormProps) {
+export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: AddBanFormProps) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [uuid, setUuid] = useState('');
@@ -20,19 +21,31 @@ export function AddBanForm({ casperletId, onClose, onSuccess }: AddBanFormProps)
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('security_ban_list')
-      .insert({
-        casperlet_id: casperletId,
-        avatar_name: name,
-        avatar_uuid: uuid
-      })
-      .select()
-      .single();
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: "ban",
+          parcel_id: casperletId,
+          resident_uuid: residentUuid,
+          avatar_name: name.trim(),
+          avatar_key: uuid.trim(),
+          reason: "Manual ban"
+        })
+      });
 
-    if (!error && data) {
-      onSuccess(data);
+      const data = await response.json();
+
+      if (response.ok) {
+        onSuccess(data.data);
+      } else {
+        console.error('Error banning avatar:', data.error);
+      }
+    } catch (err) {
+      console.error('Error banning avatar:', err);
     }
+    
     setLoading(false);
   };
 
@@ -66,9 +79,10 @@ export function AddBanForm({ casperletId, onClose, onSuccess }: AddBanFormProps)
 
             <div className="space-y-2">
               <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
-                UUID (RECOMENDADO)
+                UUID
               </label>
               <input
+                required
                 value={uuid}
                 onChange={e => setUuid(e.target.value)}
                 placeholder="00000000-0000-0000-0000-000000000000"

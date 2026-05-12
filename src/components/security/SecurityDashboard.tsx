@@ -127,7 +127,8 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
     async function loadSecurityParcels(ids: string[]) {
       if (ids.length === 0) return;
-      const { data } = await supabase
+      
+      const { data, error } = await supabase
         .from('security_parcels')
         .select('*')
         .in('casperlet_id', ids);
@@ -137,6 +138,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           acc[item.casperlet_id] = item;
           return acc;
         }, {});
+        
         setSecurityData(prev => ({ ...prev, ...mapped }));
       }
     }
@@ -486,7 +488,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                 <AccessListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} residentUuid={residentUuid} />
               )}
               {activeTab === 'ban' && (
-                <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} residentUuid={residentUuid} />
               )}
               {activeTab === 'logs' && (
                 <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />

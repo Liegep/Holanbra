@@ -213,9 +213,9 @@ router.post('/config', async (req, res) => {
 
 router.post('/access', async (req, res) => {
   try {
-    const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role } = req.body;
+    const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role, reason } = req.body;
     
-    if (action !== 'add') {
+    if (action !== 'add' && action !== 'ban') {
       return res.status(400).json({ error: 'Invalid action' });
     }
 
@@ -242,21 +242,46 @@ router.post('/access', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Property access denied' });
     }
     
-    // 3. Insertar em security_access_list
-    const { data, error } = await supabase
-      .from('security_access_list')
-      .insert({
-        casperlet_id: parcel_id,
-        avatar_name,
-        avatar_key,
-        role
-      })
-      .select()
-      .single();
+    if (action === 'add') {
+      // 3. Insertar em security_access_list
+      const { data, error } = await supabase
+        .from('security_access_list')
+        .insert({
+          casperlet_id: parcel_id,
+          avatar_name,
+          avatar_key,
+          role
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
       
-    if (error) throw error;
-    
-    res.json({ success: true, data });
+      return res.json({ success: true, data });
+    } else if (action === 'ban') {
+      // 3. Ban: Insertar em security_ban_list
+      const { data, error } = await supabase
+        .from('security_ban_list')
+        .insert({
+          casperlet_id: parcel_id,
+          avatar_name,
+          avatar_key,
+          reason
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      // Remover da security_access_list
+      await supabase
+        .from('security_access_list')
+        .delete()
+        .eq('casperlet_id', parcel_id)
+        .eq('avatar_key', avatar_key);
+        
+      return res.json({ success: true, data });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
