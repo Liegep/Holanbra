@@ -130,7 +130,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
           </div>
         </div>
         
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide px-2">
+        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide px-2 md:justify-center">
           {categories.map(cat => {
             const info = CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO];
             const Icon = info?.icon || Layout;
@@ -251,7 +251,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                       >
                         <div className="px-8 pb-10 pt-2">
                           <div className={cn("h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-10 transition-all duration-1000", isExpanded ? "via-amber-500/50" : "")} />
-                          <div className="max-w-3xl md:ml-24">
+                          <div className="max-w-3xl mx-auto">
                             <motion.div 
                               initial={{ y: 20, opacity: 0 }}
                               animate={{ y: 0, opacity: 1 }}

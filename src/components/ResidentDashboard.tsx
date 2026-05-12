@@ -478,7 +478,7 @@ const ResidentDashboard:FC = () => {
       <div className="max-w-[1440px] mx-auto space-y-12">
         
         {/* Header - Profile Section */}
-        <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-8 md:p-12 rounded-[40px] border border-white/5 relative overflow-hidden mt-8 md:mt-0">
+        <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-8 md:p-12 rounded-[40px] border border-white/5 relative overflow-hidden mt-8 md:mt-0 max-w-6xl mx-auto w-full">
           <div className="w-full flex justify-end md:absolute md:top-8 md:right-8 z-10 scale-90 md:scale-100 origin-top-right">
             <GridStatus />
           </div>
@@ -912,7 +912,7 @@ const ResidentDashboard:FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto"
             >
               {/* New Ticket Form */}
               <div className="lg:col-span-1 space-y-6">
@@ -1141,6 +1141,7 @@ const ResidentDashboard:FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="max-w-5xl mx-auto w-full"
             >
               <FAQDisplay onSupportClick={handleSupportTabClick} />
             </motion.div>
