@@ -58,27 +58,37 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         }
 
         console.log("[Debug] Fetching properties for UUID:", finalUuid);
-        const { data: mainProps } = await supabase
+        const { data: mainProps, error: mainPropsError } = await supabase
           .from('properties')
-          .select('casperlet_id, name, tenant_id, user_id, id')
-          .or(`tenant_id.eq.${finalUuid},user_id.eq.${finalUuid}`);
+          .select('casperlet_id, name, tenant_id, id')
+          .eq('tenant_id', finalUuid);
+
+        if (mainPropsError) {
+          console.error("Error fetching main properties:", mainPropsError);
+        }
 
         console.log("[Debug] Main props:", mainProps);
         
-        const { data: tenantEntries } = await supabase
+        const { data: tenantEntries, error: tenantEntriesError } = await supabase
           .from('property_tenants')
           .select('property_id')
           .eq('tenant_id', finalUuid);
         
+        if (tenantEntriesError) {
+          console.error("Error fetching tenant entries:", tenantEntriesError);
+        }
         console.log("[Debug] Tenant entries:", tenantEntries);
 
         let subProps: any[] = [];
         if (tenantEntries && tenantEntries.length > 0) {
           const propertyIds = tenantEntries.map(e => e.property_id);
-          const { data: subData } = await supabase
+          const { data: subData, error: subDataError } = await supabase
             .from('properties')
-            .select('casperlet_id, name, tenant_id, user_id, id')
+            .select('casperlet_id, name, tenant_id, id')
             .in('id', propertyIds);
+          if (subDataError) {
+            console.error("Error fetching sub properties:", subDataError);
+          }
           if (subData) {
             subProps = subData;
             console.log("[Debug] Sub props:", subProps);
@@ -135,28 +145,32 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
   const handleToggle = async (parcelId: string) => {
     const security = securityData[parcelId];
-    const isActive = security?.is_active || false;
+    const isActive = security?.active || false;
     setToggling(parcelId);
     setToggleError(null);
     
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active user session');
+      }
+
       // Use the local API route
       const response = await fetch(`/api/security/config`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${security?.orb_token || ''}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ parcel_id: parcelId, active: !isActive })
       });
 
       if (response.ok) {
+        const result = await response.json();
         setSecurityData(prev => ({
           ...prev,
-          [parcelId]: { 
-            ...(prev[parcelId] || {}), 
-            is_active: !isActive,
-          }
+          [parcelId]: result.data
         }));
       } else {
         throw new Error('Failed to update status');
@@ -198,11 +212,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           <div className="flex items-center gap-6">
             <div className={cn(
                "w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl",
-               currentSecurity?.is_active 
+               currentSecurity?.active 
                  ? "bg-emerald-500 text-black shadow-emerald-500/20" 
                  : "bg-white/5 text-white/20 border border-white/10"
             )}>
-              <Shield size={28} className={currentSecurity?.is_active ? "animate-pulse" : ""} />
+              <Shield size={28} className={currentSecurity?.active ? "animate-pulse" : ""} />
             </div>
             <div className="space-y-1">
               <h2 className="text-xl font-black uppercase tracking-[0.4em] text-white">
@@ -211,9 +225,9 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                  currentSecurity?.is_active ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
+                  currentSecurity?.active ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
                 )}>
-                  {currentSecurity?.is_active ? "Authenticated" : "Standby"}
+                  {currentSecurity?.active ? "Authenticated" : "Standby"}
                 </div>
                 <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">
                   {selectedParcelName || "Initializing Link..."}
@@ -252,8 +266,8 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               {activeTab === 'dashboard' && (
                 <div className="flex flex-col gap-12 max-w-4xl mx-auto h-full">
                   <div className="text-center">
-                    <h3 className={cn("text-2xl font-black uppercase tracking-[0.2em]", selectedParcelId && securityData[selectedParcelId]?.is_active ? "text-emerald-500" : "text-white")}>
-                      {selectedParcelId && securityData[selectedParcelId]?.is_active ? "SISTEMA ATIVO" : "SISTEMA STANDBY"}
+                    <h3 className={cn("text-2xl font-black uppercase tracking-[0.2em]", selectedParcelId && securityData[selectedParcelId]?.active ? "text-emerald-500" : "text-white")}>
+                      {selectedParcelId && securityData[selectedParcelId]?.active ? "SISTEMA ATIVO" : "SISTEMA STANDBY"}
                     </h3>
                   </div>
                   {/* Parcel Selector */}
@@ -282,7 +296,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                   <div className="relative flex flex-col items-center gap-12 bg-[#0c0c0e]/50 p-12 sm:p-20 rounded-[5rem] border border-white/5 shadow-2xl overflow-hidden group">
                     <div className={cn(
                       "absolute inset-0 transition-opacity duration-1000 blur-[150px] opacity-10",
-                      currentSecurity?.is_active ? "bg-emerald-500" : "bg-red-500"
+                      currentSecurity?.active ? "bg-emerald-500" : "bg-red-500"
                     )} />
 
                     <div className="relative z-10 flex flex-col items-center gap-12 w-full">
@@ -301,7 +315,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                           disabled={toggling === selectedParcelId}
                           className={cn(
                             "w-64 h-24 rounded-full border-[4px] transition-all duration-300 flex items-center p-2 relative shadow-inner active:scale-95",
-                            currentSecurity?.is_active 
+                            currentSecurity?.active 
                               ? "bg-emerald-500 border-emerald-400 justify-end" 
                               : "bg-zinc-900 border-white/10 justify-start"
                           )}
@@ -310,19 +324,19 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                             layout
                             className={cn(
                               "w-16 h-16 rounded-full shadow-xl flex items-center justify-center",
-                              currentSecurity?.is_active ? "bg-white" : "bg-white/10"
+                              currentSecurity?.active ? "bg-white" : "bg-white/10"
                             )}
                           >
-                             <Power size={24} className={currentSecurity?.is_active ? "text-emerald-500" : "text-white/20"} />
+                             <Power size={24} className={currentSecurity?.active ? "text-emerald-500" : "text-white/20"} />
                           </motion.div>
                           
                           <span className={cn(
                             "absolute text-xs font-black uppercase tracking-[0.2em] transition-all duration-300",
-                            currentSecurity?.is_active 
+                            currentSecurity?.active 
                               ? "left-8 text-white/50" 
                               : "right-8 text-white/20"
                           )}>
-                            {currentSecurity?.is_active ? t('security.on') : t('security.off')}
+                            {currentSecurity?.active ? t('security.on') : t('security.off')}
                           </span>
                         </button>
                         <div className="flex flex-col items-center gap-2">
@@ -333,7 +347,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
                       <div className="flex gap-12">
                         <div className="flex flex-col items-center gap-2">
-                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.is_active ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]" : "bg-black")} />
+                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.active ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]" : "bg-black")} />
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active</span>
                         </div>
                         <div className="flex flex-col items-center gap-2">
@@ -341,7 +355,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Linked</span>
                         </div>
                         <div className="flex flex-col items-center gap-2">
-                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.is_active ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,1)]" : "bg-black")} />
+                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.active ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,1)]" : "bg-black")} />
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Alarm</span>
                         </div>
                       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, Power, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { SecurityDashboard } from './SecurityDashboard';
@@ -14,12 +14,20 @@ export function SecurityButton({ residentUuid, className }: { residentUuid?: str
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-lg shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 group",
+          "flex items-center justify-between gap-4 p-4 rounded-2xl border border-white/5 bg-zinc-900/50 hover:bg-zinc-800 transition-all active:scale-95 text-left group",
           className
         )}
       >
-        <Shield size={18} className="group-hover:rotate-12 transition-transform" />
-        <span className="text-xs uppercase tracking-widest">{t('security.title')}</span>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+            <Shield size={20} />
+          </div>
+          <div>
+            <span className="block text-[10px] font-black uppercase text-white/30 tracking-widest">{t('security.title')}</span>
+            <span className="block text-xs font-bold text-white tracking-tight">System Control</span>
+          </div>
+        </div>
+        <ChevronRight size={16} className="text-white/20 group-hover:text-amber-500 transition-colors" />
       </button>
 
       <AnimatePresence>

@@ -1,5 +1,6 @@
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 const router = express.Router();
 
@@ -9,8 +10,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
-// Helper de validação de token
-async function validateToken(token, parcelId) {
+// Helper de validação de token (Orb Token)
+async function validateOrbToken(token, parcelId) {
   const { data, error } = await supabase
     .from('security_parcels')
     .select('casperlet_id, active')
@@ -22,13 +23,42 @@ async function validateToken(token, parcelId) {
   return data;
 }
 
+// Helper para validar usuário logado (via Auth Token)
+async function validateUserAccess(token, parcelId) {
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) return null;
+
+  // Verificar se o usuário tem acesso à property (casperlet_id)
+  const { data: property, error: propError } = await supabase
+    .from('properties')
+    .select('id, tenant_id')
+    .eq('casperlet_id', parcelId)
+    .single();
+
+  if (propError || !property) return null;
+  
+  if (property.tenant_id === user.id) return { userId: user.id };
+  
+  // Verifique property_tenants
+  const { data: tenant } = await supabase
+    .from('property_tenants')
+    .select('id')
+    .eq('property_id', property.id)
+    .eq('tenant_id', user.id)
+    .maybeSingle();
+    
+  if (tenant) return { userId: user.id };
+  
+  return null;
+}
+
 // 1. security-check
 router.post('/check', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, avatar_key, avatar_name } = req.body;
     
-    if (!(await validateToken(token, parcel_id))) {
+    if (!(await validateOrbToken(token, parcel_id))) {
       return res.status(401).json({ allowed: false, role: "unknown" });
     }
 
@@ -68,7 +98,7 @@ router.post('/log', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, avatar_key, avatar_name, action } = req.body;
     
-    if (!(await validateToken(token, parcel_id))) {
+    if (!(await validateOrbToken(token, parcel_id))) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
@@ -89,83 +119,67 @@ router.all('/config', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const parcel_id = req.query.parcel_id || req.body.parcel_id;
     
-    if (!(await validateToken(token, parcel_id))) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    
     if (req.method === 'GET') {
+      // GET: Aceita Orb ou Usuário
+      let isOrbAuthorized = await validateOrbToken(token, parcel_id);
+      let userAuth = null;
+      if (!isOrbAuthorized) {
+        userAuth = await validateUserAccess(token, parcel_id);
+      }
+      
+      if (!isOrbAuthorized && !userAuth) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
       const { data, error } = await supabase
         .from('security_parcels')
-        .select('active, radius, warn_time, ask_before')
+        .select('active, radius, warn_time, ask_before, orb_token')
         .eq('casperlet_id', parcel_id)
-        .single();
+        .maybeSingle(); // Usar maybeSingle ao invés de filter no array
         
       if (error) throw error;
-      res.json(data);
-    } else if (req.method === 'POST') {
-      const { active } = req.body;
-      const { error } = await supabase
-        .from('security_parcels')
-        .update({ active })
-        .eq('casperlet_id', parcel_id);
-        
-      if (error) throw error;
-      res.json({ success: true });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+      res.json(data || {});
 
-// 4. security-access
-router.post('/access', async (req, res) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
-    const { parcel_id, action, avatar_key, avatar_name, role, reason } = req.body;
-    
-    if (!(await validateToken(token, parcel_id))) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    } else if (req.method === 'POST') {
+      // POST: Apenas Usuário
+      const userAuth = await validateUserAccess(token, parcel_id);
+      if (!userAuth) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      
+      const { active } = req.body;
+      let updatedData = null;
+      
+      const { data: existing } = await supabase
+        .from('security_parcels')
+        .select('casperlet_id')
+        .eq('casperlet_id', parcel_id)
+        .maybeSingle();
+        
+      if (existing) {
+        const { data, error } = await supabase
+          .from('security_parcels')
+          .update({ active })
+          .eq('casperlet_id', parcel_id)
+          .select()
+          .single();
+        if (error) throw error;
+        updatedData = data;
+      } else {
+        const { data, error } = await supabase.from('security_parcels').insert({ 
+          casperlet_id: parcel_id, 
+          active: active, 
+          radius: 20, 
+          warn_time: 15, 
+          ask_before: true,
+          orb_token: crypto.randomUUID()
+        }).select().single();
+        if (error) throw error;
+        updatedData = data;
+      }
+      
+      res.json({ success: true, data: updatedData });
     }
-    
-    let result = { success: true };
-    
-    switch (action) {
-      case 'add':
-        await supabase.from('security_access_list').insert({ casperlet_id: parcel_id, avatar_key, avatar_name, role: role || 'resident' });
-        break;
-      case 'remove':
-        await supabase.from('security_access_list').delete().eq('casperlet_id', parcel_id).eq('avatar_name', avatar_name);
-        break;
-      case 'add-manager':
-        await supabase.from('security_access_list').insert({ casperlet_id: parcel_id, avatar_key, avatar_name, role: 'manager' });
-        break;
-      case 'remove-manager':
-        await supabase.from('security_access_list').delete().eq('casperlet_id', parcel_id).eq('avatar_name', avatar_name).eq('role', 'manager');
-        break;
-      case 'list':
-        const { data: list } = await supabase.from('security_access_list').select('*').eq('casperlet_id', parcel_id);
-        result = list;
-        break;
-      case 'ban-list':
-        const { data: bans } = await supabase.from('security_ban_list').select('*').eq('casperlet_id', parcel_id);
-        result = bans;
-        break;
-      case 'manager-list':
-        const { data: managers } = await supabase.from('security_access_list').select('*').eq('casperlet_id', parcel_id).eq('role', 'manager');
-        result = managers;
-        break;
-      case 'ban':
-        await supabase.from('security_ban_list').insert({ casperlet_id: parcel_id, avatar_key, avatar_name, reason });
-        await supabase.from('security_access_list').delete().eq('casperlet_id', parcel_id).eq('avatar_key', avatar_key);
-        break;
-      case 'unban':
-        await supabase.from('security_ban_list').delete().eq('casperlet_id', parcel_id).eq('avatar_name', avatar_name);
-        break;
-      default:
-        throw new Error('Invalid action');
-    }
-    
-    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
