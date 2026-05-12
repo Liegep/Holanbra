@@ -238,6 +238,108 @@ async function startServer() {
   });
 
 
+  // 5. SECURITY SYSTEM ROUTES (Orb LSL Integration)
+  app.post('/api/security/check', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const { parcel_id, avatar_key, avatar_name } = req.body;
+
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+
+    try {
+      // 1. Verify token and active status
+      const { data: parcel, error: pError } = await supabase
+        .from('security_parcels')
+        .select('casperlet_id, active')
+        .eq('orb_token', token)
+        .single();
+
+      if (pError || !parcel) return res.status(403).json({ allowed: false, role: 'invalid_token' });
+      if (!parcel.active) return res.status(200).json({ allowed: true, role: 'system_disabled' });
+      if (parcel.casperlet_id !== parcel_id) return res.status(403).json({ allowed: false, role: 'wrong_parcel' });
+
+      // 2. Check Ban List
+      const { data: banned } = await supabase
+        .from('security_ban_list')
+        .select('id')
+        .eq('casperlet_id', parcel_id)
+        .eq('avatar_key', avatar_key)
+        .maybeSingle();
+
+      if (banned) return res.status(200).json({ allowed: false, role: 'banned' });
+
+      // 3. Check Access List
+      const { data: access } = await supabase
+        .from('security_access_list')
+        .select('role')
+        .eq('casperlet_id', parcel_id)
+        .eq('avatar_key', avatar_key)
+        .maybeSingle();
+
+      if (access) return res.status(200).json({ allowed: true, role: access.role });
+
+      // 4. Default Unknown
+      return res.status(200).json({ allowed: false, role: 'unknown' });
+    } catch (err) {
+      console.error('[Security-Check] Error:', err.message);
+      return res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  app.post('/api/security/log', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const { parcel_id, avatar_key, avatar_name, action } = req.body;
+
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+
+    try {
+      const { data: parcel, error: pError } = await supabase
+        .from('security_parcels')
+        .select('casperlet_id')
+        .eq('orb_token', token)
+        .single();
+
+      if (pError || !parcel || parcel.casperlet_id !== parcel_id) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      await supabase.from('security_logs').insert({
+        casperlet_id: parcel_id,
+        avatar_key,
+        avatar_name,
+        action,
+        created_at: new Date().toISOString()
+      });
+
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/security/config', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
+    const { parcel_id } = req.query;
+
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+
+    try {
+      const { data: parcel, error: pError } = await supabase
+        .from('security_parcels')
+        .select('active, radius, warn_time, ask_before')
+        .eq('orb_token', token)
+        .eq('casperlet_id', parcel_id)
+        .single();
+
+      if (pError || !parcel) return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(200).json(parcel);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // Logging and Health routes
   app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);

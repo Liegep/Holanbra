@@ -32,6 +32,8 @@ import Toast, { ToastType } from './Toast';
 import { FAQDisplay } from './FAQDisplay';
 import { SpotifyPlayer } from './SpotifyPlayer';
 
+import { SecurityButton } from './security/SecurityButton';
+
 const ResidentDashboard:FC = () => {
   const { t, i18n } = useTranslation();
 
@@ -507,12 +509,16 @@ const ResidentDashboard:FC = () => {
               </div>
             </div>
 
-            <button 
-              onClick={handleLogout}
-              className="mt-4 flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
-            >
-              <LogOut size={14} /> {t('resident.logout')}
-            </button>
+            <div className="flex flex-wrap justify-center gap-3 mt-4">
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
+              >
+                <LogOut size={14} /> {t('resident.logout')}
+              </button>
+
+              <SecurityButton />
+            </div>
           </div>
 
           {/* Spotify Radio Trigger (Lateral for Dashboard) */}
