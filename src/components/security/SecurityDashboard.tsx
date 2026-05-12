@@ -25,6 +25,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
   const [loading, setLoading] = useState(true);
   const [securityData, setSecurityData] = useState<Record<string, any>>({});
   const [toggling, setToggling] = useState<string | null>(null);
+  const [toggleError, setToggleError] = useState<string | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
@@ -136,6 +137,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
     const security = securityData[parcelId];
     const isActive = security?.is_active || false;
     setToggling(parcelId);
+    setToggleError(null);
     
     try {
       // Use the local API route
@@ -157,10 +159,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           }
         }));
       } else {
-        console.error('Failed to toggle security status');
+        throw new Error('Failed to update status');
       }
     } catch (err) {
       console.error('Error toggling security:', err);
+      setToggleError('Failed to toggle security. Please try again.');
     } finally {
       setToggling(null);
     }
@@ -297,39 +300,34 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                           onClick={() => handleToggle(selectedParcelId!)}
                           disabled={toggling === selectedParcelId}
                           className={cn(
-                            "w-64 h-64 sm:w-72 sm:h-72 rounded-full border-[12px] transition-all duration-700 flex flex-col items-center justify-center gap-6 relative shadow-2xl active:scale-95 group/btn",
+                            "w-64 h-24 rounded-full border-[4px] transition-all duration-300 flex items-center p-2 relative shadow-inner active:scale-95",
                             currentSecurity?.is_active 
-                              ? "bg-emerald-500 border-white/20 shadow-[0_0_100px_rgba(16,185,129,0.3)]" 
-                              : "bg-zinc-900 border-white/5 shadow-inner"
+                              ? "bg-emerald-500 border-emerald-400 justify-end" 
+                              : "bg-zinc-900 border-white/10 justify-start"
                           )}
                         >
-                          <AnimatePresence>
-                            {currentSecurity?.is_active && (
-                              <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1.2, opacity: 0.2 }}
-                                exit={{ scale: 0.8, opacity: 0 }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                                className="absolute inset-0 rounded-full bg-emerald-400"
-                              />
+                          <motion.div
+                            layout
+                            className={cn(
+                              "w-16 h-16 rounded-full shadow-xl flex items-center justify-center",
+                              currentSecurity?.is_active ? "bg-white" : "bg-white/10"
                             )}
-                          </AnimatePresence>
-                          
-                          <Power size={90} className={cn(
-                            "transition-all duration-700",
-                            currentSecurity?.is_active ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" : "text-white/5 scale-90",
-                            toggling === selectedParcelId && "animate-spin"
-                          )} />
+                          >
+                             <Power size={24} className={currentSecurity?.is_active ? "text-emerald-500" : "text-white/20"} />
+                          </motion.div>
                           
                           <span className={cn(
-                            "text-3xl font-black uppercase tracking-[0.2em] transition-all duration-700",
-                            currentSecurity?.is_active ? "text-white" : "text-white/20"
+                            "absolute text-xs font-black uppercase tracking-[0.2em] transition-all duration-300",
+                            currentSecurity?.is_active 
+                              ? "left-8 text-white/50" 
+                              : "right-8 text-white/20"
                           )}>
                             {currentSecurity?.is_active ? t('security.on') : t('security.off')}
                           </span>
                         </button>
                         <div className="flex flex-col items-center gap-2">
                            <span className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.3em]">{t('security.toggle_assist', 'CLIQUE PARA LIGAR / DESLIGAR')}</span>
+                           {toggleError && <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">{toggleError}</span>}
                         </div>
                       </div>
 
