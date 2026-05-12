@@ -83,18 +83,18 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
     const newToken = crypto.randomUUID();
     const { error } = await supabase
       .from('security_parcels')
-      .update({ token: newToken })
+      .update({ orb_token: newToken })
       .eq('casperlet_id', selectedParcelId);
 
     if (!error) {
-      setConfig(prev => ({ ...prev, token: newToken }));
+      setConfig(prev => ({ ...prev, orb_token: newToken }));
       setShowConfirmRegen(false);
     }
   };
 
   const copyToClipboard = () => {
-    if (!config?.token) return;
-    navigator.clipboard.writeText(config.token);
+    if (!config?.orb_token) return;
+    navigator.clipboard.writeText(config.orb_token);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -158,7 +158,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
             </div>
             <div className="flex gap-2">
               <div className="flex-1 px-4 py-3 bg-black/40 border border-white/5 rounded-xl font-mono text-[10px] text-white/60 select-all truncate">
-                {config.token}
+                {config.orb_token}
               </div>
               <button
                 onClick={copyToClipboard}

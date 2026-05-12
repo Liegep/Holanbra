@@ -1249,6 +1249,8 @@ const resources = {
         "warn_regenerate": "Regenerar o token desconectará o orb. Você precisará atualizar o script LSL.",
         "on": "LIGADO",
         "off": "DESLIGADO",
+        "toggle_assist": "CLIQUE PARA LIGAR / DESLIGAR",
+        "ban_avatar": "Banir Avatar",
         "active": "Ativo",
         "inactive": "Inativo",
         "radius": "Raio (metros)",

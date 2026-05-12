@@ -240,9 +240,12 @@ async function startServer() {
 
   // 5. SECURITY SYSTEM ROUTES (Orb LSL Integration)
   app.post('/api/security/check', async (req, res) => {
+    const payload = { ...req.query, ...req.body };
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const { parcel_id, avatar_key, avatar_name } = req.body;
+    const { parcel_id, avatar_key, avatar_name } = payload;
+
+    console.log(`[Security-Check] Request: Parcel=${parcel_id}, Avatar=${avatar_name}, Key=${avatar_key}`);
 
     if (!token) return res.status(401).json({ error: 'Missing token' });
 
@@ -250,61 +253,82 @@ async function startServer() {
       // 1. Verify token and active status
       const { data: parcel, error: pError } = await supabase
         .from('security_parcels')
-        .select('casperlet_id, active')
+        .select('casperlet_id, is_active')
         .eq('orb_token', token)
         .single();
 
-      if (pError || !parcel) return res.status(403).json({ allowed: false, role: 'invalid_token' });
-      if (!parcel.active) return res.status(200).json({ allowed: true, role: 'system_disabled' });
-      if (parcel.casperlet_id !== parcel_id) return res.status(403).json({ allowed: false, role: 'wrong_parcel' });
+      if (pError || !parcel) {
+        console.warn(`[Security-Check] Invalid token: ${token}`);
+        return res.status(403).json({ allowed: false, role: 'invalid_token' });
+      }
 
-      // 2. Check Ban List
-      const { data: banned } = await supabase
-        .from('security_ban_list')
+      if (!parcel.is_active) {
+        return res.status(200).json({ allowed: true, role: 'system_disabled' });
+      }
+      
+      // Ensure parcel_id matches the one linked to this token
+      if (parcel.casperlet_id !== parcel_id) {
+        console.warn(`[Security-Check] Parcel mismatch. Expected ${parcel.casperlet_id}, got ${parcel_id}`);
+        return res.status(403).json({ allowed: false, role: 'wrong_parcel' });
+      }
+
+      // 2. Check Renters Table (Active Tenants)
+      // We check if the name or key exists in the renters table
+      const { data: isRenter } = await supabase
+        .from('renters')
         .select('id')
-        .eq('casperlet_id', parcel_id)
-        .eq('avatar_key', avatar_key)
+        .or(`avatar_name.eq."${avatar_name}",avatar_uuid.eq."${avatar_key}"`)
         .maybeSingle();
 
-      if (banned) return res.status(200).json({ allowed: false, role: 'banned' });
+      if (isRenter) {
+        console.log(`[Security-Check] Allowed: ${avatar_name} is a registered resident (renters table)`);
+        return res.status(200).json({ allowed: true, role: 'resident' });
+      }
 
-      // 3. Check Access List
+      // 3. Check Property Tenants (Direct Lease)
+      // Check properties table for current tenant
+      const { data: isTenant } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('casperlet_id', parcel_id)
+        .or(`tenant_name.eq."${avatar_name}",tenant_id.eq."${avatar_key}"`)
+        .maybeSingle();
+
+      if (isTenant) {
+        console.log(`[Security-Check] Allowed: ${avatar_name} is the current tenant of this parcel`);
+        return res.status(200).json({ allowed: true, role: 'tenant' });
+      }
+
+      // 4. Check Access List (Guest List)
       const { data: access } = await supabase
         .from('security_access_list')
         .select('role')
         .eq('casperlet_id', parcel_id)
-        .eq('avatar_key', avatar_key)
+        .or(`avatar_name.eq."${avatar_name}",avatar_key.eq."${avatar_key}"`)
         .maybeSingle();
 
-      if (access) return res.status(200).json({ allowed: true, role: access.role });
+      if (access) {
+        console.log(`[Security-Check] Allowed: ${avatar_name} is in the access list (${access.role})`);
+        return res.status(200).json({ allowed: true, role: access.role });
+      }
 
-      // 4. Default Unknown
+      // 5. Default Denied
+      console.log(`[Security-Check] Denied: ${avatar_name}`);
       return res.status(200).json({ allowed: false, role: 'unknown' });
     } catch (err) {
-      console.error('[Security-Check] Error:', err.message);
+      console.error('[Security-Check] Critical Error:', err.message);
       return res.status(500).json({ error: 'Server error' });
     }
   });
 
   app.post('/api/security/log', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    const { parcel_id, avatar_key, avatar_name, action } = req.body;
+    const payload = { ...req.query, ...req.body };
+    const { parcel_id, avatar_key, avatar_name, action } = payload;
 
-    if (!token) return res.status(401).json({ error: 'Missing token' });
+    console.log(`[Security-Log] Action: ${action} | Parcel: ${parcel_id} | Avatar: ${avatar_name}`);
 
     try {
-      const { data: parcel, error: pError } = await supabase
-        .from('security_parcels')
-        .select('casperlet_id')
-        .eq('orb_token', token)
-        .single();
-
-      if (pError || !parcel || parcel.casperlet_id !== parcel_id) {
-        return res.status(403).json({ error: 'Unauthorized' });
-      }
-
-      await supabase.from('security_logs').insert({
+      const { error } = await supabase.from('security_logs').insert({
         casperlet_id: parcel_id,
         avatar_key,
         avatar_name,
@@ -312,8 +336,10 @@ async function startServer() {
         created_at: new Date().toISOString()
       });
 
+      if (error) throw error;
       return res.status(200).json({ success: true });
     } catch (err) {
+      console.error('[Security-Log] Error:', err.message);
       return res.status(500).json({ error: err.message });
     }
   });
@@ -328,7 +354,7 @@ async function startServer() {
     try {
       const { data: parcel, error: pError } = await supabase
         .from('security_parcels')
-        .select('active, radius, warn_time, ask_before')
+        .select('is_active, radius, warn_time, ask_before')
         .eq('orb_token', token)
         .eq('casperlet_id', parcel_id)
         .single();

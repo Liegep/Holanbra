@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Users, Ban, ScrollText, Settings, Power, ArrowRight } from 'lucide-react';
+import { X, Shield, Users, Ban, ScrollText, Settings, Power, ArrowRight, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
@@ -51,7 +51,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         const { data: tenantEntries } = await supabase
           .from('property_tenants')
           .select('property_id')
-          .eq('resident_id', finalUuid);
+          .eq('tenant_id', finalUuid);
 
         let subProps: any[] = [];
         if (tenantEntries && tenantEntries.length > 0) {
@@ -121,14 +121,31 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
       const { error } = await supabase
         .from('security_parcels')
-        .update({ is_active: !isActive })
-        .eq('casperlet_id', parcelId);
+        .upsert({ 
+          casperlet_id: parcelId,
+          is_active: !isActive,
+          orb_token: security?.orb_token || security?.token || crypto.randomUUID()
+        }, { onConflict: 'casperlet_id' });
 
       if (!error) {
+        const newOrbToken = security?.orb_token || security?.token || (securityData[parcelId]?.orb_token) || 'generating...'; 
+        // Note: the upsert happened, ideally we'd refresh, but let's at least keep state consistent
         setSecurityData(prev => ({
           ...prev,
-          [parcelId]: { ...prev[parcelId], is_active: !isActive }
+          [parcelId]: { 
+            ...(prev[parcelId] || {}), 
+            is_active: !isActive,
+            // If it was newly generated in the DB, it's better to let the user refresh or fetch it.
+            // But we can try to guess it if we just saved it.
+          }
         }));
+        // Reload parcel data to get the generated token if it was new
+        if (!security?.orb_token && !security?.token) {
+           const { data } = await supabase.from('security_parcels').select('*').eq('casperlet_id', parcelId).single();
+           if (data) {
+             setSecurityData(prev => ({ ...prev, [parcelId]: data }));
+           }
+        }
       }
     } finally {
       setToggling(null);
@@ -217,6 +234,28 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
             <div className="p-6 sm:p-12 h-full">
               {activeTab === 'dashboard' && (
                 <div className="flex flex-col gap-12 max-w-4xl mx-auto h-full">
+                  {/* Parcel Selector */}
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {properties.map(p => (
+                      <button
+                        key={p.casperlet_id}
+                        onClick={() => {
+                          setSelectedParcelId(p.casperlet_id);
+                          setSelectedParcelName(p.name);
+                        }}
+                        className={cn(
+                          "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all flex items-center gap-2",
+                          selectedParcelId === p.casperlet_id
+                            ? "bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20"
+                            : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                        )}
+                      >
+                        <MapPin size={12} />
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+
                   {/* Central Console */}
                   <div className="relative flex flex-col items-center gap-12 bg-[#0c0c0e]/50 p-12 sm:p-20 rounded-[5rem] border border-white/5 shadow-2xl overflow-hidden group">
                     <div className={cn(
@@ -234,41 +273,46 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                         <p className="text-3xl font-black text-white uppercase tracking-tighter">{selectedParcelName}</p>
                       </div>
 
-                      <button
-                        onClick={() => handleToggle(selectedParcelId!)}
-                        disabled={toggling === selectedParcelId}
-                        className={cn(
-                          "w-64 h-64 sm:w-72 sm:h-72 rounded-full border-[12px] transition-all duration-700 flex flex-col items-center justify-center gap-6 relative shadow-2xl active:scale-95 group/btn",
-                          currentSecurity?.is_active 
-                            ? "bg-emerald-500 border-white/20 shadow-[0_0_100px_rgba(16,185,129,0.3)]" 
-                            : "bg-zinc-900 border-white/5 shadow-inner"
-                        )}
-                      >
-                        <AnimatePresence>
-                          {currentSecurity?.is_active && (
-                            <motion.div
-                              initial={{ scale: 0.8, opacity: 0 }}
-                              animate={{ scale: 1.2, opacity: 0.2 }}
-                              exit={{ scale: 0.8, opacity: 0 }}
-                              transition={{ repeat: Infinity, duration: 2 }}
-                              className="absolute inset-0 rounded-full bg-emerald-400"
-                            />
+                      <div className="flex flex-col items-center gap-6">
+                        <button
+                          onClick={() => handleToggle(selectedParcelId!)}
+                          disabled={toggling === selectedParcelId}
+                          className={cn(
+                            "w-64 h-64 sm:w-72 sm:h-72 rounded-full border-[12px] transition-all duration-700 flex flex-col items-center justify-center gap-6 relative shadow-2xl active:scale-95 group/btn",
+                            currentSecurity?.is_active 
+                              ? "bg-emerald-500 border-white/20 shadow-[0_0_100px_rgba(16,185,129,0.3)]" 
+                              : "bg-zinc-900 border-white/5 shadow-inner"
                           )}
-                        </AnimatePresence>
-                        
-                        <Power size={90} className={cn(
-                          "transition-all duration-700",
-                          currentSecurity?.is_active ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" : "text-white/5 scale-90",
-                          toggling === selectedParcelId && "animate-spin"
-                        )} />
-                        
-                        <span className={cn(
-                          "text-3xl font-black uppercase tracking-[0.2em] transition-all duration-700",
-                          currentSecurity?.is_active ? "text-white" : "text-white/20"
-                        )}>
-                          {currentSecurity?.is_active ? t('security.on') : t('security.off')}
-                        </span>
-                      </button>
+                        >
+                          <AnimatePresence>
+                            {currentSecurity?.is_active && (
+                              <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1.2, opacity: 0.2 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                className="absolute inset-0 rounded-full bg-emerald-400"
+                              />
+                            )}
+                          </AnimatePresence>
+                          
+                          <Power size={90} className={cn(
+                            "transition-all duration-700",
+                            currentSecurity?.is_active ? "text-white scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" : "text-white/5 scale-90",
+                            toggling === selectedParcelId && "animate-spin"
+                          )} />
+                          
+                          <span className={cn(
+                            "text-3xl font-black uppercase tracking-[0.2em] transition-all duration-700",
+                            currentSecurity?.is_active ? "text-white" : "text-white/20"
+                          )}>
+                            {currentSecurity?.is_active ? t('security.on') : t('security.off')}
+                          </span>
+                        </button>
+                        <div className="flex flex-col items-center gap-2">
+                           <span className="text-[10px] font-black text-amber-500/50 uppercase tracking-[0.3em]">{t('security.toggle_assist', 'CLIQUE PARA LIGAR / DESLIGAR')}</span>
+                        </div>
+                      </div>
 
                       <div className="flex gap-12">
                         <div className="flex flex-col items-center gap-2">
@@ -276,7 +320,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active</span>
                         </div>
                         <div className="flex flex-col items-center gap-2">
-                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.token ? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,1)]" : "bg-black")} />
+                           <div className={cn("w-2.5 h-2.5 rounded-full", currentSecurity?.orb_token ? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,1)]" : "bg-black")} />
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Linked</span>
                         </div>
                         <div className="flex flex-col items-center gap-2">
@@ -333,7 +377,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                   </div>
 
                   {/* Token Footer */}
-                  {currentSecurity?.token && (
+                  {currentSecurity?.orb_token && (
                     <div className="p-8 rounded-[3rem] bg-zinc-900/50 border border-white/5 flex items-center justify-between gap-8 mt-auto">
                       <div className="space-y-1">
                         <h5 className="text-[10px] font-black text-white/20 uppercase tracking-widest">Encryption Key</h5>
@@ -341,11 +385,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                       </div>
                       <div className="flex gap-4">
                         <div className="px-6 py-3 bg-black/40 rounded-xl font-mono text-[10px] text-white/40 border border-white/5 select-all truncate max-w-[240px]">
-                          {currentSecurity.token}
+                          {currentSecurity.orb_token}
                         </div>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(currentSecurity.token);
+                            navigator.clipboard.writeText(currentSecurity.orb_token);
                             alert(t('security.token_copied'));
                           }}
                           className="px-6 py-3 bg-amber-500 text-black hover:bg-amber-400 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2"
