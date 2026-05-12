@@ -696,7 +696,7 @@ const ResidentDashboard:FC = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-12"
               >
-                <div className="flex flex-col lg:flex-row gap-10 items-start">
+                <div className="flex flex-col lg:flex-row gap-10 items-start lg:justify-center">
                   {/* Prim Status Sidebar - Desktop Only */}
                   {isLoggedIn && (
                     <div className="hidden lg:flex flex-col gap-3 w-full lg:w-64 shrink-0">
@@ -741,7 +741,7 @@ const ResidentDashboard:FC = () => {
                           </div>
                         </div>
                       </div>
-
+ 
                       {/* Prim Tip Widget - Attached Style */}
                       <div className={cn(
                         "glass-card p-4 rounded-[24px] border flex items-center gap-3 relative overflow-hidden group transition-all text-left",
@@ -768,8 +768,8 @@ const ResidentDashboard:FC = () => {
                       </div>
                     </div>
                   )}
-
-                  <div className="flex-1 w-full">
+ 
+                  <div className="w-full lg:max-w-5xl">
                     {properties.length === 0 ? (
                       <div className="glass-card p-20 text-center space-y-6 border-white/5">
                         <Home size={60} className="mx-auto text-white/10" />
