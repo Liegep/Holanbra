@@ -128,11 +128,25 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
           <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
         </div>
       ) : !config ? (
-        <div className="h-48 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/20 gap-4">
-          <AlertCircle size={32} />
-          <p className="uppercase font-black text-[10px] tracking-[0.3em]">
-            {t('security.inactive')}
-          </p>
+        <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[3rem] text-white/20 gap-8 bg-white/[0.01]">
+          <div className="relative">
+            <Shield size={64} className="opacity-10" />
+            <AlertCircle size={24} className="absolute -top-2 -right-2 text-amber-500 animate-pulse" />
+          </div>
+          <div className="text-center space-y-4">
+            <h3 className="uppercase font-black text-[12px] tracking-[0.5em] text-white/60">
+              {t('security.system_offline', 'Security System Offline')}
+            </h3>
+            <p className="text-[10px] text-white/20 uppercase tracking-widest font-bold max-w-xs leading-relaxed">
+              Activate the main console in the Terminal tab to configure regional security rules.
+            </p>
+            <button
+               onClick={() => onParcelSelect(selectedParcelId)}
+               className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-amber-500 hover:border-amber-500/20 transition-all active:scale-95"
+            >
+               Retry Link
+            </button>
+          </div>
         </div>
       ) : (
         <>

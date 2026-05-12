@@ -1208,6 +1208,8 @@ const resources = {
         "expires_in": "Expira em {{days}} dias e {{hours}} horas",
         "date_at_time": "{{date}} às {{time}}",
         "logged_out": "Sessão encerrada com sucesso",
+        "management": "Gerenciamento",
+        "dashboard_menu": "Menu do Painel",
         "prim_usage": "Uso de Objetos / Prims",
         "over_limit": "Acima do Limite",
         "within_limit": "Dentro do Limite",
@@ -1516,7 +1518,9 @@ const resources = {
         "others": "Otros",
         "fill_all": "Por favor, complete todos los campos",
         "ticket_sent": "Ticket enviado con éxito",
-        "logged_out": "Sesión cerrada con éxito"
+        "logged_out": "Sesión cerrada con éxito",
+        "management": "Gestión",
+        "dashboard_menu": "Menú del Panel"
       },
       "security": {
         "title": "Sistema de Seguridad",
@@ -2086,7 +2090,9 @@ const resources = {
         "week": "Week",
         "expires_in": "Expires in {{days}} days and {{hours}} hours",
         "date_at_time": "{{date}} at {{time}}",
-        "logged_out": "Logged out successfully"
+        "logged_out": "Succesvol uitgelogd",
+        "management": "Beheer",
+        "dashboard_menu": "Dashboard Menu"
       },
       "security": {
         "title": "Beveiligingssysteem",

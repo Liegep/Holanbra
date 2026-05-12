@@ -24,6 +24,8 @@ import {
   HelpCircle,
   Music,
   Box,
+  Menu,
+  X,
   ShieldCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -70,6 +72,7 @@ const ResidentDashboard:FC = () => {
   const [replyingToTicketId, setReplyingToTicketId] = useState<string | null>(null);
   const [residentReply, setResidentReply] = useState('');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Auto-login if session exists
   useEffect(() => {
@@ -472,7 +475,7 @@ const ResidentDashboard:FC = () => {
 
   return (
     <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-[1440px] mx-auto space-y-12">
         
         {/* Header - Profile Section */}
         <div className="flex flex-col items-center text-center gap-8 bg-white/5 p-8 md:p-12 rounded-[40px] border border-white/5 relative overflow-hidden mt-8 md:mt-0">
@@ -480,331 +483,430 @@ const ResidentDashboard:FC = () => {
             <GridStatus />
           </div>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
-          
-          <div className="flex flex-col items-center gap-6 mt-4 md:mt-0">
-            <div className="relative">
-              <div className="w-32 h-32 aspect-square rounded-2xl overflow-hidden border border-[#f59e0b] shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
-                <img 
-                  src={slAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
+                    <div className="flex flex-col items-center gap-6 mt-4 md:mt-0">
+              <div className="relative">
+                <div className="w-32 h-32 aspect-square rounded-2xl overflow-hidden border border-[#f59e0b] shadow-[0_0_40px_rgba(245,158,11,0.2)] bg-zinc-900">
+                  <img 
+                    src={slAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">
+                  <ShieldCheck size={16} className="text-white" />
+                </div>
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-background-dark rounded-xl flex items-center justify-center shadow-lg">
-                <ShieldCheck size={16} className="text-white" />
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-3 text-white/40">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('resident.session')}</span>
+                </div>
+                <h1 className="text-4xl font-display font-bold tracking-tighter capitalize text-white">
+                  {residentData?.avatar_name}
+                </h1>
+                <div className="flex items-center justify-center gap-2">
+                  <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-md border border-white/5">
+                    {residentData?.tenant_id || residentData?.avatar_uuid}
+                  </p>
+                </div>
               </div>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-center gap-3 text-amber-500">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('resident.session')}</span>
-              </div>
-              <h1 className="text-4xl font-display font-bold tracking-tighter capitalize text-white">
-                {residentData?.avatar_name}
-              </h1>
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-white/40 text-[10px] font-mono uppercase tracking-widest bg-white/5 px-3 py-1 rounded-md border border-white/5">
-                  {residentData?.tenant_id || residentData?.avatar_uuid}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex flex-wrap justify-center gap-3 mt-4">
-              <button 
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-8 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[10px] font-black rounded-full border border-red-500/20 shadow-lg"
-              >
-                <LogOut size={14} /> {t('resident.logout')}
-              </button>
+              {/* Desktop Management Buttons */}
+              <div className="hidden md:flex items-center justify-center gap-4 mt-4">
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-6 py-3 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all uppercase tracking-widest text-[9px] font-black rounded-xl border border-red-500/20 shadow-lg"
+                >
+                  <LogOut size={14} /> {t('resident.logout')}
+                </button>
 
-              <SecurityButton residentUuid={residentData?.avatar_uuid} />
+                <SecurityButton residentUuid={residentData?.avatar_uuid} />
+
+                <button 
+                  onClick={() => window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }))}
+                  className="flex items-center gap-3 px-6 py-3 bg-white/5 hover:bg-white/10 text-amber-500 border border-white/10 rounded-xl transition-all active:scale-95 group"
+                >
+                  <Music size={16} className="animate-pulse" />
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[9px] font-black uppercase tracking-widest">Holanbra Radio</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Mobile Menu Trigger */}
+              <div className="md:hidden mt-2">
+                <button 
+                  onClick={() => setIsMobileMenuOpen(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-black rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-500/20"
+                >
+                  <Menu size={16} /> {t('resident.management', 'Management')}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Spotify Radio Trigger (Lateral for Dashboard) */}
-          <div className="md:absolute md:right-12 md:top-1/2 md:-translate-y-1/2 w-full md:w-auto flex justify-center mt-8 md:mt-0">
+          {/* Mobile Overlay Menu / Drawer */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[200] md:hidden"
+              >
+                <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  className="absolute bottom-0 left-0 w-full bg-zinc-900 border-t border-white/10 rounded-t-[2.5rem] p-8 pb-12 space-y-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-amber-500 font-black uppercase tracking-[0.3em] text-sm">{t('resident.dashboard_menu', 'Dashboard Menu')}</h3>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-white/40 hover:text-white">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-4">
+                    {/* Mobile Prim Counter Widget */}
+                    {primInfo && (
+                      <div className="p-5 bg-white/5 border border-white/10 rounded-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Box size={18} className="text-amber-500" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.prim_usage', 'Prim Usage')}</span>
+                          </div>
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-widest",
+                            (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit) ? "text-red-500" : "text-emerald-500"
+                          )}>
+                            {primInfo.prims_used} / {primInfo.prim_limit}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${primInfo.prim_limit > 0 ? Math.min(((groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) / primInfo.prim_limit) * 100, 100) : 0}%` }}
+                            className={cn(
+                              "h-full rounded-full",
+                              (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit) ? "bg-red-500" : "bg-emerald-500"
+                            )}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <button 
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }));
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-4 p-5 bg-white/5 border border-white/10 rounded-2xl text-left hover:bg-white/10 transition-colors"
+                    >
+                      <div className="p-3 bg-amber-500/20 rounded-xl text-amber-500">
+                        <Music size={24} />
+                      </div>
+                      <div>
+                        <span className="block text-white font-black text-xs uppercase tracking-widest">Holanbra Radio</span>
+                        <span className="block text-white/30 text-[10px] uppercase tracking-tighter">Your welcoming gift</span>
+                      </div>
+                    </button>
+ 
+                    <div className="flex flex-col gap-4">
+                      {/* Security button styled as a full width drawer item */}
+                      <SecurityButton 
+                        residentUuid={residentData?.avatar_uuid} 
+                        className="w-full justify-start p-5 bg-amber-500 text-black border-none rounded-2xl hover:bg-amber-400"
+                      />
+                      
+                      <button 
+                        onClick={() => {
+                          handleLogout();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center gap-3 p-5 bg-red-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-red-500/20"
+                      >
+                        <LogOut size={20} /> {t('resident.logout')}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Tab Navigation - STICKY */}
+          <div className="sticky top-20 z-40 flex flex-wrap justify-center gap-2 md:gap-4 bg-background-dark/80 backdrop-blur-md border-b border-white/5 pb-6">
             <button 
-              onClick={() => window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }))}
-              className="group relative px-8 py-4 rounded-2xl glass border border-white/10 flex items-center gap-4 transition-all hover:bg-white/5 active:scale-95"
+              onClick={() => setActiveTab('rentals')}
+              className={cn(
+                "px-4 md:px-6 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                activeTab === 'rentals' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white bg-white/5"
+              )}
             >
-              <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <Music size={20} className="text-amber-500 animate-pulse" />
-              </div>
-              <div className="flex flex-col items-start translate-y-[-1px]">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Holanbra Radio</span>
-                <span className="text-[8px] font-medium text-white/30 uppercase tracking-widest">Listen to your welcome gift</span>
-              </div>
+              <Home size={14} /> {t('resident.my_rentals')} ({properties.length})
+            </button>
+            <button 
+              onClick={handleSupportTabClick}
+              className={cn(
+                "px-4 md:px-6 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 relative group",
+                activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white bg-white/5"
+              )}
+            >
+              {hasNewReply && activeTab !== 'support' ? (
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.5, 1] 
+                  }}
+                  transition={{ 
+                    duration: 0.8, 
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className="absolute -top-1 -right-1"
+                >
+                  <div className="bg-blue-500 p-1.5 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] border border-black/20">
+                    <Mail size={10} className="text-white" />
+                  </div>
+                </motion.div>
+              ) : (
+                <MessageSquare size={14} />
+              )}
+              {t('resident.support')} ({tickets.length})
+            </button>
+            <button 
+              onClick={() => setActiveTab('help')}
+              className={cn(
+                "px-4 md:px-6 py-3 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+                activeTab === 'help' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white bg-white/5"
+              )}
+            >
+              <HelpCircle size={14} /> {t('resident.self_help')}
             </button>
           </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="flex justify-center gap-4 border-b border-white/5 pb-4">
-          <button 
-            onClick={() => setActiveTab('rentals')}
-            className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-              activeTab === 'rentals' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
-            )}
-          >
-            <Home size={14} /> {t('resident.my_rentals')} ({properties.length})
-          </button>
-          <button 
-            onClick={handleSupportTabClick}
-            className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 relative group",
-              activeTab === 'support' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
-            )}
-          >
-            {hasNewReply && activeTab !== 'support' ? (
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [1, 0.5, 1] 
-                }}
-                transition={{ 
-                  duration: 0.8, 
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="absolute -top-1 -right-1"
+          <AnimatePresence mode="wait">
+            {activeTab === 'rentals' ? (
+              <motion.div 
+                key="rentals"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-12"
               >
-                <div className="bg-blue-500 p-1.5 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] border border-black/20">
-                  <Mail size={10} className="text-white" />
+                <div className="flex flex-col lg:flex-row gap-10 items-start">
+                  {/* Prim Status Sidebar - Desktop Only */}
+                  {isLoggedIn && (
+                    <div className="hidden lg:flex flex-col gap-3 w-full lg:w-64 shrink-0">
+                      {/* Prim Counter */}
+                      <div className="glass-card bg-white/5 p-6 rounded-[32px] border-white/5 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-3xl rounded-full translate-x-12 -translate-y-12" />
+                        <div className="flex flex-col gap-4 relative z-10">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                              <Box size={20} />
+                            </div>
+                            <div className="flex-1 space-y-1 text-left">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white/40 block leading-tight">{t('resident.prim_usage', 'Prim Usage')}</span>
+                              <div className="flex items-baseline gap-2">
+                                <h4 className="text-2xl font-black text-white">
+                                  {primInfo ? (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) : '--'}
+                                </h4>
+                                <span className="text-white/20 font-bold text-xs">/ {primInfo?.prim_limit || '---'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${primInfo && primInfo.prim_limit > 0 ? Math.min(((groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) / primInfo.prim_limit) * 100, 100) : 0}%` }}
+                                className={cn(
+                                  "h-full rounded-full transition-all duration-1000",
+                                  primInfo && primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
+                                )}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className={cn(
+                                "text-[8px] font-black uppercase tracking-widest leading-none",
+                                !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
+                              )}>
+                                {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? t('resident.over_limit', 'FORA DO LIMITE') : t('resident.within_limit', 'DENTRO DO LIMITE'))}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Prim Tip Widget - Attached Style */}
+                      <div className={cn(
+                        "glass-card p-4 rounded-[24px] border flex items-center gap-3 relative overflow-hidden group transition-all text-left",
+                        !primInfo ? "bg-amber-500/5 border-amber-500/10 shadow-lg shadow-amber-500/5" : "bg-emerald-500/5 border-emerald-500/10 shadow-lg shadow-emerald-500/5"
+                      )}>
+                         <div className={cn(
+                           "absolute top-0 right-0 w-16 h-16 blur-2xl rounded-full translate-x-8 -translate-y-8",
+                           !primInfo ? "bg-amber-500/5" : "bg-emerald-500/5"
+                         )} />
+                         <div className={cn(
+                           "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                           !primInfo ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
+                         )}>
+                            <ShieldCheck size={16} />
+                         </div>
+                         <div className="space-y-0.5 relative z-10">
+                            <h4 className="text-[10px] font-bold text-white tracking-tight leading-tight">
+                              {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : t('resident.prim_tip_title', 'Real-time Sync Active')}
+                            </h4>
+                            <p className="text-[8px] text-white/40 leading-tight font-medium italic">
+                              {!primInfo ? t('resident.prim_not_synced_desc', 'Visit your parcel and touch the Prim Counter to sync.') : t('resident.prim_tip_desc')}
+                            </p>
+                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex-1 w-full">
+                    {properties.length === 0 ? (
+                      <div className="glass-card p-20 text-center space-y-6 border-white/5">
+                        <Home size={60} className="mx-auto text-white/10" />
+                        <div className="space-y-2">
+                            <p className="text-xl text-white font-medium">{t('resident.no_rentals')}</p>
+                            <p className="text-white/40 max-w-md mx-auto">{t('resident.explore_desc')}</p>
+                        </div>
+                        <Link to="/#properties" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
+                           {t('resident.browse')}
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        {properties.map((prop) => {
+                          const expiresAt = prop.expiry_date || prop.expiry || prop.expires_at || prop.next_payment;
+                          let timeRemainingLabel = t('resident.expired');
+                          let isExpired = true;
+
+                          if (expiresAt) {
+                            const expiry = new Date(expiresAt);
+                            const now = new Date();
+                            const diffInMs = expiry.getTime() - now.getTime();
+                            
+                            if (diffInMs > 0) {
+                              isExpired = false;
+                              const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+                              const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                              timeRemainingLabel = t('resident.expires_in', { 
+                                days, 
+                                hours, 
+                                defaultValue: `Expires in ${days} days and ${hours} hours` 
+                              });
+                            }
+                          }
+                          
+                          return (
+                            <motion.div 
+                              key={prop.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="glass-card rounded-[40px] overflow-hidden border-white/5 group"
+                            >
+                              {/* Property Image Header */}
+                              <div className="relative h-64 overflow-hidden">
+                                <img src={prop.image_url} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
+                                <div className="absolute bottom-6 left-8 text-left">
+                                  <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
+                                  <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
+                                    <MapPin size={12} /> HOLANBRA
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Rental Stats */}
+                              <div className="p-6 md:p-10 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="glass-card bg-white/5 p-6 md:p-8 rounded-[32px] border-white/5 space-y-4 flex flex-col items-center text-center">
+                                  <div className="flex items-center justify-between w-full">
+                                    <Clock className="text-amber-500" size={18} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{t('resident.status')}</span>
+                                  </div>
+                                  <div className="flex-1 flex flex-col justify-center">
+                                    <p className={`text-2xl md:text-3xl font-display font-black leading-tight ${isExpired ? 'text-red-500' : 'text-white'}`}>
+                                        {timeRemainingLabel}
+                                    </p>
+                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-tighter">{t('resident.remaining')}</p>
+                                  </div>
+                                </div>
+                                <div className="glass-card bg-white/5 p-6 md:p-8 rounded-[32px] border-white/5 space-y-4 flex flex-col items-center text-center">
+                                  <div className="flex items-center justify-between w-full">
+                                    <Calendar className="text-amber-500" size={18} />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">{t('resident.expires')}</span>
+                                  </div>
+                                  <div className="flex-1 flex flex-col justify-center">
+                                    <p className="text-lg md:text-xl font-bold text-white tracking-tight">
+                                      {expiresAt ? (
+                                        (() => {
+                                          try {
+                                            const d = new Date(expiresAt);
+                                            if (isNaN(d.getTime())) return t('resident.active', 'Active');
+                                            
+                                            // More robust locale selection
+                                            const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 
+                                                           i18n.language.startsWith('en') ? 'en-US' : 
+                                                           i18n.language;
+                                            
+                                            const datePart = d.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+                                            const timePart = d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+                                            
+                                            return t('resident.date_at_time', { 
+                                              date: datePart, 
+                                              time: timePart, 
+                                              defaultValue: `${datePart} ${timePart}` 
+                                            });
+                                          } catch (e) {
+                                            console.error("Date error:", e);
+                                            return String(expiresAt);
+                                          }
+                                        })()
+                                      ) : t('resident.active', 'Active')}
+                                    </p>
+                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-tighter">{t('resident.due')}</p>
+                                  </div>
+                                </div>
+
+                                <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4 col-span-full">
+                                   <div className="flex items-center justify-between">
+                                     <div className="flex items-center gap-3">
+                                       <CreditCard className="text-amber-500" size={20} />
+                                       <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.price')}</span>
+                                     </div>
+                                     <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">
+                                       L$ {prop.rental_price || prop.price} / {t('resident.week', 'Week')}
+                                     </div>
+                                   </div>
+                                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
+                                      <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
+                                        {t('resident.manage_desc', { name: prop.name })}
+                                      </p>
+                                      <button 
+                                        onClick={() => window.open(prop.teleport_url, '_blank')}
+                                        className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
+                                      >
+                                        <MapPin size={12} /> {t('resident.visit')}
+                                      </button>
+                                   </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </motion.div>
-            ) : (
-              <MessageSquare size={14} />
-            )}
-            {t('resident.support')} ({tickets.length})
-          </button>
-          <button 
-            onClick={() => setActiveTab('help')}
-            className={cn(
-              "px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-              activeTab === 'help' ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "text-white/40 hover:text-white"
-            )}
-          >
-            <HelpCircle size={14} /> {t('resident.self_help')}
-          </button>
-        </div>
-
-        {isLoggedIn && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8"
-          >
-            <div className="glass-card bg-white/5 p-8 rounded-[40px] border-white/5 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 blur-3xl rounded-full translate-x-16 -translate-y-16" />
-              <div className="flex flex-col gap-6 relative z-10">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                    <Box size={32} />
-                  </div>
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.prim_usage', 'Object / Prim Usage')}</span>
-                      <span className={cn(
-                        "text-[10px] font-black uppercase tracking-widest",
-                        !primInfo ? "text-amber-500/50" : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "text-red-500" : "text-emerald-500")
-                      )}>
-                        {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : (primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? t('resident.over_limit', 'FORA DO LIMITE') : t('resident.within_limit', 'DENTRO DO LIMITE'))}
-                      </span>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <h4 className="text-4xl font-black text-white">
-                        {primInfo ? (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) : '--'}
-                      </h4>
-                      <span className="text-white/20 font-bold">/ {primInfo?.prim_limit || '---'}</span>
-                    </div>
-                    <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${primInfo && primInfo.prim_limit > 0 ? Math.min(((groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) / primInfo.prim_limit) * 100, 100) : 0}%` }}
-                        className={cn(
-                          "h-full rounded-full transition-all duration-1000",
-                          primInfo && primInfo.prim_limit > 0 && (groupPrims.length > 0 ? groupPrims.reduce((acc, p) => acc + p.prims_used, 0) : primInfo.prims_used) > primInfo.prim_limit ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]" : "bg-emerald-500"
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {groupPrims.length > 1 && (
-                  <div className="pt-4 border-t border-white/5 space-y-3">
-                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{t('resident.usage_breakdown', 'Usage Breakdown')}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {groupPrims.map((p, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-white/5 p-3 rounded-2xl">
-                          <span className="text-xs font-bold text-white/70 truncate mr-2">{p.resident_name}</span>
-                          <span className="text-xs font-black text-white">{p.prims_used}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className={cn(
-              "glass-card p-8 rounded-[40px] border flex items-center gap-6 relative overflow-hidden group transition-all",
-              !primInfo ? "bg-amber-500/5 border-amber-500/10" : "bg-emerald-500/5 border-emerald-500/10"
-            )}>
-               <div className={cn(
-                 "absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full translate-x-16 -translate-y-16",
-                 !primInfo ? "bg-amber-500/5" : "bg-emerald-500/5"
-               )} />
-               <div className={cn(
-                 "w-16 h-16 rounded-2xl flex items-center justify-center shrink-0",
-                 !primInfo ? "bg-amber-500/10 text-amber-500" : "bg-emerald-500/10 text-emerald-500"
-               )}>
-                  <ShieldCheck size={32} />
-               </div>
-               <div className="space-y-1 relative z-10">
-                  <h4 className="text-lg font-bold text-white tracking-tight">
-                    {!primInfo ? t('resident.prim_not_synced', 'Sync Pending') : t('resident.prim_tip_title', 'Real-time Sync Active')}
-                  </h4>
-                  <p className="text-sm text-white/50 leading-relaxed font-medium italic">
-                    {!primInfo ? t('resident.prim_not_synced_desc', 'Visit your parcel and touch the Prim Counter to sync.') : t('resident.prim_tip_desc')}
-                  </p>
-               </div>
-            </div>
-          </motion.div>
-        )}
-
-        <AnimatePresence mode="wait">
-          {activeTab === 'rentals' ? (
-            <motion.div 
-              key="rentals"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-8"
-            >
-              {properties.length === 0 ? (
-                <div className="glass-card p-20 text-center space-y-6 border-white/5">
-                   <Home size={60} className="mx-auto text-white/10" />
-                   <div className="space-y-2">
-                       <p className="text-xl text-white font-medium">{t('resident.no_rentals')}</p>
-                       <p className="text-white/40 max-w-md mx-auto">{t('resident.explore_desc')}</p>
-                   </div>
-                   <Link to="/#properties" className="inline-block px-8 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase font-black hover:bg-white hover:text-black transition-all">
-                      {t('resident.browse')}
-                   </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {properties.map((prop) => {
-                    const expiresAt = prop.expiry_date || prop.expiry || prop.expires_at || prop.next_payment;
-                    let timeRemainingLabel = t('resident.expired');
-                    let isExpired = true;
-
-                    if (expiresAt) {
-                      const expiry = new Date(expiresAt);
-                      const now = new Date();
-                      const diffInMs = expiry.getTime() - now.getTime();
-                      
-                      if (diffInMs > 0) {
-                        isExpired = false;
-                        const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-                        const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                        timeRemainingLabel = t('resident.expires_in', { 
-                          days, 
-                          hours, 
-                          defaultValue: `Expires in ${days} days and ${hours} hours` 
-                        });
-                      }
-                    }
-                    
-                    return (
-                      <motion.div 
-                        key={prop.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="glass-card rounded-[40px] overflow-hidden border-white/5 group"
-                      >
-                        {/* Property Image Header */}
-                        <div className="relative h-64 overflow-hidden">
-                          <img src={prop.image_url} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" referrerPolicy="no-referrer" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent" />
-                          <div className="absolute bottom-6 left-8 text-left">
-                            <h3 className="text-3xl font-bold text-white tracking-tighter">{prop.name}</h3>
-                            <div className="flex items-center gap-2 text-amber-400 text-[10px] font-black uppercase tracking-widest">
-                              <MapPin size={12} /> HOLANBRA
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Rental Stats */}
-                        <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
-                            <div className="flex items-center justify-between">
-                              <Clock className="text-amber-500" size={20} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.status')}</span>
-                            </div>
-                            <div>
-                              <p className={`text-3xl font-display font-black ${isExpired ? 'text-red-500' : 'text-white'}`}>
-                                  {timeRemainingLabel}
-                              </p>
-                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('resident.remaining')}</p>
-                            </div>
-                          </div>
-
-                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4">
-                            <div className="flex items-center justify-between">
-                              <Calendar className="text-amber-500" size={20} />
-                              <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.expires')}</span>
-                            </div>
-                            <div>
-                              <p className="text-xl font-bold text-white">
-                                {expiresAt ? (
-                                  (() => {
-                                    const d = new Date(expiresAt);
-                                    const datePart = d.toLocaleDateString(i18n.language === 'en' ? 'en-US' : (i18n.language === 'pt' ? 'pt-BR' : i18n.language), { day: 'numeric', month: 'long', year: 'numeric' });
-                                    const timePart = d.toLocaleTimeString(i18n.language === 'en' ? 'en-US' : (i18n.language === 'pt' ? 'pt-BR' : i18n.language), { hour: '2-digit', minute: '2-digit' });
-                                    return t('resident.date_at_time', { 
-                                      date: datePart, 
-                                      time: timePart, 
-                                      defaultValue: `${datePart} at ${timePart}` 
-                                    });
-                                  })()
-                                ) : t('resident.active', 'Active')}
-                              </p>
-                              <p className="text-xs text-white/40 mt-1 uppercase tracking-tighter">{t('resident.due')}</p>
-                            </div>
-                          </div>
-
-                          <div className="glass-card bg-white/5 p-6 rounded-3xl border-white/5 space-y-4 col-span-full">
-                             <div className="flex items-center justify-between">
-                               <div className="flex items-center gap-3">
-                                 <CreditCard className="text-amber-500" size={20} />
-                                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('resident.price')}</span>
-                               </div>
-                               <div className="px-3 py-1 bg-amber-500 text-black text-[10px] font-black rounded-full uppercase tracking-tighter">
-                                 L$ {prop.rental_price || prop.price} / {t('resident.week', 'Week')}
-                               </div>
-                             </div>
-                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
-                                <p className="text-[10px] text-white/60 leading-relaxed max-w-xs">
-                                  {t('resident.manage_desc', { name: prop.name })}
-                                </p>
-                                <button 
-                                  onClick={() => window.open(prop.teleport_url, '_blank')}
-                                  className="w-full md:w-auto px-6 py-3 bg-white text-black text-[10px] font-black uppercase rounded-full hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg"
-                                >
-                                  <MapPin size={12} /> {t('resident.visit')}
-                                </button>
-                             </div>
-                          </div>
-                </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
-            </motion.div>
-          ) : activeTab === 'support' ? (
+            ) : activeTab === 'support' ? (
             <motion.div 
               key="support"
               initial={{ opacity: 0, y: 20 }}
