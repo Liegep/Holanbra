@@ -148,27 +148,22 @@ router.post('/config', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, active } = req.body;
     
-    // POST: Apenas Usuário
-    const userAuth = await validateUserAccess(token, parcel_id);
-    if (!userAuth) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    // 1. Get user (NÃO validar com orb_token)
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Invalid user session' });
     }
     
-    // Verificar se o imóvel pertence a este tenant
+    // 2. Verificar property por casperlet_id = parcel_id e tenant_id = user.id
     const { data: property, error: propError } = await supabase
       .from('properties')
       .select('id')
       .eq('casperlet_id', parcel_id)
-      .eq('tenant_id', userAuth.userId) // Verifica tenant_id = user.id conforme solicitado
+      .eq('tenant_id', user.id) // tenant_id = user.id
       .maybeSingle();
-
-    // Se nulo, talvez esteja em property_tenants, mas vamos manter a regra solicitada
+      
     if (propError || !property) {
-      // Re-verificar via property_tenants (já que a regra é: tenant_id = user.id OU property_tenants)
-      // A regra solicitada no post anterior disse: verificar tenant_id = user.id.
-      // O prompt diz: "verificar se existe em public.properties uma linha com: casperlet_id = parcel_id e tenant_id = user.id"
-      // Entendido.
-      return res.status(403).json({ error: 'Forbidden' });
+      return res.status(403).json({ error: 'User does not own/rent this property' });
     }
     
     let updatedData = null;
