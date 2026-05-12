@@ -114,72 +114,95 @@ router.post('/log', async (req, res) => {
 });
 
 // 3. security-config (GET to read, POST to update)
-router.all('/config', async (req, res) => {
+router.get('/config', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
-    const parcel_id = req.query.parcel_id || req.body.parcel_id;
+    const parcel_id = req.query.parcel_id;
     
-    if (req.method === 'GET') {
-      // GET: Aceita Orb ou Usuário
-      let isOrbAuthorized = await validateOrbToken(token, parcel_id);
-      let userAuth = null;
-      if (!isOrbAuthorized) {
-        userAuth = await validateUserAccess(token, parcel_id);
-      }
+    // GET: Aceita Orb ou Usuário
+    let isOrbAuthorized = await validateOrbToken(token, parcel_id);
+    let userAuth = null;
+    if (!isOrbAuthorized) {
+      userAuth = await validateUserAccess(token, parcel_id);
+    }
+    
+    if (!isOrbAuthorized && !userAuth) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    const { data, error } = await supabase
+      .from('security_parcels')
+      .select('active, radius, warn_time, ask_before, orb_token')
+      .eq('casperlet_id', parcel_id)
+      .maybeSingle();
+        
+    if (error) throw error;
+    res.json(data || {});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/config', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
+    const { parcel_id, active } = req.body;
+    
+    // POST: Apenas Usuário
+    const userAuth = await validateUserAccess(token, parcel_id);
+    if (!userAuth) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    // Verificar se o imóvel pertence a este tenant
+    const { data: property, error: propError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('casperlet_id', parcel_id)
+      .eq('tenant_id', userAuth.userId) // Verifica tenant_id = user.id conforme solicitado
+      .maybeSingle();
+
+    // Se nulo, talvez esteja em property_tenants, mas vamos manter a regra solicitada
+    if (propError || !property) {
+      // Re-verificar via property_tenants (já que a regra é: tenant_id = user.id OU property_tenants)
+      // A regra solicitada no post anterior disse: verificar tenant_id = user.id.
+      // O prompt diz: "verificar se existe em public.properties uma linha com: casperlet_id = parcel_id e tenant_id = user.id"
+      // Entendido.
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    let updatedData = null;
+    
+    const { data: existing } = await supabase
+      .from('security_parcels')
+      .select('casperlet_id')
+      .eq('casperlet_id', parcel_id)
+      .maybeSingle();
       
-      if (!isOrbAuthorized && !userAuth) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      
+    if (existing) {
       const { data, error } = await supabase
         .from('security_parcels')
-        .select('active, radius, warn_time, ask_before, orb_token')
+        .update({ active, updated_at: new Date().toISOString() })
         .eq('casperlet_id', parcel_id)
-        .maybeSingle(); // Usar maybeSingle ao invés de filter no array
-        
+        .select()
+        .single();
       if (error) throw error;
-      res.json(data || {});
-
-    } else if (req.method === 'POST') {
-      // POST: Apenas Usuário
-      const userAuth = await validateUserAccess(token, parcel_id);
-      if (!userAuth) {
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-      
-      const { active } = req.body;
-      let updatedData = null;
-      
-      const { data: existing } = await supabase
-        .from('security_parcels')
-        .select('casperlet_id')
-        .eq('casperlet_id', parcel_id)
-        .maybeSingle();
-        
-      if (existing) {
-        const { data, error } = await supabase
-          .from('security_parcels')
-          .update({ active })
-          .eq('casperlet_id', parcel_id)
-          .select()
-          .single();
-        if (error) throw error;
-        updatedData = data;
-      } else {
-        const { data, error } = await supabase.from('security_parcels').insert({ 
-          casperlet_id: parcel_id, 
-          active: active, 
-          radius: 20, 
-          warn_time: 15, 
-          ask_before: true,
-          orb_token: crypto.randomUUID()
-        }).select().single();
-        if (error) throw error;
-        updatedData = data;
-      }
-      
-      res.json({ success: true, data: updatedData });
+      updatedData = data;
+    } else {
+      const { data, error } = await supabase.from('security_parcels').insert({ 
+        casperlet_id: parcel_id, 
+        active: active, 
+        radius: 20, 
+        warn_time: 15, 
+        ask_before: true,
+        orb_token: crypto.randomUUID()
+      }).select().single();
+      if (error) throw error;
+      updatedData = data;
     }
+    
+    res.json({ success: true, data: updatedData });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
