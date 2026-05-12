@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Shield, Power, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -30,14 +31,17 @@ export function SecurityButton({ residentUuid, className }: { residentUuid?: str
         <ChevronRight size={16} className="text-white/20 group-hover:text-amber-500 transition-colors" />
       </button>
 
-      <AnimatePresence>
-        {isOpen && (
-          <SecurityDashboard 
-            onClose={() => setIsOpen(false)} 
-            residentUuid={residentUuid}
-          />
-        )}
-      </AnimatePresence>
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <SecurityDashboard 
+              onClose={() => setIsOpen(false)} 
+              residentUuid={residentUuid}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
