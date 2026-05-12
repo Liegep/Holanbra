@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, MapPin, Copy, RefreshCw, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings, MapPin, Copy, RefreshCw, Save, CheckCircle2, AlertCircle, Trash2, ShieldAlert, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
@@ -13,23 +13,33 @@ interface SettingsTabProps {
 export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: SettingsTabProps) {
   const { t } = useTranslation();
   const [config, setConfig] = useState<any>(null);
+  const [managers, setManagers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showConfirmRegen, setShowConfirmRegen] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   useEffect(() => {
     if (!selectedParcelId) return;
 
     async function loadConfig() {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: configData } = await supabase
         .from('security_parcels')
         .select('*')
         .eq('casperlet_id', selectedParcelId)
         .single();
 
-      if (!error && data) setConfig(data);
+      const { data: managersData } = await supabase
+        .from('security_access_list')
+        .select('*')
+        .eq('casperlet_id', selectedParcelId)
+        .eq('role', 'manager');
+
+      if (configData) setConfig(configData);
+      if (managersData) setManagers(managersData);
       setLoading(false);
     }
 
@@ -52,6 +62,21 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
 
     setSaving(false);
   };
+
+  const handleClearAll = async () => {
+    if (!selectedParcelId) return;
+    setClearing(true);
+    
+    // Clear access list
+    await supabase.from('security_access_list').delete().eq('casperlet_id', selectedParcelId);
+    // Clear ban list
+    await supabase.from('security_ban_list').delete().eq('casperlet_id', selectedParcelId);
+    
+    setClearing(false);
+    setShowConfirmClear(false);
+  };
+
+  const timerPresets = [0, 10, 20, 30];
 
   const regenerateToken = async () => {
     if (!selectedParcelId) return;
@@ -138,64 +163,122 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect }: Se
           </div>
 
           {/* Form Settings */}
-          <form onSubmit={handleSave} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
+          <form onSubmit={handleSave} className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div className="space-y-4">
                 <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
                   {t('security.radius')}
                 </label>
-                <input
-                  type="number"
-                  value={config.radius}
-                  onChange={e => setConfig({ ...config, radius: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
-                />
+                <div className="relative group">
+                  <input
+                    type="number"
+                    value={config.radius}
+                    onChange={e => setConfig({ ...config, radius: parseInt(e.target.value) })}
+                    className="w-full px-5 py-4 bg-white/5 border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
+                  />
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-white/20 uppercase">Meters</div>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+              <div className="space-y-4">
+                <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1 flex justify-between">
                   {t('security.warn_time')}
+                  <span className="text-amber-500 font-mono">{config.warn_time}s</span>
                 </label>
-                <input
-                  type="number"
-                  value={config.warn_time}
-                  onChange={e => setConfig({ ...config, warn_time: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
-                />
+                <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+                  {timerPresets.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setConfig({ ...config, warn_time: t })}
+                      className={cn(
+                        "flex-1 py-3 rounded-xl text-[10px] font-black transition-all",
+                        config.warn_time === t
+                          ? "bg-amber-500 text-black shadow-lg shadow-amber-500/10"
+                          : "text-white/20 hover:text-white/40 hover:bg-white/5"
+                      )}
+                    >
+                      {t}s
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <label className="flex items-center gap-3 p-4 bg-white/2 hover:bg-white/5 border border-white/5 rounded-2xl cursor-pointer transition-all group">
-              <div className={cn(
-                "w-10 h-6 rounded-full relative transition-colors",
-                config.ask_before_eject ? "bg-amber-500" : "bg-zinc-700"
-              )}>
-                <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-white rounded-full transition-all",
-                  config.ask_before_eject ? "right-1" : "left-1"
-                )} />
+            <div className="space-y-4">
+              <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+                Authorized Managers (Display Only)
+              </label>
+              <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-wrap gap-2 min-h-[60px]">
+                {managers.length === 0 ? (
+                  <div className="w-full flex items-center justify-center text-[9px] text-white/10 uppercase font-black tracking-widest">
+                    No Managers Registry Found
+                  </div>
+                ) : (
+                  managers.map((m) => (
+                    <div key={m.id} className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[9px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                      <Shield size={10} />
+                      {m.avatar_name}
+                    </div>
+                  ))
+                )}
               </div>
-              <input
-                type="checkbox"
-                className="hidden"
-                checked={config.ask_before_eject}
-                onChange={e => setConfig({ ...config, ask_before_eject: e.target.checked })}
-              />
-              <span className="text-[10px] font-black uppercase text-white/60 group-hover:text-white tracking-widest transition-colors">
-                {t('security.ask_before')}
-              </span>
-            </label>
+            </div>
 
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full py-3.5 bg-white text-black hover:bg-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all disabled:opacity-50"
-            >
-              <Save size={16} />
-              {saving ? t('common.save') : t('security.save')}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
+              <button
+                type="button"
+                onClick={() => setShowConfirmClear(true)}
+                className="flex-[0.4] py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 border border-red-500/20"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear All Lists
+              </button>
+              
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 py-4 bg-white text-black hover:bg-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all disabled:opacity-50"
+              >
+                {saving ? <div className="w-4 h-4 border-2 border-black/20 border-t-black animate-spin rounded-full" /> : <Save size={16} />}
+                {t('security.save')}
+              </button>
+            </div>
           </form>
         </>
+      )}
+
+      {/* Clear All Confirmation */}
+      {showConfirmClear && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-sm bg-zinc-900 border border-red-500/40 rounded-3xl p-8 text-center space-y-6 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+            <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto ring-4 ring-red-500/5 pulse">
+              <AlertCircle size={40} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-black uppercase tracking-[0.2em] text-lg">System Purge</h3>
+              <p className="text-[10px] text-white/40 uppercase leading-relaxed font-bold px-4">
+                This will permanently delete all Access and Ban entries for this parcel. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleClearAll}
+                disabled={clearing}
+                className="w-full py-4 bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-red-600 shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+              >
+                {clearing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
+                Execute Purge
+              </button>
+              <button
+                onClick={() => setShowConfirmClear(false)}
+                className="w-full py-4 text-white/30 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:text-white"
+              >
+                {t('security.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Regen Confirmation */}
