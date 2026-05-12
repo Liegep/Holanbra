@@ -74,15 +74,15 @@ async function startServer() {
 
   const app = express();
 
-  // 5. SECURITY SYSTEM ROUTES (Integrado com as novas rotas)
-  app.use('/api/security', securityRoutes);
-
   // 1. DATA PARSERS (Handles standard formats)
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   // Text allows us to catch raw text payloads from LSL if Content-Type is missing or plain
   app.use(express.text({ type: ['text/plain', 'application/x-www-form-urlencoded'] }));
+
+  // 5. SECURITY SYSTEM ROUTES (Integrado com as novas rotas)
+  app.use('/api/security', securityRoutes);
 
   // 2. SL UPDATE ROUTE (DIRECT DB SAVER)
   app.all('/sl-update', async (req, res) => {
