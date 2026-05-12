@@ -166,13 +166,26 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         body: JSON.stringify({ parcel_id: parcelId, active: !isActive })
       });
 
+      const rawText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (e) {
+        result = { error: rawText };
+      }
+
       if (response.ok) {
-        const result = await response.json();
         setSecurityData(prev => ({
           ...prev,
           [parcelId]: result.data
         }));
       } else {
+        console.error('Toggle error', {
+          status: response.status,
+          statusText: response.statusText,
+          body: rawText
+        });
+        setToggleError(result.error || 'Failed to toggle security. Please try again.');
         throw new Error('Failed to update status');
       }
     } catch (err) {
