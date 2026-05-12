@@ -115,14 +115,14 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect }: Ban
                   <div className="w-16 h-16 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center ring-1 ring-red-500/20 shadow-inner transition-all group-hover:scale-110">
                     <Gavel size={32} />
                   </div>
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <h4 className="text-sm font-black text-white uppercase tracking-widest group-hover:text-red-400 transition-colors">
                       {ban.avatar_name}
                     </h4>
-                    {ban.avatar_uuid && (
-                      <div className="text-[9px] font-mono text-white/20 uppercase tracking-widest mt-1.5 p-1 px-2 bg-black/40 rounded-lg border border-white/5">
-                        {ban.avatar_uuid}
-                      </div>
+                    {ban.reason && (
+                      <span className="text-[10px] text-white/40 italic">
+                        "{ban.reason}"
+                      </span>
                     )}
                   </div>
                 </div>
@@ -130,10 +130,10 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect }: Ban
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => removeBan(ban.id)}
-                    className="px-6 py-4 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 shadow-lg active:scale-95 flex items-center gap-2"
+                    className="px-6 py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border border-red-500/20 shadow-lg active:scale-95 flex items-center gap-2"
                   >
                     <Trash2 size={16} />
-                    {t('security.unban')}
+                    {t('security.remove_ban', 'Remover Ban')}
                   </button>
                 </div>
               </div>

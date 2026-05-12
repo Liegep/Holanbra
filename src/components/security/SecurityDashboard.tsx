@@ -45,28 +45,31 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
     async function loadProperties() {
       try {
         let finalUuid = residentUuid;
-
         if (!finalUuid) {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) finalUuid = user.id;
         }
 
         if (!finalUuid) {
+          console.log("[Debug] No residentUuid found");
           setLoading(false);
           return;
         }
 
-        // Fetch properties where the user is the main tenant OR an admin
+        console.log("[Debug] Fetching properties for UUID:", finalUuid);
         const { data: mainProps } = await supabase
           .from('properties')
           .select('casperlet_id, name, tenant_id, user_id, id')
           .or(`tenant_id.eq.${finalUuid},user_id.eq.${finalUuid}`);
 
-        // Fetch properties where the user is a sub-tenant
+        console.log("[Debug] Main props:", mainProps);
+        
         const { data: tenantEntries } = await supabase
           .from('property_tenants')
           .select('property_id')
           .eq('tenant_id', finalUuid);
+        
+        console.log("[Debug] Tenant entries:", tenantEntries);
 
         let subProps: any[] = [];
         if (tenantEntries && tenantEntries.length > 0) {
@@ -75,7 +78,10 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
             .from('properties')
             .select('casperlet_id, name, tenant_id, user_id, id')
             .in('id', propertyIds);
-          if (subData) subProps = subData;
+          if (subData) {
+            subProps = subData;
+            console.log("[Debug] Sub props:", subProps);
+          }
         }
 
         const combined = [...(mainProps || []), ...subProps];
@@ -83,21 +89,30 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           v.casperlet_id && a.findIndex(t => t.casperlet_id === v.casperlet_id) === i
         );
         
+        console.log("[Debug] Final properties:", validProperties);
         setProperties(validProperties);
-
-        if (validProperties.length > 0) {
-          if (!selectedParcelId || !validProperties.find(p => p.casperlet_id === selectedParcelId)) {
-            setSelectedParcelId(validProperties[0].casperlet_id);
-            setSelectedParcelName(validProperties[0].name);
-          }
-          await loadSecurityParcels(validProperties.map((p: any) => p.casperlet_id));
-        }
+        setLoading(false);
       } catch (err) {
         console.error("Error loading security dashboard:", err);
-      } finally {
         setLoading(false);
       }
     }
+    loadProperties();
+  }, [residentUuid, supabase]);
+
+  useEffect(() => {
+    if (properties.length > 0) {
+        if (!selectedParcelId || !properties.find(p => p.casperlet_id === selectedParcelId)) {
+            setSelectedParcelId(properties[0].casperlet_id);
+            setSelectedParcelName(properties[0].name);
+        }
+        loadSecurityParcels(properties.map((p: any) => p.casperlet_id));
+    }
+  }, [properties]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [selectedParcelId]);
 
     async function loadSecurityParcels(ids: string[]) {
       if (ids.length === 0) return;
@@ -115,15 +130,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
       }
     }
 
-    loadProperties();
-  }, [residentUuid]);
 
-  useEffect(() => {
-    if (properties.length > 0 && !selectedParcelId) {
-      setSelectedParcelId(properties[0].casperlet_id);
-      setSelectedParcelName(properties[0].name);
-    }
-  }, [properties]);
 
   const handleToggle = async (parcelId: string) => {
     const security = securityData[parcelId];
@@ -131,37 +138,29 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
     setToggling(parcelId);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user && !residentUuid) return;
+      // Use the local API route
+      const response = await fetch(`/api/security/config`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${security?.orb_token || ''}`
+        },
+        body: JSON.stringify({ parcel_id: parcelId, active: !isActive })
+      });
 
-      const { error } = await supabase
-        .from('security_parcels')
-        .upsert({ 
-          casperlet_id: parcelId,
-          is_active: !isActive,
-          orb_token: security?.orb_token || security?.token || crypto.randomUUID()
-        }, { onConflict: 'casperlet_id' });
-
-      if (!error) {
-        const newOrbToken = security?.orb_token || security?.token || (securityData[parcelId]?.orb_token) || 'generating...'; 
-        // Note: the upsert happened, ideally we'd refresh, but let's at least keep state consistent
+      if (response.ok) {
         setSecurityData(prev => ({
           ...prev,
           [parcelId]: { 
             ...(prev[parcelId] || {}), 
             is_active: !isActive,
-            // If it was newly generated in the DB, it's better to let the user refresh or fetch it.
-            // But we can try to guess it if we just saved it.
           }
         }));
-        // Reload parcel data to get the generated token if it was new
-        if (!security?.orb_token && !security?.token) {
-           const { data } = await supabase.from('security_parcels').select('*').eq('casperlet_id', parcelId).single();
-           if (data) {
-             setSecurityData(prev => ({ ...prev, [parcelId]: data }));
-           }
-        }
+      } else {
+        console.error('Failed to toggle security status');
       }
+    } catch (err) {
+      console.error('Error toggling security:', err);
     } finally {
       setToggling(null);
     }
@@ -378,7 +377,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                     ))}
                   </div>
 
-                  {/* Logs Section */}
+                      {/* Logs Section */}
                   <div className="bg-zinc-900/50 p-6 rounded-[3rem] border border-white/5 space-y-6">
                     <div className="flex items-center justify-between">
                       <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Últimos Eventos</h4>
@@ -390,28 +389,41 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                       <div className="text-white/20 text-xs text-center p-4">Nenhum evento recente.</div>
                     ) : (
                       <div className="space-y-2">
-                        {logs.map((log) => (
-                          <div key={log.id} className="flex justify-between text-[10px] font-mono text-white/60 bg-black/20 p-3 rounded-lg border border-white/5">
-                            <span>{log.avatar_name} - {log.action}</span>
-                            <span className="text-white/30">{new Date(log.created_at).toLocaleTimeString()}</span>
-                          </div>
-                        ))}
+                        {logs.map((log) => {
+                          const actionColors = {
+                            detected: 'text-amber-400',
+                            ejected: 'text-red-400',
+                            warned: 'text-orange-400',
+                            allowed: 'text-emerald-400',
+                            banned: 'text-red-600',
+                          };
+                          return (
+                            <div key={log.id} className="flex items-center justify-between text-[10px] font-mono text-white/60 bg-black/20 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-all">
+                              <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
+                                <span>{log.avatar_name}</span>
+                              </div>
+                              <span className={cn("font-black uppercase", actionColors[log.action as keyof typeof actionColors] || 'text-white')}>{log.action}</span>
+                              <span className="text-white/30">{new Date(log.created_at).toLocaleTimeString()}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
 
                   {/* QUICK ACTION BUTTONS */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                      <button 
                        onClick={() => setActiveTab('access')}
-                       className="flex items-center justify-center gap-4 py-6 bg-blue-600 text-white hover:bg-blue-500 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/10 transition-all active:scale-95"
+                       className="flex items-center justify-center gap-4 py-8 bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95"
                      >
                        <Users size={20} />
                        {t('security.add_avatar')}
                      </button>
                      <button 
                        onClick={() => setActiveTab('ban')}
-                       className="flex items-center justify-center gap-4 py-6 bg-red-600 text-white hover:bg-red-500 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-red-500/10 transition-all active:scale-95"
+                       className="flex items-center justify-center gap-4 py-8 bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600 hover:text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95"
                      >
                        <Ban size={20} />
                        {t('security.ban_avatar', 'Ban Avatar')}

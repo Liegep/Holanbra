@@ -75,7 +75,7 @@ async function startServer() {
   const app = express();
 
   // 1. DATA PARSERS (Handles standard formats)
-  app.use(cors());
+  app.use(cors({ origin: '*' }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   // Text allows us to catch raw text payloads from LSL if Content-Type is missing or plain

@@ -83,24 +83,35 @@ router.post('/log', async (req, res) => {
   }
 });
 
-// 3. security-config
-router.get('/config', async (req, res) => {
+// 3. security-config (GET to read, POST to update)
+router.all('/config', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
-    const parcel_id = req.query.parcel_id;
+    const parcel_id = req.query.parcel_id || req.body.parcel_id;
     
     if (!(await validateToken(token, parcel_id))) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     
-    const { data, error } = await supabase
-      .from('security_parcels')
-      .select('active, radius, warn_time, ask_before')
-      .eq('casperlet_id', parcel_id)
-      .single();
-      
-    if (error) throw error;
-    res.json(data);
+    if (req.method === 'GET') {
+      const { data, error } = await supabase
+        .from('security_parcels')
+        .select('active, radius, warn_time, ask_before')
+        .eq('casperlet_id', parcel_id)
+        .single();
+        
+      if (error) throw error;
+      res.json(data);
+    } else if (req.method === 'POST') {
+      const { active } = req.body;
+      const { error } = await supabase
+        .from('security_parcels')
+        .update({ active })
+        .eq('casperlet_id', parcel_id);
+        
+      if (error) throw error;
+      res.json({ success: true });
+    }
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
