@@ -6,11 +6,12 @@ import { cn } from '../../../lib/utils';
 
 interface AddAvatarFormProps {
   casperletId: string;
+  residentUuid: string;
   onClose: () => void;
   onSuccess: (newAvatar: any) => void;
 }
 
-export function AddAvatarForm({ casperletId, onClose, onSuccess }: AddAvatarFormProps) {
+export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }: AddAvatarFormProps) {
   const { t } = useTranslation();
   const [name, setName] = useState('');
   const [uuid, setUuid] = useState('');
@@ -21,22 +22,31 @@ export function AddAvatarForm({ casperletId, onClose, onSuccess }: AddAvatarForm
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from('security_access_list')
-      .insert({
-        casperlet_id: casperletId,
-        avatar_name: name.trim(),
-        avatar_key: uuid.trim(),
-        role: role
-      })
-      .select()
-      .single();
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: "add",
+          parcel_id: casperletId,
+          resident_uuid: residentUuid,
+          avatar_name: name.trim(),
+          avatar_key: uuid.trim(),
+          role
+        })
+      });
 
-    if (!error && data) {
-      onSuccess(data);
-    } else {
-      console.error('Error adding avatar:', error);
+      const data = await response.json();
+
+      if (response.ok) {
+        onSuccess(data.data);
+      } else {
+        console.error('Error adding avatar:', data.error);
+      }
+    } catch (err) {
+      console.error('Error adding avatar:', err);
     }
+    
     setLoading(false);
   };
 

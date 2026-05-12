@@ -137,7 +137,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           acc[item.casperlet_id] = item;
           return acc;
         }, {});
-        setSecurityData(mapped);
+        setSecurityData(prev => ({ ...prev, ...mapped }));
       }
     }
 
@@ -483,7 +483,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               )}
 
               {activeTab === 'access' && (
-                <AccessListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                <AccessListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} residentUuid={residentUuid} />
               )}
               {activeTab === 'ban' && (
                 <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />

@@ -211,4 +211,55 @@ router.post('/config', async (req, res) => {
   }
 });
 
+router.post('/access', async (req, res) => {
+  try {
+    const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role } = req.body;
+    
+    if (action !== 'add') {
+      return res.status(400).json({ error: 'Invalid action' });
+    }
+
+    // 1. Verificar se existe renter com avatar_uuid = resident_uuid
+    const { data: renter, error: renterError } = await supabase
+      .from('renters')
+      .select('avatar_uuid')
+      .eq('avatar_uuid', resident_uuid)
+      .maybeSingle();
+      
+    if (renterError || !renter) {
+      return res.status(403).json({ error: 'Forbidden: Invalid Renter' });
+    }
+    
+    // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
+    const { data: property, error: propError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('casperlet_id', parcel_id)
+      .eq('tenant_id', resident_uuid)
+      .maybeSingle();
+      
+    if (propError || !property) {
+      return res.status(403).json({ error: 'Forbidden: Property access denied' });
+    }
+    
+    // 3. Insertar em security_access_list
+    const { data, error } = await supabase
+      .from('security_access_list')
+      .insert({
+        casperlet_id: parcel_id,
+        avatar_name,
+        avatar_key,
+        role
+      })
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

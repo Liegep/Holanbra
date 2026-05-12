@@ -9,9 +9,10 @@ interface AccessListTabProps {
   selectedParcelId: string | null;
   properties: any[];
   onParcelSelect: (id: string) => void;
+  residentUuid?: string;
 }
 
-export function AccessListTab({ selectedParcelId, properties, onParcelSelect }: AccessListTabProps) {
+export function AccessListTab({ selectedParcelId, properties, onParcelSelect, residentUuid }: AccessListTabProps) {
   const { t } = useTranslation();
   const [avatars, setAvatars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,6 +151,7 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect }: 
       {showAddForm && (
         <AddAvatarForm
           casperletId={selectedParcelId!}
+          residentUuid={residentUuid!}
           onClose={() => setShowAddForm(false)}
           onSuccess={(newAvatar) => {
             setAvatars(prev => [newAvatar, ...prev]);
