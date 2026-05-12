@@ -145,25 +145,33 @@ router.get('/config', async (req, res) => {
 
 router.post('/config', async (req, res) => {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
-    const { parcel_id, active } = req.body;
+    const { parcel_id, active, resident_uuid } = req.body;
     
-    // 1. Get user (NÃO validar com orb_token)
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
-      return res.status(401).json({ error: 'Invalid user session' });
+    if (!resident_uuid) {
+      return res.status(401).json({ error: 'Forbidden: Missing resident_uuid' });
     }
     
-    // 2. Verificar property por casperlet_id = parcel_id e tenant_id = user.id
+    // 1. Verificar se existe renter com avatar_uuid = resident_uuid
+    const { data: renter, error: renterError } = await supabase
+      .from('renters')
+      .select('avatar_uuid')
+      .eq('avatar_uuid', resident_uuid)
+      .maybeSingle();
+      
+    if (renterError || !renter) {
+      return res.status(403).json({ error: 'Forbidden: Invalid Renter' });
+    }
+    
+    // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
     const { data: property, error: propError } = await supabase
       .from('properties')
       .select('id')
       .eq('casperlet_id', parcel_id)
-      .eq('tenant_id', user.id) // tenant_id = user.id
+      .eq('tenant_id', resident_uuid)
       .maybeSingle();
       
     if (propError || !property) {
-      return res.status(403).json({ error: 'User does not own/rent this property' });
+      return res.status(403).json({ error: 'Forbidden: Property access denied' });
     }
     
     let updatedData = null;

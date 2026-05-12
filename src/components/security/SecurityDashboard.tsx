@@ -150,10 +150,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
     setToggleError(null);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Usar residentUuid recebido na prop ou o finalUuid carregado
+      const residentUuidData = residentUuid;
       
-      if (!session) {
-        throw new Error('No active user session');
+      if (!residentUuidData) {
+        throw new Error('No resident UUID available');
       }
 
       // Use the local API route
@@ -161,9 +162,8 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ parcel_id: parcelId, active: !isActive })
+        body: JSON.stringify({ parcel_id: parcelId, active: !isActive, resident_uuid: residentUuidData })
       });
 
       const rawText = await response.text();

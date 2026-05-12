@@ -25,8 +25,8 @@ export function AddAvatarForm({ casperletId, onClose, onSuccess }: AddAvatarForm
       .from('security_access_list')
       .insert({
         casperlet_id: casperletId,
-        avatar_name: name,
-        avatar_uuid: uuid,
+        avatar_name: name.trim(),
+        avatar_key: uuid.trim(),
         role: role
       })
       .select()
@@ -34,6 +34,8 @@ export function AddAvatarForm({ casperletId, onClose, onSuccess }: AddAvatarForm
 
     if (!error && data) {
       onSuccess(data);
+    } else {
+      console.error('Error adding avatar:', error);
     }
     setLoading(false);
   };
@@ -68,9 +70,10 @@ export function AddAvatarForm({ casperletId, onClose, onSuccess }: AddAvatarForm
 
             <div className="space-y-2">
               <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
-                UUID (OPCIONAL)
+                UUID
               </label>
               <input
+                required
                 value={uuid}
                 onChange={e => setUuid(e.target.value)}
                 placeholder="00000000-0000-0000-0000-000000000000"
