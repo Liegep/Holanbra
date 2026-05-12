@@ -74,6 +74,9 @@ async function startServer() {
 
   const app = express();
 
+  // 5. SECURITY SYSTEM ROUTES (Integrado com as novas rotas)
+  app.use('/api/security', securityRoutes);
+
   // 1. DATA PARSERS (Handles standard formats)
   app.use(cors());
   app.use(express.json());
@@ -238,9 +241,6 @@ async function startServer() {
     }
   });
 
-
-  // 5. SECURITY SYSTEM ROUTES (Integrado com as novas rotas)
-  app.use('/api/security', securityRoutes);
 
   // Logging and Health routes
   app.use((req, res, next) => {

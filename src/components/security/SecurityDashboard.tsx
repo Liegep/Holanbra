@@ -25,7 +25,22 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
   const [loading, setLoading] = useState(true);
   const [securityData, setSecurityData] = useState<Record<string, any>>({});
   const [toggling, setToggling] = useState<string | null>(null);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
+  const fetchLogs = async () => {
+    if (!selectedParcelId) return;
+    setLoadingLogs(true);
+    const { data, error } = await supabase
+      .from('security_logs')
+      .select('*')
+      .eq('casperlet_id', selectedParcelId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    if (!error && data) setLogs(data);
+    setLoadingLogs(false);
+  };
   useEffect(() => {
     async function loadProperties() {
       try {
@@ -234,6 +249,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
             <div className="p-6 sm:p-12 h-full">
               {activeTab === 'dashboard' && (
                 <div className="flex flex-col gap-12 max-w-4xl mx-auto h-full">
+                  <div className="text-center">
+                    <h3 className={cn("text-2xl font-black uppercase tracking-[0.2em]", selectedParcelId && securityData[selectedParcelId]?.is_active ? "text-emerald-500" : "text-white")}>
+                      {selectedParcelId && securityData[selectedParcelId]?.is_active ? "SISTEMA ATIVO" : "SISTEMA STANDBY"}
+                    </h3>
+                  </div>
                   {/* Parcel Selector */}
                   <div className="flex flex-wrap gap-2 justify-center">
                     {properties.map(p => (
@@ -356,6 +376,28 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                         <span className="text-[10px] font-black text-white/40 group-hover:text-white uppercase tracking-[0.3em]">{item.label}</span>
                       </button>
                     ))}
+                  </div>
+
+                  {/* Logs Section */}
+                  <div className="bg-zinc-900/50 p-6 rounded-[3rem] border border-white/5 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Últimos Eventos</h4>
+                      <button onClick={fetchLogs} className="text-[9px] font-black text-amber-500 uppercase tracking-widest hover:text-white transition-colors underline">Atualizar</button>
+                    </div>
+                    {loadingLogs ? (
+                      <div className="text-white/20 text-xs text-center p-4">Carregando...</div>
+                    ) : logs.length === 0 ? (
+                      <div className="text-white/20 text-xs text-center p-4">Nenhum evento recente.</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {logs.map((log) => (
+                          <div key={log.id} className="flex justify-between text-[10px] font-mono text-white/60 bg-black/20 p-3 rounded-lg border border-white/5">
+                            <span>{log.avatar_name} - {log.action}</span>
+                            <span className="text-white/30">{new Date(log.created_at).toLocaleTimeString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* QUICK ACTION BUTTONS */}
