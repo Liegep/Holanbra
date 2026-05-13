@@ -297,19 +297,56 @@ async function accessActionHandler(req, res) {
 
     // AÇÕES DE ESCRITA
     if (action === 'add' || action === 'add-manager') {
-      const finalRole = action === 'add-manager' ? 'manager' : (role || 'guest');
-      const { data, error } = await supabase
-        .from('security_access_list')
-        .insert({
-          casperlet_id: parcel_id,
-          avatar_name,
-          avatar_key: avatar_key || null,
-          role: finalRole
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return res.json({ success: true, data });
+      const finalRole = action === 'add-manager' ? 'manager' : (role || 'resident');
+      
+      const payload = {
+        casperlet_id: parcel_id,
+        avatar_name,
+        avatar_key: avatar_key || null,
+        role: finalRole
+      };
+
+      // Tentar upsert se houver key, senão apenas insert
+      let result;
+      if (avatar_key) {
+        result = await supabase
+          .from('security_access_list')
+          .upsert(payload, { onConflict: 'casperlet_id,avatar_key' })
+          .select()
+          .single();
+      } else {
+        result = await supabase
+          .from('security_access_list')
+          .insert(payload)
+          .select()
+          .single();
+      }
+      
+      // Ignorar erro de duplicidade se for o caso
+      if (result.error) {
+        if (result.error.code === '23505') {
+          const query = supabase
+            .from('security_access_list')
+            .select('*')
+            .eq('casperlet_id', parcel_id);
+          
+          if (avatar_key) query.eq('avatar_key', avatar_key);
+          else query.eq('avatar_name', avatar_name);
+          
+          const { data } = await query.single();
+          result.data = data;
+        } else {
+          throw result.error;
+        }
+      }
+      
+      // Remover da security_ban_list se existir
+      const banQuery = supabase.from('security_ban_list').delete().eq('casperlet_id', parcel_id);
+      if (avatar_key) banQuery.eq('avatar_key', avatar_key);
+      else banQuery.eq('avatar_name', avatar_name);
+      await banQuery;
+
+      return res.json({ success: true, data: result.data });
     }
 
     if (action === 'remove' || action === 'remove-manager') {
