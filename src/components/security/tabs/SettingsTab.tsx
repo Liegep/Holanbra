@@ -77,6 +77,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          action: 'settings',
           parcel_id: selectedParcelId,
           resident_uuid: residentUuid,
           radius: Number(config.radius),

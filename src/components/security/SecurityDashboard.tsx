@@ -189,7 +189,12 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ parcel_id: parcelId, active: !isActive, resident_uuid: residentUuidData })
+        body: JSON.stringify({ 
+          action: 'toggle',
+          parcel_id: parcelId, 
+          active: !isActive, 
+          resident_uuid: residentUuidData 
+        })
       });
 
       const rawText = await response.text();

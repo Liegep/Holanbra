@@ -161,7 +161,24 @@ router.get('/config', async (req, res) => {
       .maybeSingle();
         
     if (error) throw error;
-    res.json(data || {});
+    
+    // Preparar retorno plano para o LSL ou Painel
+    const configData = data ? {
+      active: Boolean(data.active),
+      radius: Number(data.radius ?? 20),
+      warn_time: Number(data.warn_time ?? 15),
+      ask_before: Boolean(data.ask_before),
+      orb_token: data.orb_token
+    } : {
+      active: false,
+      radius: 20,
+      warn_time: 15,
+      ask_before: true,
+      orb_token: ""
+    };
+
+    console.log('[security/config GET]', parcel_id, configData);
+    return res.json(configData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -169,7 +186,7 @@ router.get('/config', async (req, res) => {
 
 router.post('/config', async (req, res) => {
   try {
-    const { parcel_id, active, radius, warn_time, ask_before, resident_uuid } = req.body;
+    const { action, parcel_id, active, radius, warn_time, ask_before, resident_uuid } = req.body;
     
     if (!resident_uuid) {
       return res.status(401).json({ error: 'Forbidden: Missing resident_uuid' });
@@ -202,7 +219,7 @@ router.post('/config', async (req, res) => {
     
     const { data: existing } = await supabase
       .from('security_parcels')
-      .select('casperlet_id')
+      .select('casperlet_id, active')
       .eq('casperlet_id', parcel_id)
       .maybeSingle();
       
@@ -210,20 +227,34 @@ router.post('/config', async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    if (typeof active === 'boolean') {
+    if (action === 'toggle') {
+      if (typeof active !== 'boolean') {
+        return res.status(400).json({ error: 'active boolean required for toggle' });
+      }
       updatePayload.active = active;
-    }
-
-    if (typeof radius === 'number') {
-      updatePayload.radius = radius;
-    }
-
-    if (typeof warn_time === 'number') {
-      updatePayload.warn_time = warn_time;
-    }
-
-    if (typeof ask_before === 'boolean') {
-      updatePayload.ask_before = ask_before;
+    } else if (action === 'settings') {
+      if (typeof radius === 'number' && !Number.isNaN(radius)) {
+        updatePayload.radius = radius;
+      }
+      if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
+        updatePayload.warn_time = warn_time;
+      }
+      if (typeof ask_before === 'boolean') {
+        updatePayload.ask_before = ask_before;
+      }
+    } else {
+      // Por compatibilidade se não vier action, mas vier active ou settings
+      // Mas a regra diz: só trocar active se action === 'toggle'
+      if (typeof radius === 'number' && !Number.isNaN(radius)) {
+        updatePayload.radius = radius;
+      }
+      if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
+        updatePayload.warn_time = warn_time;
+      }
+      if (typeof ask_before === 'boolean') {
+        updatePayload.ask_before = ask_before;
+      }
+      // Se não houver action explícita, NÃO mudamos active.
     }
 
     if (existing) {
@@ -238,7 +269,7 @@ router.post('/config', async (req, res) => {
     } else {
       const { data, error } = await supabase.from('security_parcels').insert({ 
         casperlet_id: parcel_id, 
-        active: typeof active === 'boolean' ? active : false, 
+        active: action === 'toggle' ? active : true, // Padrão on se for primeira config via settings
         radius: typeof radius === 'number' ? radius : 20, 
         warn_time: typeof warn_time === 'number' ? warn_time : 15, 
         ask_before: typeof ask_before === 'boolean' ? ask_before : true,
