@@ -221,12 +221,9 @@ router.post('/orb-config', async (req, res) => {
 
     if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
       updatePayload.warn_time = Math.max(0, warn_time);
-      if (updatePayload.warn_time > 0) {
-        updatePayload.ask_before = true;
-      } else {
-        updatePayload.ask_before = false;
-      }
-    } else if (typeof ask_before === 'boolean') {
+    }
+    
+    if (typeof ask_before === 'boolean') {
       updatePayload.ask_before = ask_before;
     }
 
@@ -300,28 +297,18 @@ router.post('/config', async (req, res) => {
       }
       if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
         updatePayload.warn_time = Math.max(0, warn_time);
-        if (updatePayload.warn_time > 0) {
-          updatePayload.ask_before = true;
-        } else {
-          updatePayload.ask_before = false;
-        }
-      } else if (typeof ask_before === 'boolean') {
+      }
+      if (typeof ask_before === 'boolean') {
         updatePayload.ask_before = ask_before;
       }
     } else {
-      // Por compatibilidade se não vier action, mas vier active ou settings
-      // Mas a regra diz: só trocar active se action === 'toggle'
       if (typeof radius === 'number' && !Number.isNaN(radius)) {
         updatePayload.radius = radius;
       }
       if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
         updatePayload.warn_time = Math.max(0, warn_time);
-        if (updatePayload.warn_time > 0) {
-          updatePayload.ask_before = true;
-        } else {
-          updatePayload.ask_before = false;
-        }
-      } else if (typeof ask_before === 'boolean') {
+      }
+      if (typeof ask_before === 'boolean') {
         updatePayload.ask_before = ask_before;
       }
       // Se não houver action explícita, NÃO mudamos active.
@@ -337,13 +324,12 @@ router.post('/config', async (req, res) => {
       if (error) throw error;
       updatedData = data;
     } else {
-      const initialWarnTime = typeof warn_time === 'number' ? Math.max(0, warn_time) : 15;
       const { data, error } = await supabase.from('security_parcels').insert({ 
         casperlet_id: parcel_id, 
         active: action === 'toggle' ? active : true, // Padrão on se for primeira config via settings
         radius: typeof radius === 'number' ? radius : 20, 
-        warn_time: initialWarnTime, 
-        ask_before: initialWarnTime > 0,
+        warn_time: typeof warn_time === 'number' ? Math.max(0, warn_time) : 15, 
+        ask_before: typeof ask_before === 'boolean' ? ask_before : true,
         orb_token: crypto.randomUUID()
       }).select().single();
       if (error) throw error;

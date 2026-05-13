@@ -73,10 +73,6 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
 
     setSaving(true);
     try {
-      const warnTime = Number(config.warn_time);
-      // Logic: warn_time > 0 means ask_before MUST be true. warn_time === 0 means ask_before MUST be false.
-      const askBefore = warnTime > 0;
-
       const response = await fetch('/api/security/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,8 +81,8 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
           parcel_id: selectedParcelId,
           resident_uuid: residentUuid,
           radius: Number(config.radius),
-          warn_time: warnTime,
-          ask_before: askBefore
+          warn_time: Number(config.warn_time),
+          ask_before: Boolean(config.ask_before)
         })
       });
 
@@ -248,8 +244,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                       type="button"
                       onClick={() => setConfig({ 
                         ...config, 
-                        warn_time: tP,
-                        ask_before: tP > 0
+                        warn_time: tP
                       })}
                       className={cn(
                         "flex-1 py-3 rounded-xl text-[10px] font-black transition-all",
@@ -268,10 +263,10 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[11px] text-white font-black uppercase tracking-wider">
-                  {t('security.ask_before', 'WARN BEFORE EJECTING')}
+                  {t('security.ask_manager_before', 'ASK MANAGER BEFORE EJECTING')}
                 </div>
                 <div className="text-[9px] text-white/20 uppercase font-bold tracking-tight">
-                  {t('security.ask_before_desc', 'SEND WARNING TO UNAUTHORIZED AVATAR BEFORE EJECTION')}
+                  {t('security.ask_manager_before_desc', 'SEND APPROVAL POPUP TO MANAGERS BEFORE EJECTING VISITORS')}
                 </div>
               </div>
               <button
