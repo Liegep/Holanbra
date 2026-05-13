@@ -5,21 +5,31 @@ import crypto from 'crypto';
 const router = express.Router();
 
 // Client Supabase para uso interno
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const supabaseUrl = process.env.SUPABASE_URL || 'https://kwosiiddjwkajvatgudp.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3b3NpaWRkandrYWp2YXRndWRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NTgwMDgsImV4cCI6MjA5MzAzNDAwOH0.33En7oofSwpWDK-lScNDCob98kBJCFGstMbAU-wGvZg';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper de validação de token (Orb Token)
 async function validateOrbToken(token, parcelId) {
   const { data, error } = await supabase
     .from('security_parcels')
-    .select('casperlet_id, active')
+    .select('casperlet_id, active, orb_token')
     .eq('orb_token', token)
     .single();
   
-  if (error || !data || !data.active) return null;
-  if (parcelId && data.casperlet_id !== parcelId) return null;
+  if (error) {
+    console.log('[security/validateOrbToken] Error:', error.message, { token, parcelId });
+    return null;
+  }
+  if (!data || !data.active) {
+    console.log('[security/validateOrbToken] Inactive or missing parcel', { token, parcelId, active: data?.active });
+    return null;
+  }
+  if (parcelId && data.casperlet_id !== parcelId) {
+    console.log('[security/validateOrbToken] Parcel ID mismatch', { expected: data.casperlet_id, received: parcelId });
+    return null;
+  }
   return data;
 }
 
@@ -80,7 +90,7 @@ router.post('/check', async (req, res) => {
     // 2. Se não estiver banido, verificar access list
     const { data: access, error: accError } = await supabase
       .from('security_access_list')
-      .select('role')
+      .select('role, avatar_name, avatar_key')
       .eq('casperlet_id', parcel_id)
       .eq('avatar_key', avatar_key)
       .maybeSingle();
@@ -95,7 +105,7 @@ router.post('/check', async (req, res) => {
     });
 
     if (access) {
-      return res.json({ allowed: true, role: access.role, avatar_key, avatar_name });
+      return res.json({ allowed: true, role: access.role, avatar_key: access.avatar_key || avatar_key, avatar_name: access.avatar_name || avatar_name });
     }
 
     // 3. Só retornar allowed:false se não houver ban nem access
