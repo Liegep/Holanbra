@@ -273,6 +273,9 @@ async function accessActionHandler(req, res) {
         .select('*')
         .eq('casperlet_id', parcel_id)
         .order('created_at', { ascending: false });
+      
+      console.log('[security/access list]', { parcel_id, resident_uuid, count: data?.length, error: error?.message });
+      
       if (error) throw error;
       return res.json({ success: true, data });
     }
