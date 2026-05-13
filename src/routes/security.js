@@ -169,7 +169,7 @@ router.get('/config', async (req, res) => {
 
 router.post('/config', async (req, res) => {
   try {
-    const { parcel_id, active, resident_uuid } = req.body;
+    const { parcel_id, active, radius, warn_time, ask_before, resident_uuid } = req.body;
     
     if (!resident_uuid) {
       return res.status(401).json({ error: 'Forbidden: Missing resident_uuid' });
@@ -206,10 +206,30 @@ router.post('/config', async (req, res) => {
       .eq('casperlet_id', parcel_id)
       .maybeSingle();
       
+    const updatePayload = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (typeof active === 'boolean') {
+      updatePayload.active = active;
+    }
+
+    if (typeof radius === 'number') {
+      updatePayload.radius = radius;
+    }
+
+    if (typeof warn_time === 'number') {
+      updatePayload.warn_time = warn_time;
+    }
+
+    if (typeof ask_before === 'boolean') {
+      updatePayload.ask_before = ask_before;
+    }
+
     if (existing) {
       const { data, error } = await supabase
         .from('security_parcels')
-        .update({ active, updated_at: new Date().toISOString() })
+        .update(updatePayload)
         .eq('casperlet_id', parcel_id)
         .select()
         .single();
@@ -218,10 +238,10 @@ router.post('/config', async (req, res) => {
     } else {
       const { data, error } = await supabase.from('security_parcels').insert({ 
         casperlet_id: parcel_id, 
-        active: active, 
-        radius: 20, 
-        warn_time: 15, 
-        ask_before: true,
+        active: typeof active === 'boolean' ? active : false, 
+        radius: typeof radius === 'number' ? radius : 20, 
+        warn_time: typeof warn_time === 'number' ? warn_time : 15, 
+        ask_before: typeof ask_before === 'boolean' ? ask_before : true,
         orb_token: crypto.randomUUID()
       }).select().single();
       if (error) throw error;

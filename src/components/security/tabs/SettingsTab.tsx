@@ -69,19 +69,35 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedParcelId || !config) return;
+    if (!selectedParcelId || !config || !residentUuid) return;
 
     setSaving(true);
-    const { error } = await supabase
-      .from('security_parcels')
-      .update({
-        radius: config.radius,
-        warn_time: config.warn_time,
-        ask_before_eject: config.ask_before_eject
-      })
-      .eq('casperlet_id', selectedParcelId);
+    try {
+      const response = await fetch('/api/security/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid,
+          radius: Number(config.radius),
+          warn_time: Number(config.warn_time),
+          ask_before: config.ask_before ?? config.ask_before_eject ?? true
+        })
+      });
 
-    setSaving(false);
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+      
+      const result = await response.json();
+      if (result.success && result.data) {
+        setConfig(result.data);
+      }
+    } catch (err) {
+      console.error('Error saving security settings:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleClearAll = async () => {
@@ -221,23 +237,47 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                   <span className="text-amber-500 font-mono">{config.warn_time}s</span>
                 </label>
                 <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
-                  {timerPresets.map((t) => (
+                  {timerPresets.map((tP) => (
                     <button
-                      key={t}
+                      key={tP}
                       type="button"
-                      onClick={() => setConfig({ ...config, warn_time: t })}
+                      onClick={() => setConfig({ ...config, warn_time: tP })}
                       className={cn(
                         "flex-1 py-3 rounded-xl text-[10px] font-black transition-all",
-                        config.warn_time === t
+                        config.warn_time === tP
                           ? "bg-amber-500 text-black shadow-lg shadow-amber-500/10"
                           : "text-white/20 hover:text-white/40 hover:bg-white/5"
                       )}
                     >
-                      {t}s
+                      {tP}s
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
+
+            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="text-[11px] text-white font-black uppercase tracking-wider">
+                  {t('security.ask_before')}
+                </div>
+                <div className="text-[9px] text-white/20 uppercase font-bold tracking-tight">
+                  Display confirmation dialog to owner before ejection
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfig({ ...config, ask_before: !config.ask_before })}
+                className={cn(
+                  "relative w-12 h-6 rounded-full transition-all duration-300",
+                  config.ask_before ? "bg-amber-500" : "bg-white/10"
+                )}
+              >
+                <div className={cn(
+                  "absolute top-1 w-4 h-4 bg-black rounded-full transition-all duration-300",
+                  config.ask_before ? "left-7" : "left-1"
+                )} />
+              </button>
             </div>
 
             <div className="space-y-4">
