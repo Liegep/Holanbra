@@ -268,10 +268,10 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
             <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
               <div className="space-y-1">
                 <div className="text-[11px] text-white font-black uppercase tracking-wider">
-                  {t('security.ask_before')}
+                  {t('security.ask_before', 'WARN BEFORE EJECTING')}
                 </div>
                 <div className="text-[9px] text-white/20 uppercase font-bold tracking-tight">
-                  Display confirmation dialog to owner before ejection
+                  {t('security.ask_before_desc', 'SEND WARNING TO UNAUTHORIZED AVATAR BEFORE EJECTION')}
                 </div>
               </div>
               <button
