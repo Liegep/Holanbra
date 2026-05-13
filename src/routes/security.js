@@ -214,76 +214,153 @@ router.post('/config', async (req, res) => {
 router.post('/access', async (req, res) => {
   try {
     const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role, reason } = req.body;
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '') ?? '';
     
-    if (!['add', 'ban', 'status', 'logs'].includes(action)) {
-      return res.status(400).json({ error: 'Invalid action' });
-    }
+    let isAuthorized = false;
+    let authType = null; // 'web' or 'orb'
 
-    // 1. Verificar se existe renter com avatar_uuid = resident_uuid
-    const { data: renter, error: renterError } = await supabase
-      .from('renters')
-      .select('avatar_uuid')
-      .eq('avatar_uuid', resident_uuid)
-      .maybeSingle();
-      
-    if (renterError || !renter) {
-      return res.status(403).json({ error: 'Forbidden: Invalid Renter' });
-    }
-    
-    if (action === 'add' || action === 'ban' || action === 'logs') {
-      // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
-      const { data: property, error: propError } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('casperlet_id', parcel_id)
-        .eq('tenant_id', resident_uuid)
+    // 1. Verificar se é fluxo do painel web (resident_uuid)
+    if (resident_uuid) {
+      // Validar renter
+      const { data: renter, error: renterError } = await supabase
+        .from('renters')
+        .select('avatar_uuid')
+        .eq('avatar_uuid', resident_uuid)
         .maybeSingle();
         
-      if (propError || !property) {
-        return res.status(403).json({ error: 'Forbidden: Property access denied' });
+      if (!renterError && renter) {
+        // Validar property para ações que exigem vínculo
+        if (parcel_id && ['add', 'ban', 'remove', 'unban', 'logs', 'add-manager', 'remove-manager'].includes(action)) {
+          const { data: property, error: propError } = await supabase
+            .from('properties')
+            .select('id')
+            .eq('casperlet_id', parcel_id)
+            .eq('tenant_id', resident_uuid)
+            .maybeSingle();
+          
+          if (property && !propError) {
+            isAuthorized = true;
+            authType = 'web';
+          }
+        } else if (action === 'status') {
+          // Status lida com múltiplos IDs, validação interna
+          isAuthorized = true;
+          authType = 'web';
+        }
+      }
+    } 
+    
+    // 2. Se não autorizado via web, tentar orb_token
+    if (!isAuthorized && token) {
+      const orbData = await validateOrbToken(token, parcel_id);
+      if (orbData) {
+        isAuthorized = true;
+        authType = 'orb';
       }
     }
-    
-    if (action === 'add') {
-      // 3. Insertar em security_access_list
+
+    if (!isAuthorized) {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    // LISTAGENS (GET-like via POST para manter padrão painel)
+    if (action === 'list' || action === 'access-list') {
+      const { data, error } = await supabase
+        .from('security_access_list')
+        .select('*')
+        .eq('casperlet_id', parcel_id);
+      if (error) throw error;
+      return res.json({ success: true, data });
+    }
+
+    if (action === 'ban-list') {
+      const { data, error } = await supabase
+        .from('security_ban_list')
+        .select('*')
+        .eq('casperlet_id', parcel_id);
+      if (error) throw error;
+      return res.json({ success: true, data });
+    }
+
+    if (action === 'manager-list') {
+      const { data, error } = await supabase
+        .from('security_access_list')
+        .select('*')
+        .eq('casperlet_id', parcel_id)
+        .eq('role', 'manager');
+      if (error) throw error;
+      return res.json({ success: true, data });
+    }
+
+    // AÇÕES DE ESCRITA
+    if (action === 'add' || action === 'add-manager') {
+      const finalRole = action === 'add-manager' ? 'manager' : (role || 'guest');
       const { data, error } = await supabase
         .from('security_access_list')
         .insert({
           casperlet_id: parcel_id,
           avatar_name,
-          avatar_key,
-          role
+          avatar_key: avatar_key || null, // LSL pode não mandar key
+          role: finalRole
         })
         .select()
         .single();
-        
       if (error) throw error;
-      
       return res.json({ success: true, data });
-    } else if (action === 'ban') {
-      // 3. Ban: Insertar em security_ban_list
+    }
+
+    if (action === 'remove' || action === 'remove-manager') {
+      const query = supabase
+        .from('security_access_list')
+        .delete()
+        .eq('casperlet_id', parcel_id);
+      
+      if (avatar_key) query.eq('avatar_key', avatar_key);
+      else if (avatar_name) query.eq('avatar_name', avatar_name);
+      else return res.status(400).json({ error: 'avatar_key or avatar_name required' });
+
+      if (action === 'remove-manager') query.eq('role', 'manager');
+
+      const { error } = await query;
+      if (error) throw error;
+      return res.json({ success: true });
+    }
+
+    if (action === 'ban') {
       const { data, error } = await supabase
         .from('security_ban_list')
         .insert({
           casperlet_id: parcel_id,
           avatar_name,
-          avatar_key,
-          reason
+          avatar_key: avatar_key || null,
+          reason: reason || ''
         })
         .select()
         .single();
         
       if (error) throw error;
       
-      // Remover da security_access_list
-      await supabase
-        .from('security_access_list')
-        .delete()
-        .eq('casperlet_id', parcel_id)
-        .eq('avatar_key', avatar_key);
+      // Remover da access list se existir
+      const delQuery = supabase.from('security_access_list').delete().eq('casperlet_id', parcel_id);
+      if (avatar_key) delQuery.eq('avatar_key', avatar_key);
+      else delQuery.eq('avatar_name', avatar_name);
+      await delQuery;
         
       return res.json({ success: true, data });
-    } else if (action === 'logs') {
+    }
+
+    if (action === 'unban') {
+      const query = supabase.from('security_ban_list').delete().eq('casperlet_id', parcel_id);
+      if (avatar_key) query.eq('avatar_key', avatar_key);
+      else query.eq('avatar_name', avatar_name);
+      
+      const { error } = await query;
+      if (error) throw error;
+      return res.json({ success: true });
+    }
+
+    if (action === 'logs') {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('security_logs')
@@ -294,15 +371,15 @@ router.post('/access', async (req, res) => {
         .limit(50);
 
       if (error) throw error;
-      
       return res.json({ success: true, data });
-    } else if (action === 'status') {
+    }
+
+    if (action === 'status' && authType === 'web') {
       const { parcel_ids } = req.body;
       if (!parcel_ids || !Array.isArray(parcel_ids)) {
         return res.status(400).json({ error: 'parcel_ids array required' });
       }
 
-      // Check authorized properties
       const { data: properties } = await supabase
         .from('properties')
         .select('casperlet_id')
@@ -314,7 +391,6 @@ router.post('/access', async (req, res) => {
       }
 
       const authorizedIds = properties.map(p => p.casperlet_id);
-
       const { data: securityRecords, error: secError } = await supabase
         .from('security_parcels')
         .select('*')
@@ -323,9 +399,42 @@ router.post('/access', async (req, res) => {
       if (secError) throw secError;
       return res.json({ success: true, data: securityRecords });
     }
+
+    return res.status(400).json({ error: 'Invalid action or missing parameters' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// COMPATIBILIDADE LSL (Roteamento para action handler acima)
+router.post('/access/add', async (req, res) => {
+  req.body.action = 'add';
+  router.handle(req, res);
+});
+
+router.post('/access/remove', async (req, res) => {
+  req.body.action = 'remove';
+  router.handle(req, res);
+});
+
+router.post('/access/remove-manager', async (req, res) => {
+  req.body.action = 'remove-manager';
+  router.handle(req, res);
+});
+
+router.get('/access/list', async (req, res) => {
+  req.body = { action: 'list', parcel_id: req.query.parcel_id };
+  router.handle(req, res);
+});
+
+router.get('/ban/list', async (req, res) => {
+  req.body = { action: 'ban-list', parcel_id: req.query.parcel_id };
+  router.handle(req, res);
+});
+
+router.get('/managers', async (req, res) => {
+  req.body = { action: 'manager-list', parcel_id: req.query.parcel_id };
+  router.handle(req, res);
 });
 
 export default router;
