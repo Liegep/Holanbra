@@ -73,6 +73,10 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
 
     setSaving(true);
     try {
+      const warnTime = Number(config.warn_time);
+      // Logic: warn_time > 0 means ask_before MUST be true. warn_time === 0 means ask_before MUST be false.
+      const askBefore = warnTime > 0;
+
       const response = await fetch('/api/security/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,8 +85,8 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
           parcel_id: selectedParcelId,
           resident_uuid: residentUuid,
           radius: Number(config.radius),
-          warn_time: Number(config.warn_time),
-          ask_before: config.ask_before ?? config.ask_before_eject ?? true
+          warn_time: warnTime,
+          ask_before: askBefore
         })
       });
 
@@ -242,7 +246,11 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                     <button
                       key={tP}
                       type="button"
-                      onClick={() => setConfig({ ...config, warn_time: tP })}
+                      onClick={() => setConfig({ 
+                        ...config, 
+                        warn_time: tP,
+                        ask_before: tP > 0
+                      })}
                       className={cn(
                         "flex-1 py-3 rounded-xl text-[10px] font-black transition-all",
                         config.warn_time === tP
