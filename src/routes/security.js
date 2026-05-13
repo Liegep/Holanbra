@@ -215,7 +215,7 @@ router.post('/access', async (req, res) => {
   try {
     const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role, reason } = req.body;
     
-    if (!['add', 'ban', 'status'].includes(action)) {
+    if (!['add', 'ban', 'status', 'logs'].includes(action)) {
       return res.status(400).json({ error: 'Invalid action' });
     }
 
@@ -230,7 +230,7 @@ router.post('/access', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Invalid Renter' });
     }
     
-    if (action === 'add' || action === 'ban') {
+    if (action === 'add' || action === 'ban' || action === 'logs') {
       // 2. Verificar property por casperlet_id = parcel_id e tenant_id = resident_uuid
       const { data: property, error: propError } = await supabase
         .from('properties')
@@ -282,6 +282,17 @@ router.post('/access', async (req, res) => {
         .eq('casperlet_id', parcel_id)
         .eq('avatar_key', avatar_key);
         
+      return res.json({ success: true, data });
+    } else if (action === 'logs') {
+      const { data, error } = await supabase
+        .from('security_logs')
+        .select('*')
+        .eq('casperlet_id', parcel_id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      
       return res.json({ success: true, data });
     } else if (action === 'status') {
       const { parcel_ids } = req.body;

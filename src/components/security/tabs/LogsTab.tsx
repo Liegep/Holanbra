@@ -9,35 +9,47 @@ interface LogsTabProps {
   selectedParcelId: string | null;
   properties: any[];
   onParcelSelect: (id: string) => void;
+  residentUuid: string | null;
 }
 
-export function LogsTab({ selectedParcelId, properties, onParcelSelect }: LogsTabProps) {
+export function LogsTab({ selectedParcelId, properties, onParcelSelect, residentUuid }: LogsTabProps) {
   const { t } = useTranslation();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (!selectedParcelId) return;
+    if (!selectedParcelId || !residentUuid) return;
 
     async function loadLogs() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('security_logs')
-        .select('*')
-        .eq('casperlet_id', selectedParcelId)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (!error && data) setLogs(data);
-      setLoading(false);
+      try {
+        const response = await fetch('/api/security/access', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'logs',
+            parcel_id: selectedParcelId,
+            resident_uuid: residentUuid
+          })
+        });
+        
+        const result = await response.json();
+        if (result.success && result.data) {
+          setLogs(result.data);
+        }
+      } catch (err) {
+        console.error('Error loading logs:', err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadLogs();
 
     // Subscribe to new logs
     const channel = supabase
-      .channel('security_logs_realtime')
+      .channel(`security_logs_${selectedParcelId}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
@@ -51,7 +63,7 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect }: LogsTa
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedParcelId]);
+  }, [selectedParcelId, residentUuid]);
 
   const getActionInfo = (action: string) => {
     switch (action) {

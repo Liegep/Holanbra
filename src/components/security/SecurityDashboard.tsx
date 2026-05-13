@@ -30,17 +30,29 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
   const [loadingLogs, setLoadingLogs] = useState(false);
 
   const fetchLogs = async () => {
-    if (!selectedParcelId) return;
+    if (!selectedParcelId || !residentUuid) return;
     setLoadingLogs(true);
-    const { data, error } = await supabase
-      .from('security_logs')
-      .select('*')
-      .eq('casperlet_id', selectedParcelId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-    
-    if (!error && data) setLogs(data);
-    setLoadingLogs(false);
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'logs',
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data) {
+        // Limit to 10 for dashboard view
+        setLogs(result.data.slice(0, 10));
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard logs:', err);
+    } finally {
+      setLoadingLogs(false);
+    }
   };
   useEffect(() => {
     async function loadProperties() {
@@ -504,7 +516,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                 <BanListTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} residentUuid={residentUuid} />
               )}
               {activeTab === 'logs' && (
-                <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} />
+                <LogsTab selectedParcelId={selectedParcelId} properties={properties} onParcelSelect={setSelectedParcelId} residentUuid={residentUuid || null} />
               )}
               {activeTab === 'settings' && (
                 <SettingsTab 
