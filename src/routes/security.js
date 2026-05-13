@@ -271,7 +271,8 @@ async function accessActionHandler(req, res) {
       const { data, error } = await supabase
         .from('security_access_list')
         .select('*')
-        .eq('casperlet_id', parcel_id);
+        .eq('casperlet_id', parcel_id)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return res.json({ success: true, data });
     }
@@ -280,7 +281,8 @@ async function accessActionHandler(req, res) {
       const { data, error } = await supabase
         .from('security_ban_list')
         .select('*')
-        .eq('casperlet_id', parcel_id);
+        .eq('casperlet_id', parcel_id)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return res.json({ success: true, data });
     }
@@ -290,7 +292,8 @@ async function accessActionHandler(req, res) {
         .from('security_access_list')
         .select('*')
         .eq('casperlet_id', parcel_id)
-        .eq('role', 'manager');
+        .eq('role', 'manager')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       return res.json({ success: true, data });
     }

@@ -19,32 +19,62 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (!selectedParcelId) return;
-
-    async function loadAccessList() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('security_access_list')
-        .select('*')
-        .eq('casperlet_id', selectedParcelId)
-        .order('role', { ascending: false });
-
-      if (!error && data) setAvatars(data);
+  const loadAccessList = async () => {
+    if (!selectedParcelId || !residentUuid) return;
+    setLoading(true);
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'list',
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data) {
+        setAvatars(result.data.sort((a: any, b: any) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ));
+      }
+    } catch (err) {
+      console.error('Error loading access list:', err);
+    } finally {
       setLoading(false);
     }
+  };
 
+  useEffect(() => {
     loadAccessList();
-  }, [selectedParcelId]);
+  }, [selectedParcelId, residentUuid]);
 
-  const removeAvatar = async (id: string) => {
-    const { error } = await supabase
-      .from('security_access_list')
-      .delete()
-      .eq('id', id);
-
-    if (!error) {
-      setAvatars(prev => prev.filter(a => a.id !== id));
+  const removeAvatar = async (id: string, avatarKey?: string, avatarName?: string) => {
+    if (!selectedParcelId || !residentUuid) return;
+    
+    setLoading(true);
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove',
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid,
+          avatar_key: avatarKey,
+          avatar_name: avatarName
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        setAvatars(prev => prev.filter(a => a.id !== id));
+      }
+    } catch (err) {
+      console.error('Error removing avatar:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,15 +104,25 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="relative flex-1 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500 transition-colors" size={16} />
-          <input
-            type="text"
-            placeholder={t('team.placeholder_name')}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-xs font-medium text-white placeholder:text-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all uppercase tracking-wider"
-          />
+        <div className="flex-1 flex gap-2">
+          <div className="relative flex-1 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500 transition-colors" size={16} />
+            <input
+              type="text"
+              placeholder={t('team.placeholder_name')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-xs font-medium text-white placeholder:text-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all uppercase tracking-wider"
+            />
+          </div>
+          <button
+            onClick={() => loadAccessList()}
+            disabled={loading}
+            className="px-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white/40 hover:text-white transition-all flex items-center justify-center disabled:opacity-50"
+            title={t('common.update', 'Atualizar')}
+          >
+            <Users size={18} className={cn(loading && "animate-spin")} />
+          </button>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
@@ -136,11 +176,12 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
                 </div>
 
                 <button
-                  onClick={() => removeAvatar(avatar.id)}
+                  onClick={() => removeAvatar(avatar.id, avatar.avatar_key, avatar.avatar_name)}
                   className="w-14 h-14 flex items-center justify-center text-white/20 hover:text-white hover:bg-red-500/80 rounded-2xl transition-all border border-white/5 hover:border-red-400/50 shadow-lg active:scale-90 group/del"
                   title="Remover Acesso"
+                  disabled={loading}
                 >
-                  <Trash2 size={22} className="group-hover/del:scale-110 transition-transform" />
+                  <Trash2 size={22} className={cn("group-hover/del:scale-110 transition-transform", loading && "animate-pulse")} />
                 </button>
               </div>
             ))}
