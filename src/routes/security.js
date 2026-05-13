@@ -284,10 +284,12 @@ router.post('/access', async (req, res) => {
         
       return res.json({ success: true, data });
     } else if (action === 'logs') {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await supabase
         .from('security_logs')
         .select('*')
         .eq('casperlet_id', parcel_id)
+        .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false })
         .limit(50);
 

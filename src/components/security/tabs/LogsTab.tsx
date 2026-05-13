@@ -18,33 +18,32 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
+  const loadLogs = async () => {
     if (!selectedParcelId || !residentUuid) return;
-
-    async function loadLogs() {
-      setLoading(true);
-      try {
-        const response = await fetch('/api/security/access', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'logs',
-            parcel_id: selectedParcelId,
-            resident_uuid: residentUuid
-          })
-        });
-        
-        const result = await response.json();
-        if (result.success && result.data) {
-          setLogs(result.data);
-        }
-      } catch (err) {
-        console.error('Error loading logs:', err);
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'logs',
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success && result.data) {
+        setLogs(result.data);
       }
+    } catch (err) {
+      console.error('Error loading logs:', err);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     loadLogs();
 
     // Subscribe to new logs
@@ -101,15 +100,25 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
         ))}
       </div>
 
-      <div className="relative group">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500 transition-colors" size={14} />
-        <input
-          type="text"
-          placeholder={t('team.placeholder_name')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/5 rounded-xl text-[11px] font-medium text-white placeholder:text-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all uppercase tracking-wider"
-        />
+      <div className="flex gap-2">
+        <div className="relative group flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500 transition-colors" size={14} />
+          <input
+            type="text"
+            placeholder={t('team.placeholder_name')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-black/40 border border-white/5 rounded-xl text-[11px] font-medium text-white placeholder:text-white/10 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-all uppercase tracking-wider"
+          />
+        </div>
+        <button
+          onClick={() => loadLogs()}
+          disabled={loading}
+          className="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          <ScrollText size={14} className={cn(loading && "animate-spin")} />
+          {t('common.update', 'Atualizar')}
+        </button>
       </div>
 
       <div className="space-y-1">
