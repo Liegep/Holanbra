@@ -78,13 +78,13 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         layout
         initial={false}
         animate={state === 'modal' ? {
-          width: isMobile ? '100%' : 'min(calc(100vw - 48px), 448px)',
-          height: isMobile ? '60vh' : '480px',
-          bottom: isMobile ? '0px' : '50%',
-          right: isMobile ? '0px' : '50%',
-          x: isMobile ? '0%' : '50%',
-          y: isMobile ? '0%' : '50%',
-          borderRadius: isMobile ? '24px 24px 0 0' : '32px',
+          width: isMobile ? 'calc(100vw - 48px)' : 'min(calc(100vw - 48px), 448px)',
+          height: isMobile ? '400px' : '480px',
+          bottom: isMobile ? '50%' : '50%',
+          right: isMobile ? '50%' : '50%',
+          x: '50%',
+          y: '50%',
+          borderRadius: isMobile ? '32px' : '32px',
         } : {
           width: isMobile ? '48px' : '320px',
           height: isMobile ? '48px' : '132px',

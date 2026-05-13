@@ -214,7 +214,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
   const currentSecurity = selectedParcelId ? securityData[selectedParcelId] : null;
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6 md:p-10 no-scrollbar">
+    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 pt-20 sm:p-6 sm:pt-24 lg:pt-28 md:px-10 no-scrollbar">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -227,7 +227,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         initial={{ opacity: 0, scale: 0.9, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 40 }}
-        className="relative w-[min(96vw,1200px)] max-w-7xl bg-[#09090b] border border-white/10 rounded-[2rem] sm:rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[92vh]"
+        className="relative w-[min(96vw,1200px)] max-w-7xl bg-[#09090b] border border-white/10 rounded-[2rem] sm:rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-7rem)] lg:max-h-[calc(100vh-8rem)]"
       >
         {/* Panel Details - Screw Heads */}
         <div className="absolute top-6 left-6 w-3 h-3 rounded-full bg-white/5 border border-white/10 shadow-inner hidden sm:block" />
@@ -236,15 +236,15 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         <div className="absolute bottom-6 right-6 w-3 h-3 rounded-full bg-white/5 border border-white/10 shadow-inner hidden sm:block" />
 
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between p-6 sm:p-8 border-b border-white/5 bg-zinc-900/50 backdrop-blur-md gap-4 shrink-0">
-          <div className="flex items-center gap-4 sm:gap-6 min-w-0">
+        <div className="flex flex-wrap items-center justify-between p-3 sm:px-6 sm:py-4 border-b border-white/5 bg-zinc-900/50 backdrop-blur-md gap-4 shrink-0">
+          <div className="flex items-center gap-4 min-w-0">
             <div className={cn(
-               "w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl shrink-0",
+               "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all duration-500 shadow-xl shrink-0",
                currentSecurity?.active 
                  ? "bg-emerald-500 text-black shadow-emerald-500/20" 
                  : "bg-white/5 text-white/20 border border-white/10"
             )}>
-              <Shield size={24} className={currentSecurity?.active ? "animate-pulse" : ""} />
+              <Shield size={20} className={currentSecurity?.active ? "animate-pulse" : ""} />
             </div>
             <div className="space-y-1 min-w-0">
               <h2 className="text-lg sm:text-xl font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-white truncate">
@@ -290,16 +290,16 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               </div>
             </div>
           ) : (
-            <div className="p-4 sm:p-6 md:p-12 h-full">
+            <div className="p-4 sm:p-6 md:p-6 h-full">
               {activeTab === 'dashboard' && (
-                <div className="flex flex-col gap-6 sm:gap-12 max-w-5xl mx-auto h-full">
-                  <div className="text-center">
-                    <h3 className={cn("text-xl sm:text-2xl font-black uppercase tracking-[0.2em]", selectedParcelId && securityData[selectedParcelId]?.active ? "text-emerald-500" : "text-white")}>
+                <div className="flex flex-col gap-3 sm:gap-5 max-w-5xl mx-auto h-full">
+                  <div className="text-center mt-0 sm:mt-2">
+                    <h3 className={cn("text-lg sm:text-xl font-black uppercase tracking-[0.2em]", selectedParcelId && securityData[selectedParcelId]?.active ? "text-emerald-500" : "text-white")}>
                       {selectedParcelId && securityData[selectedParcelId]?.active ? "SISTEMA ATIVO" : "SISTEMA STANDBY"}
                     </h3>
                   </div>
                   {/* Parcel Selector */}
-                  <div className="flex flex-wrap gap-2 justify-center">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 justify-center px-4 sm:px-0">
                     {properties.map(p => (
                       <button
                         key={p.casperlet_id}
@@ -308,27 +308,27 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                           setSelectedParcelName(p.name);
                         }}
                         className={cn(
-                          "px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest border transition-all flex items-center gap-2 max-w-[200px] sm:max-w-xs",
+                          "px-5 py-3 sm:px-6 sm:py-4 rounded-[1.5rem] text-[11px] sm:text-xs font-black uppercase tracking-widest border transition-all flex items-center gap-3",
                           selectedParcelId === p.casperlet_id
-                            ? "bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20"
-                            : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                            ? "bg-amber-500 border-amber-400 text-black shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                            : "bg-white/5 border-white/10 text-white/40 hover:text-white hover:bg-white/10"
                         )}
                       >
-                        <MapPin size={12} className="shrink-0" />
-                        <span className="truncate">{p.name}</span>
+                        <MapPin size={16} className="shrink-0" />
+                        <span>{p.name}</span>
                       </button>
                     ))}
                   </div>
 
                   {/* Central Console */}
-                  <div className="relative flex flex-col items-center gap-8 md:gap-12 bg-[#0c0c0e]/50 p-8 sm:p-12 md:p-20 rounded-[3rem] md:rounded-[5rem] border border-white/5 shadow-2xl overflow-hidden group">
+                  <div className="relative flex flex-col items-center gap-4 md:gap-6 bg-[#0c0c0e]/50 p-5 sm:p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-white/5 shadow-2xl overflow-hidden group">
                     <div className={cn(
                       "absolute inset-0 transition-opacity duration-1000 blur-[150px] opacity-10",
                       currentSecurity?.active ? "bg-emerald-500" : "bg-red-500"
                     )} />
 
-                    <div className="relative z-10 flex flex-col items-center gap-8 md:gap-12 w-full">
-                      <div className="text-center space-y-3 w-full">
+                    <div className="relative z-10 flex flex-col items-center gap-4 md:gap-6 w-full">
+                      <div className="text-center space-y-2 w-full">
                         <div className="flex items-center justify-center gap-4">
                           <div className="h-[1px] w-8 sm:w-12 bg-white/10" />
                           <h4 className="text-[10px] sm:text-[11px] font-black text-amber-500 uppercase tracking-[0.4em] sm:tracking-[0.6em]">Core Control</h4>
@@ -342,7 +342,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                           onClick={() => handleToggle(selectedParcelId!)}
                           disabled={toggling === selectedParcelId}
                           className={cn(
-                            "w-48 h-16 sm:w-64 sm:h-24 rounded-full border-[4px] transition-all duration-300 flex items-center p-2 xl:p-2 relative shadow-inner active:scale-95",
+                            "w-48 h-16 sm:w-56 sm:h-20 rounded-full border-[4px] transition-all duration-300 flex items-center p-2 xl:p-2 relative shadow-inner active:scale-95",
                             currentSecurity?.active 
                               ? "bg-emerald-500 border-emerald-400 justify-end" 
                               : "bg-zinc-900 border-white/10 justify-start"
@@ -373,7 +373,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                         </div>
                       </div>
 
-                      <div className="flex gap-8 sm:gap-12 flex-wrap justify-center">
+                      <div className="flex gap-8 flex-wrap justify-center">
                         <div className="flex flex-col items-center gap-2">
                            <div className={cn("w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full", currentSecurity?.active ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]" : "bg-black")} />
                            <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Active</span>
@@ -401,7 +401,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                       <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id as any)}
-                        className="group relative p-4 sm:p-6 lg:p-8 rounded-[2rem] sm:rounded-[3rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.08] hover:border-white/20 transition-all flex flex-col items-center gap-4 sm:gap-5 text-center active:scale-95 shadow-2xl"
+                        className="group relative p-4 sm:p-6 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:bg-white/[0.08] hover:border-white/20 transition-all flex flex-col items-center gap-3 sm:gap-4 text-center active:scale-95 shadow-2xl"
                       >
                         <div className={cn(
                           "w-12 h-12 sm:w-16 sm:h-16 rounded-[1rem] sm:rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6",
@@ -456,14 +456,14 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                      <button 
                        onClick={() => setActiveTab('access')}
-                       className="flex items-center justify-center gap-3 sm:gap-4 py-6 sm:py-8 bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-[2rem] sm:rounded-[2.5rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 px-4"
+                       className="flex items-center justify-center gap-3 sm:gap-4 py-4 sm:py-6 bg-blue-600/10 border border-blue-500/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-[2rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 px-4"
                      >
                        <Users className="w-5 h-5 sm:w-6 sm:h-6" />
                        {t('security.add_avatar')}
                      </button>
                      <button 
                        onClick={() => setActiveTab('ban')}
-                       className="flex items-center justify-center gap-3 sm:gap-4 py-6 sm:py-8 bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600 hover:text-white rounded-[2rem] sm:rounded-[2.5rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 px-4"
+                       className="flex items-center justify-center gap-3 sm:gap-4 py-4 sm:py-6 bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600 hover:text-white rounded-[2rem] text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 px-4"
                      >
                        <Ban className="w-5 h-5 sm:w-6 sm:h-6" />
                        {t('security.ban_avatar', 'Ban Avatar')}
@@ -472,7 +472,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
                   {/* Token Footer */}
                   {currentSecurity?.orb_token && (
-                    <div className="p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem] bg-zinc-900/50 border border-white/5 flex flex-col md:flex-row items-center md:justify-between gap-6 sm:gap-8 mt-auto w-full">
+                    <div className="p-4 sm:p-6 rounded-[2rem] bg-zinc-900/50 border border-white/5 flex flex-col md:flex-row items-center md:justify-between gap-4 sm:gap-6 mt-auto w-full">
                       <div className="space-y-1 text-center md:text-left shrink-0">
                         <h5 className="text-[9px] sm:text-[10px] font-black text-white/20 uppercase tracking-widest">Encryption Key</h5>
                         <p className="text-emerald-500 text-[10px] sm:text-xs font-black uppercase tracking-widest">Authenticated Node</p>
@@ -520,7 +520,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         </div>
 
         {/* Global Tab Navigation */}
-        <div className="flex flex-wrap sm:flex-nowrap bg-[#0d0d0f] border-t border-white/5 p-2 sm:p-4 gap-1 sm:gap-2 shrink-0">
+        <div className="flex overflow-x-auto sm:flex-nowrap bg-[#0d0d0f] border-t border-white/5 px-4 pb-4 pt-2 sm:p-3 gap-2 shrink-0 no-scrollbar">
           {[
             { id: 'dashboard', label: 'Terminal', icon: Shield },
             { id: 'access', label: t('security.access_list'), icon: Users },
@@ -532,16 +532,16 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
-                "flex-1 min-w-[60px] flex flex-col items-center justify-center gap-1.5 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-[8px] sm:text-[9px] font-black uppercase tracking-widest transition-all group overflow-hidden relative",
+                "flex-1 min-w-[70px] sm:min-w-0 flex flex-col items-center justify-center gap-1.5 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all group overflow-hidden relative shrink-0 sm:shrink",
                 activeTab === tab.id
                   ? "bg-amber-500 text-black shadow-lg shadow-amber-500/10"
-                  : "bg-white/[0.02] text-white/20 hover:text-white hover:bg-white/[0.05]"
+                  : "bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.05]"
               )}
             >
-              <tab.icon size={18} className="relative z-10 w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-              <span className="relative z-10 hidden sm:inline-block">{tab.label}</span>
+              <tab.icon size={18} className="relative z-10 w-[18px] h-[18px]" />
+              <span className="relative z-10 mt-1">{tab.label}</span>
               {activeTab === tab.id && (
-                <motion.div layoutId="global-tab" className="absolute inset-0 bg-amber-500" />
+                <motion.div layoutId="global-tab" className="absolute inset-0 bg-amber-500 z-0" />
               )}
             </button>
           ))}
