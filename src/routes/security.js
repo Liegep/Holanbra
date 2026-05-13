@@ -58,36 +58,50 @@ router.post('/check', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, avatar_key, avatar_name } = req.body;
     
-    if (!(await validateOrbToken(token, parcel_id))) {
-      return res.status(401).json({ allowed: false, role: "unknown" });
+    const orbParcel = await validateOrbToken(token, parcel_id);
+    if (!orbParcel) {
+      console.log('[security/check] Unauthorized token/parcel', { parcel_id, token: token ? 'provided' : 'missing' });
+      return res.status(401).json({ allowed: false, role: "unauthorized" });
     }
 
-    // Verificar ban list
-    const { data: banned } = await supabase
+    // 1. Verificar ban list primeiro
+    const { data: banned, error: banError } = await supabase
       .from('security_ban_list')
-      .select('id')
+      .select('id, reason')
       .eq('casperlet_id', parcel_id)
       .eq('avatar_key', avatar_key)
       .maybeSingle();
 
     if (banned) {
-      return res.json({ allowed: false, role: "banned", avatar_key, avatar_name });
+      console.log('[security/check] Banned found', { parcel_id, avatar_key, avatar_name });
+      return res.json({ allowed: false, role: "banned", avatar_key, avatar_name, reason: banned.reason });
     }
     
-    // Verificar access list
-    const { data: access } = await supabase
+    // 2. Se não estiver banido, verificar access list
+    const { data: access, error: accError } = await supabase
       .from('security_access_list')
       .select('role')
       .eq('casperlet_id', parcel_id)
       .eq('avatar_key', avatar_key)
       .maybeSingle();
       
+    console.log('[security/check] Verification results', { 
+      parcel_id, 
+      avatar_key, 
+      avatar_name,
+      banned: !!banned, 
+      access: !!access, 
+      role: access?.role 
+    });
+
     if (access) {
       return res.json({ allowed: true, role: access.role, avatar_key, avatar_name });
     }
 
-    return res.json({ allowed: false, role: "unknown", avatar_key, avatar_name });
+    // 3. Só retornar allowed:false se não houver ban nem access
+    return res.json({ allowed: false, role: "none", avatar_key, avatar_name });
   } catch (error) {
+    console.error('[security/check] Error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
