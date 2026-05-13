@@ -141,46 +141,34 @@ router.post('/log', async (req, res) => {
 router.get('/config', async (req, res) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
-    const parcel_id = req.query.parcel_id;
-    
-    // GET: Aceita Orb ou Usuário
-    let isOrbAuthorized = await validateOrbToken(token, parcel_id);
-    let userAuth = null;
-    if (!isOrbAuthorized) {
-      userAuth = await validateUserAccess(token, parcel_id);
-    }
-    
-    if (!isOrbAuthorized && !userAuth) {
+    const parcel_id = String(req.query.parcel_id || '');
+
+    const { data: row, error } = await supabase
+      .from('security_parcels')
+      .select('casperlet_id, orb_token, active, radius, warn_time, ask_before')
+      .eq('casperlet_id', parcel_id)
+      .eq('orb_token', token)
+      .maybeSingle();
+
+    console.log('[ORB CONFIG GET]', {
+      parcel_id,
+      token_prefix: token.slice(0, 8),
+      row
+    });
+
+    if (error || !row) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    
-    const { data, error } = await supabase
-      .from('security_parcels')
-      .select('active, radius, warn_time, ask_before, orb_token')
-      .eq('casperlet_id', parcel_id)
-      .maybeSingle();
-        
-    if (error) throw error;
-    
-    // Preparar retorno plano para o LSL ou Painel
-    const configData = data ? {
-      active: Boolean(data.active),
-      radius: Number(data.radius ?? 20),
-      warn_time: Number(data.warn_time ?? 15),
-      ask_before: Boolean(data.ask_before),
-      orb_token: data.orb_token
-    } : {
-      active: false,
-      radius: 20,
-      warn_time: 15,
-      ask_before: true,
-      orb_token: ""
-    };
 
-    console.log('[security/config GET]', parcel_id, configData);
-    return res.json(configData);
+    return res.json({
+      active: row.active === true,
+      radius: Number(row.radius ?? 20),
+      warn_time: Number(row.warn_time ?? 15),
+      ask_before: row.ask_before === true,
+      orb_token: row.orb_token
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 });
 
