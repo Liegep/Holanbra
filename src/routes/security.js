@@ -14,7 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function validateOrbToken(token, parcelId) {
   const { data, error } = await supabase
     .from('security_parcels')
-    .select('casperlet_id, active, orb_token')
+    .select('casperlet_id, orb_token')
     .eq('orb_token', token)
     .single();
   
@@ -22,8 +22,8 @@ async function validateOrbToken(token, parcelId) {
     console.log('[security/validateOrbToken] Error:', error.message, { token, parcelId });
     return null;
   }
-  if (!data || !data.active) {
-    console.log('[security/validateOrbToken] Inactive or missing parcel', { token, parcelId, active: data?.active });
+  if (!data) {
+    console.log('[security/validateOrbToken] Missing parcel', { token, parcelId });
     return null;
   }
   if (parcelId && data.casperlet_id !== parcelId) {
@@ -68,14 +68,21 @@ router.post('/check', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, avatar_key, avatar_name } = req.body;
     
-    const orbParcel = await validateOrbToken(token, parcel_id);
-    if (!orbParcel) {
-      console.log('[security/check] Unauthorized token/parcel', { parcel_id, token: token ? 'provided' : 'missing' });
+    // 1. Validar orb_token + parcel_id em security_parcels (ignora 'active')
+    const { data: orbParcel, error: orbError } = await supabase
+      .from('security_parcels')
+      .select('casperlet_id')
+      .eq('casperlet_id', parcel_id)
+      .eq('orb_token', token)
+      .maybeSingle();
+
+    if (orbError || !orbParcel) {
+      console.log('[security/check] Unauthorized token/parcel', { parcel_id, token_prefix: token.slice(0, 10) });
       return res.status(401).json({ allowed: false, role: "unauthorized" });
     }
 
-    // 1. Verificar ban list primeiro
-    const { data: banned, error: banError } = await supabase
+    // 2. Verificar ban list primeiro
+    const { data: banned } = await supabase
       .from('security_ban_list')
       .select('id, reason')
       .eq('casperlet_id', parcel_id)
@@ -84,18 +91,18 @@ router.post('/check', async (req, res) => {
 
     if (banned) {
       console.log('[security/check] Banned found', { parcel_id, avatar_key, avatar_name });
-      return res.json({ allowed: false, role: "banned", avatar_key, avatar_name, reason: banned.reason });
+      return res.json({ allowed: false, role: "banned", avatar_key, avatar_name, reason: banned?.reason });
     }
     
-    // 2. Se não estiver banido, verificar access list
-    const { data: access, error: accError } = await supabase
+    // 3. Se não estiver banido, verificar access list
+    const { data: access } = await supabase
       .from('security_access_list')
-      .select('role, avatar_name, avatar_key')
+      .select('role, avatar_name')
       .eq('casperlet_id', parcel_id)
       .eq('avatar_key', avatar_key)
       .maybeSingle();
       
-    console.log('[security/check] Verification results', { 
+    console.log('[security/check] Results:', { 
       parcel_id, 
       avatar_key, 
       avatar_name,
@@ -105,11 +112,16 @@ router.post('/check', async (req, res) => {
     });
 
     if (access) {
-      return res.json({ allowed: true, role: access.role, avatar_key: access.avatar_key || avatar_key, avatar_name: access.avatar_name || avatar_name });
+      return res.json({ 
+        allowed: true, 
+        role: access.role, 
+        avatar_key, 
+        avatar_name: access.avatar_name || avatar_name 
+      });
     }
 
-    // 3. Só retornar allowed:false se não houver ban nem access
-    return res.json({ allowed: false, role: "none", avatar_key, avatar_name });
+    // 4. Só retornar allowed:false se não houver ban nem access
+    return res.json({ allowed: false, role: "unknown", avatar_key, avatar_name });
   } catch (error) {
     console.error('[security/check] Error:', error.message);
     res.status(500).json({ error: error.message });
