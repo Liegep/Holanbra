@@ -152,7 +152,8 @@ router.get('/config', async (req, res) => {
 
     console.log('[ORB CONFIG GET]', {
       parcel_id,
-      token_prefix: token.slice(0, 8),
+      token_prefix: token.slice(0, 10),
+      error,
       row
     });
 
@@ -541,9 +542,34 @@ router.get('/ban/list', (req, res) => {
   accessActionHandler(req, res);
 });
 
-router.get('/managers', (req, res) => {
-  req.body = { ...req.body, action: 'manager-list', parcel_id: req.query.parcel_id };
-  accessActionHandler(req, res);
+router.get('/managers', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
+    const parcel_id = String(req.query.parcel_id || '');
+
+    const { data: parcel, error: parcelError } = await supabase
+      .from('security_parcels')
+      .select('casperlet_id')
+      .eq('casperlet_id', parcel_id)
+      .eq('orb_token', token)
+      .maybeSingle();
+
+    if (parcelError || !parcel) {
+      return res.status(403).json({ error: 'Forbidden: Access denied' });
+    }
+
+    const { data, error } = await supabase
+      .from('security_access_list')
+      .select('avatar_key, avatar_name, role')
+      .eq('casperlet_id', parcel_id)
+      .eq('role', 'manager');
+
+    if (error) throw error;
+
+    return res.json(data || []);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;
