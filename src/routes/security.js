@@ -173,6 +173,64 @@ router.get('/config', async (req, res) => {
   }
 });
 
+router.post('/orb-config', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '') ?? '';
+    const { parcel_id, active, radius, warn_time, ask_before } = req.body;
+
+    if (!parcel_id) {
+      return res.status(400).json({ error: 'parcel_id required' });
+    }
+
+    // Validar token e parcel
+    const { data: row, error: fetchError } = await supabase
+      .from('security_parcels')
+      .select('casperlet_id, orb_token')
+      .eq('casperlet_id', parcel_id)
+      .eq('orb_token', token)
+      .maybeSingle();
+
+    if (fetchError || !row) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const updatePayload = {
+      updated_at: new Date().toISOString()
+    };
+
+    if (typeof active === 'boolean') {
+      updatePayload.active = active;
+    }
+
+    if (typeof radius === 'number' && !Number.isNaN(radius)) {
+      updatePayload.radius = radius;
+    }
+
+    if (typeof warn_time === 'number' && !Number.isNaN(warn_time)) {
+      updatePayload.warn_time = warn_time;
+    }
+
+    if (typeof ask_before === 'boolean') {
+      updatePayload.ask_before = ask_before;
+    }
+
+    const { data, error: updateError } = await supabase
+      .from('security_parcels')
+      .update(updatePayload)
+      .eq('casperlet_id', parcel_id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    console.error('[ORB CONFIG POST] Error:', error.message);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/config', async (req, res) => {
   try {
     const { action, parcel_id, active, radius, warn_time, ask_before, resident_uuid } = req.body;
