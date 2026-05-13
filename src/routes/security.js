@@ -211,7 +211,7 @@ router.post('/config', async (req, res) => {
   }
 });
 
-router.post('/access', async (req, res) => {
+async function accessActionHandler(req, res) {
   try {
     const { action, parcel_id, resident_uuid, avatar_name, avatar_key, role, reason } = req.body;
     const authHeader = req.headers.authorization;
@@ -231,7 +231,9 @@ router.post('/access', async (req, res) => {
         
       if (!renterError && renter) {
         // Validar property para ações que exigem vínculo
-        if (parcel_id && ['add', 'ban', 'remove', 'unban', 'logs', 'add-manager', 'remove-manager'].includes(action)) {
+        const needsPropertyCheck = ['add', 'ban', 'remove', 'unban', 'logs', 'add-manager', 'remove-manager', 'list', 'access-list', 'ban-list', 'manager-list'].includes(action);
+        
+        if (parcel_id && needsPropertyCheck) {
           const { data: property, error: propError } = await supabase
             .from('properties')
             .select('id')
@@ -264,7 +266,7 @@ router.post('/access', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: Access denied' });
     }
 
-    // LISTAGENS (GET-like via POST para manter padrão painel)
+    // LISTAGENS
     if (action === 'list' || action === 'access-list') {
       const { data, error } = await supabase
         .from('security_access_list')
@@ -301,7 +303,7 @@ router.post('/access', async (req, res) => {
         .insert({
           casperlet_id: parcel_id,
           avatar_name,
-          avatar_key: avatar_key || null, // LSL pode não mandar key
+          avatar_key: avatar_key || null,
           role: finalRole
         })
         .select()
@@ -341,7 +343,6 @@ router.post('/access', async (req, res) => {
         
       if (error) throw error;
       
-      // Remover da access list se existir
       const delQuery = supabase.from('security_access_list').delete().eq('casperlet_id', parcel_id);
       if (avatar_key) delQuery.eq('avatar_key', avatar_key);
       else delQuery.eq('avatar_name', avatar_name);
@@ -404,37 +405,39 @@ router.post('/access', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+}
 
-// COMPATIBILIDADE LSL (Roteamento para action handler acima)
-router.post('/access/add', async (req, res) => {
+router.post('/access', accessActionHandler);
+
+// COMPATIBILIDADE LSL
+router.post('/access/add', (req, res) => {
   req.body.action = 'add';
-  router.handle(req, res);
+  accessActionHandler(req, res);
 });
 
-router.post('/access/remove', async (req, res) => {
+router.post('/access/remove', (req, res) => {
   req.body.action = 'remove';
-  router.handle(req, res);
+  accessActionHandler(req, res);
 });
 
-router.post('/access/remove-manager', async (req, res) => {
+router.post('/access/remove-manager', (req, res) => {
   req.body.action = 'remove-manager';
-  router.handle(req, res);
+  accessActionHandler(req, res);
 });
 
-router.get('/access/list', async (req, res) => {
-  req.body = { action: 'list', parcel_id: req.query.parcel_id };
-  router.handle(req, res);
+router.get('/access/list', (req, res) => {
+  req.body = { ...req.body, action: 'list', parcel_id: req.query.parcel_id };
+  accessActionHandler(req, res);
 });
 
-router.get('/ban/list', async (req, res) => {
-  req.body = { action: 'ban-list', parcel_id: req.query.parcel_id };
-  router.handle(req, res);
+router.get('/ban/list', (req, res) => {
+  req.body = { ...req.body, action: 'ban-list', parcel_id: req.query.parcel_id };
+  accessActionHandler(req, res);
 });
 
-router.get('/managers', async (req, res) => {
-  req.body = { action: 'manager-list', parcel_id: req.query.parcel_id };
-  router.handle(req, res);
+router.get('/managers', (req, res) => {
+  req.body = { ...req.body, action: 'manager-list', parcel_id: req.query.parcel_id };
+  accessActionHandler(req, res);
 });
 
 export default router;
