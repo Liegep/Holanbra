@@ -139,16 +139,27 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
   const timerPresets = [0, 10, 20, 30];
 
   const regenerateToken = async () => {
-    if (!selectedParcelId) return;
-    const newToken = crypto.randomUUID();
-    const { error } = await supabase
-      .from('security_parcels')
-      .update({ orb_token: newToken })
-      .eq('casperlet_id', selectedParcelId);
+    if (!selectedParcelId || !residentUuid) return;
+    
+    try {
+      const response = await fetch('/api/security/regenerate-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid
+        })
+      });
 
-    if (!error) {
-      setConfig(prev => ({ ...prev, orb_token: newToken }));
-      setShowConfirmRegen(false);
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setConfig(result.data);
+        setShowConfirmRegen(false);
+      } else {
+        throw new Error(result.error || 'Failed to regenerate token');
+      }
+    } catch (err) {
+      console.error('Error regenerating token:', err);
     }
   };
 

@@ -314,6 +314,7 @@ router.post('/config', async (req, res) => {
       // Se não houver action explícita, NÃO mudamos active.
     }
 
+    // Use upsert pattern that preserves orb_token
     if (existing) {
       const { data, error } = await supabase
         .from('security_parcels')
@@ -324,16 +325,36 @@ router.post('/config', async (req, res) => {
       if (error) throw error;
       updatedData = data;
     } else {
-      const { data, error } = await supabase.from('security_parcels').insert({ 
-        casperlet_id: parcel_id, 
-        active: action === 'toggle' ? active : true, // Padrão on se for primeira config via settings
-        radius: typeof radius === 'number' ? radius : 20, 
-        warn_time: typeof warn_time === 'number' ? Math.max(0, warn_time) : 15, 
-        ask_before: typeof ask_before === 'boolean' ? ask_before : true,
-        orb_token: crypto.randomUUID()
-      }).select().single();
-      if (error) throw error;
-      updatedData = data;
+      // First, double check if it REALLY doesn't exist by casperlet_id only (no filters)
+      const { data: realExisting } = await supabase
+        .from('security_parcels')
+        .select('casperlet_id, orb_token')
+        .eq('casperlet_id', parcel_id)
+        .maybeSingle();
+
+      if (realExisting) {
+        // If it actually exists, update instead
+        const { data, error } = await supabase
+          .from('security_parcels')
+          .update(updatePayload)
+          .eq('casperlet_id', parcel_id)
+          .select()
+          .single();
+        if (error) throw error;
+        updatedData = data;
+      } else {
+        // New record: Generate token ONCE
+        const { data, error } = await supabase.from('security_parcels').insert({ 
+          casperlet_id: parcel_id, 
+          active: action === 'toggle' ? active : true,
+          radius: typeof radius === 'number' ? radius : 20, 
+          warn_time: typeof warn_time === 'number' ? Math.max(0, warn_time) : 15, 
+          ask_before: typeof ask_before === 'boolean' ? ask_before : true,
+          orb_token: crypto.randomUUID()
+        }).select().single();
+        if (error) throw error;
+        updatedData = data;
+      }
     }
     
     res.json({ success: true, data: updatedData });
@@ -581,6 +602,40 @@ async function accessActionHandler(req, res) {
     res.status(500).json({ error: error.message });
   }
 }
+
+router.post('/regenerate-token', async (req, res) => {
+  try {
+    const { parcel_id, resident_uuid } = req.body;
+    
+    if (!resident_uuid || !parcel_id) {
+      return res.status(400).json({ error: 'parcel_id and resident_uuid required' });
+    }
+
+    // Validação de acesso (mesma do /config)
+    const { data: prop } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('casperlet_id', parcel_id)
+      .eq('tenant_id', resident_uuid)
+      .maybeSingle();
+
+    if (!prop) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { data, error } = await supabase
+      .from('security_parcels')
+      .update({ orb_token: crypto.randomUUID(), updated_at: new Date().toISOString() })
+      .eq('casperlet_id', parcel_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.post('/access', accessActionHandler);
 
