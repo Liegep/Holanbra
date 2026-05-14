@@ -15,7 +15,7 @@ Use this script to monitor object/prim usage on your land parcels.
 // HOLAMBRA REAL ESTATE - PRIM CHECKER v1.4 (Linked)
 string WEB_URL = "https://holanbra.com/api/prim-update";
 string API_TOKEN = "holanbra_secret_token";
-string CASPERLET_ID = ""; // Deixe em branco para usar o nome do objeto ou preencha com o ID da Propriedade no Holanbra
+string CASPERLET_ID = ""; // Deixe em branco para usar o nome do objeto, ou coloque o UUID do CasperLet (ID da Propriedade)
 float  TIMER_INTERVAL = 3600.0; // 1 hora
 
 do_sync_owners() {

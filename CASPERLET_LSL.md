@@ -15,8 +15,7 @@ To sync your properties in Second Life with this website, create a new script in
 
 string WEB_URL = "https://ais-dev-5jscnf6ijevfgjd7y5gmga-702719526292.europe-west2.run.app/sl-update";
 string API_TOKEN = "holanbra_secret_token"; 
-string CASPERLET_ID = ""; 
-
+string CASPERLET_ID = ""; // Deixe em branco para usar o nome do objeto, ou coloque o UUID do CasperLet (ID da Propriedade)
 default {
     state_entry() {
         if(CASPERLET_ID == "") CASPERLET_ID = llGetObjectName();

@@ -61,6 +61,28 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
         .eq('role', 'manager');
 
       if (managersData) setManagers(managersData);
+
+      // Also try to load managers via API if direct fetch is empty or as preferred method
+      if (residentUuid) {
+        try {
+          const mResponse = await fetch('/api/security/access', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: "manager-list",
+              parcel_id: selectedParcelId,
+              resident_uuid: residentUuid
+            })
+          });
+          const mResult = await mResponse.json();
+          if (mResponse.ok && mResult.success) {
+            setManagers(mResult.data);
+          }
+        } catch (err) {
+          console.error("Error loading managers:", err);
+        }
+      }
+      
       setLoading(false);
     }
 
@@ -286,18 +308,21 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
 
             <div className="space-y-4">
               <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
-                {t('security.managers_display')}
+                {t('security.managers_display', 'Managers')}
               </label>
               <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-wrap gap-2 min-h-[60px]">
                 {managers.length === 0 ? (
                   <div className="w-full flex items-center justify-center text-[9px] text-white/10 uppercase font-black tracking-widest">
-                    {t('security.no_managers')}
+                    {t('security.no_managers', 'No managers added')}
                   </div>
                 ) : (
                   managers.map((m) => (
-                    <div key={m.id} className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[9px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-2">
+                    <div key={m.id} className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[9px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-2 group relative">
                       <Shield size={10} />
                       {m.avatar_name}
+                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-white/5">
+                        {m.avatar_key}
+                      </span>
                     </div>
                   ))
                 )}

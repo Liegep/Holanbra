@@ -165,13 +165,25 @@ async function startServer() {
       // 1. Vincular à propriedade se o id foi fornecido
       let autoLimit = 0;
       if (casperlet_id) {
-        const { data: prop } = await supabase
+        // Tenta buscar primeiro pelo CasperLet ID (UUID) que é mais único
+        const { data: propById } = await supabase
           .from('properties')
           .select('prims_allowed')
-          .eq('name', casperlet_id)
-          .single();
+          .eq('casperlet_id', casperlet_id)
+          .maybeSingle();
         
-        if (prop) autoLimit = prop.prims_allowed || 0;
+        if (propById) {
+          autoLimit = propById.prims_allowed || 0;
+        } else {
+          // Fallback para buscar pelo nome
+          const { data: propByName } = await supabase
+            .from('properties')
+            .select('prims_allowed')
+            .eq('name', casperlet_id)
+            .maybeSingle();
+          
+          if (propByName) autoLimit = propByName.prims_allowed || 0;
+        }
       }
 
       // Se não enviou casperlet_id ou não achou, tenta o método antigo pelo renter_uuid

@@ -628,7 +628,9 @@ const resources = {
         "no_avatars": "No avatars in list",
         "loading": "Loading...",
         "confirm_delete_title": "Double Confirmation",
-        "confirm_delete_desc": "Are you absolutely sure? This action is permanent."
+        "confirm_delete_desc": "Are you absolutely sure? This action is permanent.",
+        "managers_display": "Managers (View Only)",
+        "no_managers": "No managers added"
       }
     }
   },
@@ -1564,7 +1566,9 @@ const resources = {
         "no_avatars": "No hay avatares en la lista",
         "loading": "Cargando...",
         "confirm_delete_title": "Doble Confirmación",
-        "confirm_delete_desc": "¿Estás absolutamente seguro? Esta acción es permanente."
+        "confirm_delete_desc": "¿Estás absolutamente seguro? Esta acción es permanente.",
+        "managers_display": "Gerentes (Solo Vista)",
+        "no_managers": "No se han añadido gerentes"
       },
       "admin": {
         "dashboard": "Terminal Ejecutiva",
@@ -2137,7 +2141,9 @@ const resources = {
         "no_avatars": "Geen avatars in de lijst",
         "loading": "Laden...",
         "confirm_delete_title": "Dubbele Bevestiging",
-        "confirm_delete_desc": "Weet je het absoluut zeker? Deze actie is permanent."
+        "confirm_delete_desc": "Weet je het absoluut zeker? Deze actie is permanent.",
+        "managers_display": "Managers (Alleen Lezen)",
+        "no_managers": "Geen managers toegevoegd"
       },
       "admin": {
         "navigation": {
