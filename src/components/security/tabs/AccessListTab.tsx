@@ -53,6 +53,13 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
   const removeAvatar = async (id: string, avatarKey?: string, avatarName?: string) => {
     if (!selectedParcelId || !residentUuid) return;
     
+    // Find avatar to check role
+    const avatar = avatars.find(a => a.id === id);
+    if (avatar?.role === 'manager') {
+      const confirmed = window.confirm(t('security.confirm_remove_manager', 'This avatar is a manager. Removing it will also revoke manager permissions and orb access. Continue?'));
+      if (!confirmed) return;
+    }
+    
     setLoading(true);
     try {
       const response = await fetch('/api/security/access', {
