@@ -173,85 +173,60 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
   if (!selectedParcelId) return null;
 
   return (
-    <div className="space-y-8">
-      {/* Parcel Selector */}
-      <div className="flex flex-wrap gap-2">
-        {properties.map(p => (
-          <button
-            key={p.casperlet_id}
-            onClick={() => onParcelSelect(p.casperlet_id)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all flex items-center gap-2",
-              selectedParcelId === p.casperlet_id
-                ? "bg-white/10 border-white/20 text-white"
-                : "bg-transparent border-white/5 text-white/30 hover:text-white/50"
-            )}
-          >
-            <MapPin size={10} />
-            {p.name}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-4 pt-1">
 
       {loading ? (
-        <div className="space-y-6">
-          <div className="h-24 bg-white/5 animate-pulse rounded-2xl" />
-          <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
+        <div className="space-y-4">
+          <div className="h-20 bg-white/5 animate-pulse rounded-xl" />
+          <div className="h-40 bg-white/5 animate-pulse rounded-xl" />
         </div>
       ) : !config ? (
-        <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[3rem] text-white/20 gap-8 bg-white/[0.01]">
-          <div className="relative">
-            <Shield size={64} className="opacity-10" />
-            <AlertCircle size={24} className="absolute -top-2 -right-2 text-amber-500 animate-pulse" />
-          </div>
-          <div className="text-center space-y-4">
-            <h3 className="uppercase font-black text-[12px] tracking-[0.5em] text-white/60">
+        <div className="h-48 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/20 gap-4 bg-white/[0.01]">
+          <Shield size={32} className="opacity-10" />
+          <div className="text-center space-y-2">
+            <h3 className="uppercase font-black text-[10px] tracking-[0.3em] text-white/60">
               {t('security.system_offline', 'Security System Offline')}
             </h3>
-            <p className="text-[10px] text-white/20 uppercase tracking-widest font-bold max-w-xs leading-relaxed">
-              Activate the main console in the Terminal tab to configure regional security rules.
+            <p className="text-[8px] text-white/20 uppercase tracking-widest font-bold max-w-xs leading-relaxed">
+              Activate the main console in the Terminal tab.
             </p>
-            <button
-               onClick={() => onParcelSelect(selectedParcelId)}
-               className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-amber-500 hover:border-amber-500/20 transition-all active:scale-95"
-            >
-               Retry Link
-            </button>
           </div>
         </div>
       ) : (
         <>
-          {/* Orb Connection */}
-          <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-2xl space-y-4">
-            <div className="flex items-center gap-2 text-amber-500">
-              <RefreshCw size={16} />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">{t('security.copy_token')}</h3>
+          {/* Orb Connection - Compact */}
+          <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-500">
+                <RefreshCw size={12} />
+                <h3 className="text-[9px] font-black uppercase tracking-[0.2em]">{t('security.copy_token')}</h3>
+              </div>
+              <button
+                onClick={() => setShowConfirmRegen(true)}
+                className="text-[8px] text-white/20 hover:text-red-400 font-bold uppercase tracking-widest transition-colors flex items-center gap-1"
+              >
+                <RefreshCw size={10} />
+                Regenerate
+              </button>
             </div>
             <div className="flex gap-2">
-              <div className="flex-1 px-4 py-3 bg-black/40 border border-white/5 rounded-xl font-mono text-[10px] text-white/60 select-all truncate">
+              <div className="flex-1 px-3 py-2 bg-black/40 border border-white/5 rounded-lg font-mono text-[9px] text-white/60 select-all truncate">
                 {config.orb_token}
               </div>
               <button
                 onClick={copyToClipboard}
-                className="px-4 bg-amber-500 text-black hover:bg-amber-600 rounded-xl transition-all active:scale-95 flex items-center justify-center shrink-0"
+                className="px-3 bg-amber-500 text-black hover:bg-amber-600 rounded-lg transition-all active:scale-95 flex items-center justify-center shrink-0"
               >
-                {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
               </button>
             </div>
-            <button
-              onClick={() => setShowConfirmRegen(true)}
-              className="text-[9px] text-white/20 hover:text-red-400 font-bold uppercase tracking-widest transition-colors flex items-center gap-2"
-            >
-              <RefreshCw size={12} />
-              {t('security.regenerate_token')}
-            </button>
           </div>
 
-          {/* Form Settings */}
-          <form onSubmit={handleSave} className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+          {/* Form Settings - Compact */}
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1">
                   {t('security.radius')}
                 </label>
                 <div className="relative group">
@@ -259,18 +234,18 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                     type="number"
                     value={config.radius}
                     onChange={e => setConfig({ ...config, radius: parseInt(e.target.value) })}
-                    className="w-full px-5 py-4 bg-white/5 border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-white/20 uppercase">Meters</div>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-white/20 uppercase">Meters</div>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1 flex justify-between">
+              <div className="space-y-2">
+                <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1 flex justify-between">
                   {t('security.timer_label')}
                   <span className="text-amber-500 font-mono">{config.warn_time}s</span>
                 </label>
-                <div className="flex gap-2 p-1 bg-black/40 rounded-2xl border border-white/5">
+                <div className="flex gap-1 p-1 bg-black/40 rounded-xl border border-white/5">
                   {timerPresets.map((tP) => (
                     <button
                       key={tP}
@@ -280,7 +255,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                         warn_time: tP
                       })}
                       className={cn(
-                        "flex-1 py-3 rounded-xl text-[10px] font-black transition-all",
+                        "flex-1 py-1.5 rounded-lg text-[9px] font-black transition-all",
                         config.warn_time === tP
                           ? "bg-amber-500 text-black shadow-lg shadow-amber-500/10"
                           : "text-white/20 hover:text-white/40 hover:bg-white/5"
@@ -293,45 +268,45 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
               </div>
             </div>
 
-            <div className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center justify-between">
-              <div className="space-y-1">
-                <div className="text-[11px] text-white font-black uppercase tracking-wider">
+            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-xl flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="text-[10px] text-white font-black uppercase tracking-wider">
                   {t('security.ask_manager_before', 'ASK MANAGER BEFORE EJECTING')}
                 </div>
-                <div className="text-[9px] text-white/20 uppercase font-bold tracking-tight">
-                  {t('security.ask_manager_before_desc', 'SEND APPROVAL POPUP TO MANAGERS BEFORE EJECTING VISITORS')}
+                <div className="text-[8px] text-white/20 uppercase font-bold tracking-tight">
+                  {t('security.ask_manager_before_desc', 'SEND APPROVAL POPUP TO MANAGERS')}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setConfig({ ...config, ask_before: !config.ask_before })}
                 className={cn(
-                  "relative w-12 h-6 rounded-full transition-all duration-300",
+                  "relative w-10 h-5 rounded-full transition-all duration-300",
                   config.ask_before ? "bg-amber-500" : "bg-white/10"
                 )}
               >
                 <div className={cn(
-                  "absolute top-1 w-4 h-4 bg-black rounded-full transition-all duration-300",
-                  config.ask_before ? "left-7" : "left-1"
+                  "absolute top-0.5 w-4 h-4 bg-black rounded-full transition-all duration-300",
+                  config.ask_before ? "left-5.5" : "left-0.5"
                 )} />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+            <div className="space-y-2">
+              <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1">
                 {t('security.managers_display', 'Managers')}
               </label>
-              <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-wrap gap-2 min-h-[60px]">
+              <div className="p-2.5 bg-white/[0.02] border border-white/5 rounded-xl flex flex-wrap gap-1.5 min-h-[40px]">
                 {managers.length === 0 ? (
-                  <div className="w-full flex items-center justify-center text-[9px] text-white/10 uppercase font-black tracking-widest">
+                  <div className="w-full h-full flex items-center justify-center text-[8px] text-white/10 uppercase font-black tracking-widest py-2">
                     {t('security.no_managers', 'No managers added')}
                   </div>
                 ) : (
                   managers.map((m) => (
-                    <div key={m.id} className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-[9px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-2 group relative">
-                      <Shield size={10} />
+                    <div key={m.id} className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded-md text-[8px] font-black text-blue-400 uppercase tracking-wider flex items-center gap-1.5 group relative">
+                      <Shield size={8} />
                       {m.avatar_name}
-                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[8px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-white/5">
+                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black px-2 py-1 rounded text-[7px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-white/5">
                         {m.avatar_key}
                       </span>
                     </div>
@@ -340,22 +315,22 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-white/5">
+            <div className="flex gap-2 pt-2 border-t border-white/5">
               <button
                 type="button"
                 onClick={() => setShowConfirmClear(true)}
-                className="flex-[0.4] py-4 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 border border-red-500/20"
+                className="flex-[0.4] py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 border border-red-500/20"
               >
-                <Trash2 className="w-4 h-4" />
-                {t('security.clear_all_lists')}
+                <Trash2 className="w-3.5 h-3.5" />
+                Purge
               </button>
               
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 py-4 bg-white text-black hover:bg-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all disabled:opacity-50"
+                className="flex-1 py-3 bg-white text-black hover:bg-zinc-200 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all disabled:opacity-50"
               >
-                {saving ? <div className="w-4 h-4 border-2 border-black/20 border-t-black animate-spin rounded-full" /> : <Save size={16} />}
+                {saving ? <div className="w-3.5 h-3.5 border-2 border-black/20 border-t-black animate-spin rounded-full" /> : <Save size={14} />}
                 {t('security.save')}
               </button>
             </div>

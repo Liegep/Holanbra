@@ -52,21 +52,21 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md">
-      <div className="w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-        <div className="p-4 border-b border-white/5 flex items-center justify-between">
-          <h3 className="text-[11px] font-black uppercase text-white tracking-[0.3em] flex items-center gap-2 px-2">
-            <UserPlus size={14} className="text-amber-500" />
+      <div className="w-full max-w-xs bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+        <div className="p-3 border-b border-white/5 flex items-center justify-between bg-zinc-800/50">
+          <h3 className="text-[10px] font-black uppercase text-white tracking-[0.2em] flex items-center gap-2 px-1">
+            <UserPlus size={12} className="text-amber-500" />
             {t('security.add_avatar')}
           </h3>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/5 rounded-lg text-white/40 transition-colors">
-            <X size={18} />
+          <button onClick={onClose} className="p-1 hover:bg-white/5 rounded-md text-white/40 transition-colors">
+            <X size={14} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1">
                 {t('common.name')}
               </label>
               <input
@@ -74,33 +74,33 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Avatar Resident"
-                className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all font-bold"
+                className="w-full px-3 py-2 bg-white/5 border border-white/5 rounded-lg text-[11px] text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all font-bold"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] text-white/40 uppercase font-black tracking-widest px-1">
+            <div className="space-y-1.5">
+              <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1">
                 UUID
               </label>
               <input
                 required
                 value={uuid}
                 onChange={e => setUuid(e.target.value)}
-                placeholder="00000000-0000-0000-0000-000000000000"
-                className="w-full px-4 py-2.5 bg-white/5 border border-white/5 rounded-xl text-[10px] font-mono text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all select-all whitespace-pre truncate"
+                placeholder="00000000-0000..."
+                className="w-full px-3 py-2 bg-white/5 border border-white/5 rounded-lg text-[9px] font-mono text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all truncate"
               />
             </div>
 
-            <div className="px-4 py-3 bg-blue-500/5 border border-blue-500/10 rounded-xl flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-500 text-black flex items-center justify-center">
-                <User size={16} />
+            <div className="px-3 py-2 bg-blue-500/5 border border-blue-500/10 rounded-lg flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-blue-500 text-black flex items-center justify-center">
+                <User size={14} />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none">
+              <div className="space-y-0 text-left">
+                <div className="text-[9px] font-black text-blue-400 uppercase tracking-widest leading-none">
                   {t('security.role_resident')}
                 </div>
-                <div className="text-[8px] font-bold text-white/20 uppercase tracking-tight">
-                  Regular access list entry
+                <div className="text-[7px] font-bold text-white/20 uppercase tracking-tight mt-0.5">
+                  Regular access entry
                 </div>
               </div>
             </div>
@@ -109,9 +109,9 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-white text-black hover:bg-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+            className="w-full py-2.5 bg-white text-black hover:bg-zinc-200 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
           >
-            {loading ? <div className="w-4 h-4 border-2 border-black/20 border-t-black animate-spin rounded-full" /> : <UserPlus size={16} />}
+            {loading ? <div className="w-3.5 h-3.5 border-2 border-black/20 border-t-black animate-spin rounded-full" /> : <UserPlus size={14} />}
             {t('security.confirm')}
           </button>
         </form>
