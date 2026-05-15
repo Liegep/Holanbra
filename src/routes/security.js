@@ -12,24 +12,20 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper de validação de token (Orb Token)
 async function validateOrbToken(token, parcelId) {
+  if (!token || !parcelId) return null;
+  
   const { data, error } = await supabase
     .from('security_parcels')
     .select('casperlet_id, orb_token')
+    .eq('casperlet_id', parcelId)
     .eq('orb_token', token)
-    .single();
+    .maybeSingle();
   
-  if (error) {
-    console.log('[security/validateOrbToken] Error:', error.message, { token, parcelId });
+  if (error || !data) {
+    if (error) console.error('[security/validateOrbToken] Error:', error.message);
     return null;
   }
-  if (!data) {
-    console.log('[security/validateOrbToken] Missing parcel', { token, parcelId });
-    return null;
-  }
-  if (parcelId && data.casperlet_id !== parcelId) {
-    console.log('[security/validateOrbToken] Parcel ID mismatch', { expected: data.casperlet_id, received: parcelId });
-    return null;
-  }
+  
   return data;
 }
 
@@ -68,7 +64,11 @@ router.post('/check', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, avatar_key, avatar_name } = req.body;
     
-    // 1. Validar orb_token + parcel_id em security_parcels (ignora 'active')
+    if (!token || !parcel_id) {
+      return res.status(401).json({ error: 'Missing token or parcel_id' });
+    }
+
+    // 1. Validar orb_token + parcel_id em security_parcels
     const { data: orbParcel, error: orbError } = await supabase
       .from('security_parcels')
       .select('casperlet_id')
@@ -187,24 +187,23 @@ router.get('/config', async (req, res) => {
 
 router.post('/orb-config', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.replace('Bearer ', '') ?? '';
+    const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, active, radius, warn_time, ask_before } = req.body;
 
     if (!parcel_id) {
       return res.status(400).json({ error: 'parcel_id required' });
     }
 
-    // Validar token e parcel
-    const { data: row, error: fetchError } = await supabase
+    // Validar token e parcel juntas
+    const { data: parcel, error } = await supabase
       .from('security_parcels')
       .select('casperlet_id, orb_token')
       .eq('casperlet_id', parcel_id)
       .eq('orb_token', token)
       .maybeSingle();
 
-    if (fetchError || !row) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (error || !parcel) {
+      return res.status(401).json({ error: 'Unauthorized orb token' });
     }
 
     const updatePayload = {
