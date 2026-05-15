@@ -16,7 +16,7 @@ async function validateOrbToken(token, parcelId) {
   
   const { data, error } = await supabase
     .from('security_parcels')
-    .select('casperlet_id, orb_token')
+    .select('*')
     .eq('casperlet_id', parcelId)
     .eq('orb_token', token)
     .maybeSingle();
@@ -69,14 +69,9 @@ router.post('/check', async (req, res) => {
     }
 
     // 1. Validar orb_token + parcel_id em security_parcels
-    const { data: orbParcel, error: orbError } = await supabase
-      .from('security_parcels')
-      .select('casperlet_id')
-      .eq('casperlet_id', parcel_id)
-      .eq('orb_token', token)
-      .maybeSingle();
+    const orbParcel = await validateOrbToken(token, parcel_id);
 
-    if (orbError || !orbParcel) {
+    if (!orbParcel) {
       console.log('[security/check] Unauthorized token/parcel', { parcel_id, token_prefix: token.slice(0, 10) });
       return res.status(401).json({ allowed: false, role: "unauthorized" });
     }
@@ -155,22 +150,20 @@ router.get('/config', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const parcel_id = String(req.query.parcel_id || '');
 
-    const { data: row, error } = await supabase
-      .from('security_parcels')
-      .select('casperlet_id, orb_token, active, radius, warn_time, ask_before')
-      .eq('casperlet_id', parcel_id)
-      .eq('orb_token', token)
-      .maybeSingle();
+    if (!token || !parcel_id) {
+      return res.status(401).json({ error: 'Missing token or parcel_id' });
+    }
+
+    const row = await validateOrbToken(token, parcel_id);
 
     console.log('[ORB CONFIG GET]', {
       parcel_id,
       token_prefix: token.slice(0, 10),
-      error,
-      row
+      found: !!row
     });
 
-    if (error || !row) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (!row) {
+      return res.status(401).json({ error: 'Unauthorized orb token' });
     }
 
     return res.json({
@@ -190,19 +183,14 @@ router.post('/orb-config', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const { parcel_id, active, radius, warn_time, ask_before } = req.body;
 
-    if (!parcel_id) {
-      return res.status(400).json({ error: 'parcel_id required' });
+    if (!token || !parcel_id) {
+      return res.status(401).json({ error: 'Missing token or parcel_id' });
     }
 
     // Validar token e parcel juntas
-    const { data: parcel, error } = await supabase
-      .from('security_parcels')
-      .select('casperlet_id, orb_token')
-      .eq('casperlet_id', parcel_id)
-      .eq('orb_token', token)
-      .maybeSingle();
+    const parcel = await validateOrbToken(token, parcel_id);
 
-    if (error || !parcel) {
+    if (!parcel) {
       return res.status(401).json({ error: 'Unauthorized orb token' });
     }
 
@@ -669,14 +657,13 @@ router.get('/managers', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '') ?? '';
     const parcel_id = String(req.query.parcel_id || '');
 
-    const { data: parcel, error: parcelError } = await supabase
-      .from('security_parcels')
-      .select('casperlet_id')
-      .eq('casperlet_id', parcel_id)
-      .eq('orb_token', token)
-      .maybeSingle();
+    if (!token || !parcel_id) {
+      return res.status(401).json({ error: 'Missing token or parcel_id' });
+    }
 
-    if (parcelError || !parcel) {
+    const parcel = await validateOrbToken(token, parcel_id);
+
+    if (!parcel) {
       return res.status(403).json({ error: 'Forbidden: Access denied' });
     }
 
