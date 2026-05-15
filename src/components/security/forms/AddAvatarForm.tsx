@@ -74,7 +74,7 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="Avatar Resident"
-                className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all"
+                className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-amber-500/50 transition-all font-bold"
               />
             </div>
 
@@ -91,33 +91,18 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setRole('resident')}
-                className={cn(
-                  "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all",
-                  role === 'resident'
-                    ? "bg-blue-500/10 border-blue-500/50 text-blue-500 shadow-lg shadow-blue-500/10"
-                    : "bg-transparent border-white/5 text-white/20 hover:text-white/40"
-                )}
-              >
-                <User size={20} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('security.role_resident')}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('manager')}
-                className={cn(
-                  "p-3 rounded-xl border flex flex-col items-center gap-2 transition-all",
-                  role === 'manager'
-                    ? "bg-amber-500/10 border-amber-500/50 text-amber-500 shadow-lg shadow-amber-500/10"
-                    : "bg-transparent border-white/5 text-white/20 hover:text-white/40"
-                )}
-              >
-                <ShieldCheck size={20} />
-                <span className="text-[9px] font-black uppercase tracking-widest">{t('security.role_manager')}</span>
-              </button>
+            <div className="px-4 py-3 bg-blue-500/5 border border-blue-500/10 rounded-xl flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 text-black flex items-center justify-center">
+                <User size={16} />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none">
+                  {t('security.role_resident')}
+                </div>
+                <div className="text-[8px] font-bold text-white/20 uppercase tracking-tight">
+                  Regular access list entry
+                </div>
+              </div>
             </div>
           </div>
 

@@ -182,14 +182,23 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
                   </div>
                 </div>
 
-                <button
-                  onClick={() => removeAvatar(avatar.id, avatar.avatar_key, avatar.avatar_name)}
-                  className="w-14 h-14 flex items-center justify-center text-white/20 hover:text-white hover:bg-red-500/80 rounded-2xl transition-all border border-white/5 hover:border-red-400/50 shadow-lg active:scale-90 group/del"
-                  title="Remover Acesso"
-                  disabled={loading}
-                >
-                  <Trash2 size={22} className={cn("group-hover/del:scale-110 transition-transform", loading && "animate-pulse")} />
-                </button>
+                {avatar.role === 'manager' ? (
+                  <div 
+                    className="w-14 h-14 flex items-center justify-center text-amber-500/30 border border-amber-500/10 rounded-2xl cursor-help group/manager"
+                    title={t('security.manager_locked_info', 'Managers can only be changed by admin')}
+                  >
+                    <ShieldCheck size={22} className="group-hover/manager:scale-110 transition-transform" />
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => removeAvatar(avatar.id, avatar.avatar_key, avatar.avatar_name)}
+                    className="w-14 h-14 flex items-center justify-center text-white/20 hover:text-white hover:bg-red-500/80 rounded-2xl transition-all border border-white/5 hover:border-red-400/50 shadow-lg active:scale-90 group/del"
+                    title="Remover Acesso"
+                    disabled={loading}
+                  >
+                    <Trash2 size={22} className={cn("group-hover/del:scale-110 transition-transform", loading && "animate-pulse")} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

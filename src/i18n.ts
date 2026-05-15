@@ -630,6 +630,7 @@ const resources = {
         "confirm_delete_title": "Double Confirmation",
         "confirm_delete_desc": "Are you absolutely sure? This action is permanent.",
         "confirm_remove_manager": "This avatar is a manager. Removing it will also revoke manager permissions and orb access. Continue?",
+        "manager_locked_info": "Managers can only be changed by admin",
         "managers_display": "Managers (View Only)",
         "no_managers": "No managers added"
       }
@@ -1267,6 +1268,7 @@ const resources = {
         "confirm_delete_title": "Confirmação Dupla",
         "confirm_delete_desc": "Você tem certeza absoluta? Esta ação é permanente.",
         "confirm_remove_manager": "Este avatar é manager. Remover também retirará permissão de manager e acesso ao orb. Continuar?",
+        "manager_locked_info": "Managers só podem ser alterados pelo admin",
         "clear_all_lists": "Limpar tudo",
         "purge_desc": "Deseja apagar as listas de acesso e ban deste terreno? Esta ação é permanente.",
         "managers_display": "Gerentes (Somente Visualização)",
@@ -1570,6 +1572,7 @@ const resources = {
         "confirm_delete_title": "Doble Confirmación",
         "confirm_delete_desc": "¿Estás absolutamente seguro? Esta acción es permanente.",
         "confirm_remove_manager": "Este avatar es un administrador. Al eliminarlo, también se revocarán los permisos de administrador y el acceso al orb. ¿Continuar?",
+        "manager_locked_info": "Los managers solo podem ser alterados por el admin",
         "managers_display": "Gerentes (Solo Vista)",
         "no_managers": "No se han añadido gerentes"
       },
@@ -2146,6 +2149,7 @@ const resources = {
         "confirm_delete_title": "Dubbele Bevestiging",
         "confirm_delete_desc": "Weet je het absoluut zeker? Deze actie is permanent.",
         "confirm_remove_manager": "Deze avatar is een manager. Het verwijderen ervan zal ook de managerrechten en de toegang tot de orb intrekken. Doorgaan?",
+        "manager_locked_info": "Managers kunnen alleen door de beheerder worden gewijzigd",
         "managers_display": "Managers (Alleen Lezen)",
         "no_managers": "Geen managers toegevoegd"
       },
