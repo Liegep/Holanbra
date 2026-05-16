@@ -17,7 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
 import ReactMarkdown from 'react-markdown';
 
@@ -73,10 +73,18 @@ interface StructuredAnswer {
   expertTip: string;
 }
 
+const generateId = () => {
+  try {
+    return crypto.randomUUID();
+  } catch (e) {
+    return Math.random().toString(36).substring(2, 11);
+  }
+};
+
 const INITIAL_STRUCTURED: StructuredAnswer = {
   type: 'structured',
   intro: '',
-  steps: [{ id: crypto.randomUUID(), title: '', content: '' }],
+  steps: [{ id: generateId(), title: '', content: '' }],
   footer: '',
   expertTip: ''
 };
@@ -129,7 +137,7 @@ export const AdminFAQManager: React.FC = () => {
         // Ensure all steps have IDs for reordering
         const stepsWithIds = parsed.steps.map((s: any) => ({
           ...s,
-          id: s.id || crypto.randomUUID()
+          id: s.id || generateId()
         }));
         return { ...parsed, steps: stepsWithIds };
       }
@@ -458,7 +466,7 @@ export const AdminFAQManager: React.FC = () => {
                         onClick={() => {
                           const current = getStructuredData(activeLang);
                           updateStructuredData(activeLang, {
-                            steps: [...current.steps, { id: crypto.randomUUID(), title: '', content: '' }]
+                            steps: [...current.steps, { id: generateId(), title: '', content: '' }]
                           });
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
