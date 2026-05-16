@@ -42,6 +42,7 @@ import { AdminPricingManager } from './admin/AdminPricingManager';
 import { AdminLinkManager } from './admin/AdminLinkManager';
 import { AdminFAQManager } from './admin/AdminFAQManager';
 import { AdminPrimManager } from './admin/AdminPrimManager';
+import { AdminSecurityManagers } from './admin/AdminSecurityManagers';
 
 const INITIAL_FORM_DATA = {
   name: '',
@@ -70,7 +71,7 @@ export default function AdminArea() {
   const { t } = useTranslation();
   
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links' | 'faqs' | 'prims'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links' | 'faqs' | 'prims' | 'security'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -1094,6 +1095,7 @@ export default function AdminArea() {
             { id: 'links', name: t('admin.navigation.links'), icon: LinkIcon },
             { id: 'faqs', name: t('admin.navigation.faqs'), icon: HelpCircle },
             { id: 'prims', name: t('admin.navigation.prims', 'Prim Counter'), icon: Box },
+            { id: 'security', name: 'Orb Managers', icon: ShieldCheck },
           ].map((item) => (
             <button
               key={item.id}
@@ -1230,6 +1232,10 @@ export default function AdminArea() {
 
           {activeTab === 'prims' && (
             <AdminPrimManager />
+          )}
+
+          {activeTab === 'security' && (
+            <AdminSecurityManagers />
           )}
 
           {activeTab === 'listings' && (

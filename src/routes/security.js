@@ -10,6 +10,50 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Middleware to check if user is an admin
+async function isAdmin(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '') ?? '';
+    
+    if (!token) return res.status(401).json({ error: 'Missing token' });
+    
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+    
+    const userEmail = user.email?.toLowerCase();
+    const hardcodedAdmins = [
+      'hello@liegepaschoalini.design', 
+      'slmariew@gmail.com', 
+      'victoriaholanbra@gmail.com',
+      'meiga1975@gmail.com'
+    ];
+    
+    let isAuthorized = userEmail && hardcodedAdmins.includes(userEmail);
+
+    if (!isAuthorized && userEmail) {
+      // Check dynamic admins table
+      const { data: dbAdmin } = await supabase
+        .from('admins')
+        .select('email')
+        .eq('email', userEmail)
+        .maybeSingle();
+      
+      if (dbAdmin) isAuthorized = true;
+    }
+    
+    if (!isAuthorized && !user.app_metadata?.is_admin) {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+    
+    req.adminUser = user;
+    next();
+  } catch (err) {
+    console.error('[security/isAdmin] Error:', err.message);
+    res.status(500).json({ error: 'Internal server error during auth check' });
+  }
+}
+
 // Helper de validação de token (Orb Token)
 async function validateOrbToken(token, parcelId) {
   if (!token || !parcelId) return null;
@@ -445,6 +489,30 @@ async function accessActionHandler(req, res) {
     if (action === 'add' || action === 'add-manager') {
       const finalRole = action === 'add-manager' ? 'manager' : (role || 'resident');
       
+      // Bloqueio extra: somente admin pode adicionar role 'manager'
+      if (finalRole === 'manager' && authType !== 'orb') {
+        const adminCheckToken = req.headers.authorization?.replace('Bearer ', '') ?? '';
+        let isActuallyAdmin = false;
+        
+        if (adminCheckToken) {
+          const { data: { user } } = await supabase.auth.getUser(adminCheckToken);
+          if (user) {
+            const userEmail = user.email?.toLowerCase();
+            const hardcodedAdmins = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com', 'meiga1975@gmail.com'];
+            isActuallyAdmin = (userEmail && hardcodedAdmins.includes(userEmail)) || user.app_metadata?.is_admin;
+            
+            if (!isActuallyAdmin && userEmail) {
+              const { data: dbAdmin } = await supabase.from('admins').select('email').eq('email', userEmail).maybeSingle();
+              if (dbAdmin) isActuallyAdmin = true;
+            }
+          }
+        }
+        
+        if (!isActuallyAdmin) {
+          return res.status(403).json({ error: 'Only admins can add managers' });
+        }
+      }
+
       const payload = {
         casperlet_id: parcel_id,
         avatar_name,
@@ -496,10 +564,35 @@ async function accessActionHandler(req, res) {
     }
 
     if (action === 'remove' || action === 'remove-manager') {
+      // Bloqueio extra para remoção de managers
+      let isActuallyAdmin = false;
+      const adminCheckToken = req.headers.authorization?.replace('Bearer ', '') ?? '';
+      
+      if (adminCheckToken) {
+        const { data: { user } } = await supabase.auth.getUser(adminCheckToken);
+        if (user) {
+          const userEmail = user.email?.toLowerCase();
+          const hardcodedAdmins = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com', 'meiga1975@gmail.com'];
+          isActuallyAdmin = (userEmail && hardcodedAdmins.includes(userEmail)) || user.app_metadata?.is_admin;
+          if (!isActuallyAdmin && userEmail) {
+            const { data: dbAdmin } = await supabase.from('admins').select('email').eq('email', userEmail).maybeSingle();
+            if (dbAdmin) isActuallyAdmin = true;
+          }
+        }
+      }
+
+      if (action === 'remove-manager' && !isActuallyAdmin) {
+        return res.status(403).json({ error: 'Only admins can remove managers' });
+      }
+
       const query = supabase
         .from('security_access_list')
         .delete()
         .eq('casperlet_id', parcel_id);
+      
+      if (!isActuallyAdmin) {
+        query.neq('role', 'manager');
+      }
       
       if (avatar_key) query.eq('avatar_key', avatar_key);
       else if (avatar_name) query.eq('avatar_name', avatar_name);
@@ -678,6 +771,84 @@ router.get('/managers', async (req, res) => {
     return res.json(data || []);
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+});
+
+// ADMIN ENDPOINTS FOR SECURITY MANAGERS
+router.get('/admin/managers', isAdmin, async (req, res) => {
+  try {
+    const { parcel_id } = req.query;
+    if (!parcel_id) return res.status(400).json({ error: 'Missing parcel_id' });
+
+    const { data, error } = await supabase
+      .from('security_access_list')
+      .select('*')
+      .eq('casperlet_id', parcel_id)
+      .eq('role', 'manager')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/admin/managers', isAdmin, async (req, res) => {
+  try {
+    const { parcel_id, avatar_name, avatar_key } = req.body;
+    if (!parcel_id || !avatar_name || !avatar_key) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if already exists
+    const { data: existing } = await supabase
+      .from('security_access_list')
+      .select('id')
+      .eq('casperlet_id', parcel_id)
+      .eq('avatar_key', avatar_key)
+      .maybeSingle();
+
+    if (existing) {
+      return res.status(409).json({ success: false, error: 'Manager already exists' });
+    }
+
+    const { data, error } = await supabase
+      .from('security_access_list')
+      .insert({
+        casperlet_id: parcel_id,
+        avatar_name,
+        avatar_key,
+        role: 'manager'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete('/admin/managers', isAdmin, async (req, res) => {
+  try {
+    const { parcel_id, avatar_key } = req.body;
+    if (!parcel_id || !avatar_key) {
+      return res.status(400).json({ error: 'Missing parcel_id or avatar_key' });
+    }
+
+    const { error } = await supabase
+      .from('security_access_list')
+      .delete()
+      .eq('casperlet_id', parcel_id)
+      .eq('avatar_key', avatar_key)
+      .eq('role', 'manager');
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

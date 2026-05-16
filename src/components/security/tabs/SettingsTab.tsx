@@ -127,8 +127,8 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
     if (!selectedParcelId) return;
     setClearing(true);
     
-    // Clear access list
-    await supabase.from('security_access_list').delete().eq('casperlet_id', selectedParcelId);
+    // Clear access list (excluding managers)
+    await supabase.from('security_access_list').delete().eq('casperlet_id', selectedParcelId).neq('role', 'manager');
     // Clear ban list
     await supabase.from('security_ban_list').delete().eq('casperlet_id', selectedParcelId);
     
