@@ -17,7 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence, Reorder, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
 import ReactMarkdown from 'react-markdown';
 
@@ -114,6 +114,179 @@ const INITIAL_FAQ: Omit<FAQ, 'id'> = {
   answer_es: '',
   question_nl: '',
   answer_nl: ''
+};
+
+interface StepItemProps {
+  step: GuideStep;
+  idx: number;
+  activeLang: string;
+  stepsCount: number;
+  updateStructuredData: (lang: string, data: Partial<StructuredAnswer>) => void;
+  getStructuredData: (lang: string) => StructuredAnswer;
+}
+
+const StepItem: React.FC<StepItemProps> = ({ step, idx, activeLang, stepsCount, updateStructuredData, getStructuredData }) => {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item 
+      key={step.id} 
+      value={step}
+      dragListener={false}
+      dragControls={controls}
+      whileDrag={{ 
+        scale: 1.02,
+        backgroundColor: "rgba(255, 255, 255, 0.08)",
+        boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+      }}
+      className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group relative touch-none hover:border-amber-500/20 transition-colors"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div 
+            onPointerDown={(e) => controls.start(e)}
+            className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/20 hover:text-amber-500 bg-black/20"
+          >
+            <GripVertical size={16} />
+          </div>
+          <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
+        </div>
+        {stepsCount > 1 && (
+          <button
+            type="button"
+            onClick={() => {
+              const current = getStructuredData(activeLang);
+              updateStructuredData(activeLang, {
+                steps: current.steps.filter((_, i) => i !== idx)
+              });
+            }}
+            className="text-white/10 hover:text-red-500 transition-colors p-1"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
+      </div>
+      <input
+        type="text"
+        value={step.title}
+        onChange={(e) => {
+          const current = getStructuredData(activeLang);
+          const newSteps = [...current.steps];
+          newSteps[idx].title = e.target.value;
+          updateStructuredData(activeLang, { steps: newSteps });
+        }}
+        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 text-sm font-bold"
+        placeholder={`Step ${idx + 1} Title`}
+      />
+      <textarea
+        value={step.content}
+        onChange={(e) => {
+          const current = getStructuredData(activeLang);
+          const newSteps = [...current.steps];
+          newSteps[idx].content = e.target.value;
+          updateStructuredData(activeLang, { steps: newSteps });
+        }}
+        rows={3}
+        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
+        placeholder="Describe what needs to be done..."
+      />
+    </Reorder.Item>
+  );
+};
+
+interface FAQItemProps {
+  faq: FAQ;
+  t: (key: string, options?: any) => string;
+  handleEdit: (faq: FAQ) => void;
+  handleDelete: (id: string) => void;
+}
+
+const FAQItem: React.FC<FAQItemProps> = ({ faq, t, handleEdit, handleDelete }) => {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item
+      key={faq.id}
+      value={faq}
+      dragListener={false}
+      dragControls={controls}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      whileDrag={{ 
+        scale: 1.02,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        zIndex: 100,
+        boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.5)"
+      }}
+      className="glass-card p-6 border-white/5 flex items-center justify-between group touch-none hover:border-amber-500/20 transition-all"
+    >
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
+          <div 
+            onPointerDown={(e) => controls.start(e)}
+            className="cursor-grab active:cursor-grabbing p-3 bg-white/5 rounded-2xl transition-all text-white/20 hover:text-amber-500 hover:bg-white/10"
+          >
+            <GripVertical size={20} />
+          </div>
+        </div>
+      <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span className={cn(
+          "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
+          faq.category === 'technical' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+          faq.category === 'land' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+          faq.category === 'billing' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+          "bg-amber-500/10 text-amber-400 border-amber-500/20"
+        )}>
+          {t(`admin.faqs.categories.${faq.category}`)}
+        </span>
+      </div>
+      <h4 className="text-lg font-bold text-white mb-2">{faq.question_en}</h4>
+      <div className="flex flex-col gap-1 mt-2">
+        <div className="flex gap-2 items-center">
+          <span className="text-[6px] font-black uppercase text-white/20 w-4">Q:</span>
+          {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
+            <div 
+              key={lang}
+              title={`Question ${lang.toUpperCase()}`}
+              className={cn(
+                "w-1 h-1 rounded-full",
+                faq[`question_${lang}` as keyof FAQ] ? "bg-amber-500" : "bg-white/10"
+              )}
+            />
+          ))}
+        </div>
+        <div className="flex gap-2 items-center">
+          <span className="text-[6px] font-black uppercase text-white/20 w-4">A:</span>
+          {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
+            <div 
+              key={lang}
+              title={`Answer ${lang.toUpperCase()}`}
+              className={cn(
+                "w-1 h-1 rounded-full",
+                faq[`answer_${lang}` as keyof FAQ] ? "bg-amber-500" : "bg-white/10"
+              )}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+    <button
+      onClick={() => handleEdit(faq)}
+      className="p-3 bg-white/5 text-white/40 rounded-xl hover:bg-white hover:text-black transition-all"
+    >
+      <Edit2 size={16} />
+    </button>
+    <button
+      onClick={() => handleDelete(faq.id)}
+      className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
+    </Reorder.Item>
+  );
 };
 
 export const AdminFAQManager: React.FC = () => {
@@ -481,73 +654,17 @@ export const AdminFAQManager: React.FC = () => {
                       onReorder={(newSteps) => updateStructuredData(activeLang, { steps: newSteps })}
                       className="space-y-3"
                     >
-                      {getStructuredData(activeLang).steps.map((step, idx) => {
-                        const controls = useDragControls();
-                        return (
-                          <Reorder.Item 
-                            key={step.id} 
-                            value={step}
-                            dragListener={false}
-                            dragControls={controls}
-                            whileDrag={{ 
-                              scale: 1.02,
-                              backgroundColor: "rgba(255, 255, 255, 0.08)",
-                              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
-                            }}
-                            className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group relative touch-none hover:border-amber-500/20 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div 
-                                  onPointerDown={(e) => controls.start(e)}
-                                  className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/20 hover:text-amber-500 bg-black/20"
-                                >
-                                  <GripVertical size={16} />
-                                </div>
-                                <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
-                              </div>
-                              {getStructuredData(activeLang).steps.length > 1 && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current = getStructuredData(activeLang);
-                                    updateStructuredData(activeLang, {
-                                      steps: current.steps.filter((_, i) => i !== idx)
-                                    });
-                                  }}
-                                  className="text-white/10 hover:text-red-500 transition-colors p-1"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              )}
-                            </div>
-                            <input
-                              type="text"
-                              value={step.title}
-                              onChange={(e) => {
-                                const current = getStructuredData(activeLang);
-                                const newSteps = [...current.steps];
-                                newSteps[idx].title = e.target.value;
-                                updateStructuredData(activeLang, { steps: newSteps });
-                              }}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 text-sm font-bold"
-                              placeholder={`Step ${idx + 1} Title`}
-                            />
-                            <textarea
-                              value={step.content}
-                              onChange={(e) => {
-                                const current = getStructuredData(activeLang);
-                                const newSteps = [...current.steps];
-                                newSteps[idx].content = e.target.value;
-                                updateStructuredData(activeLang, { steps: newSteps });
-                              }}
-                              rows={3}
-                              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
-                              placeholder="Describe what needs to be done..."
-                            />
-                          </Reorder.Item>
-                        );
-                      })}
+                      {getStructuredData(activeLang).steps.map((step, idx) => (
+                        <StepItem 
+                          key={step.id}
+                          step={step}
+                          idx={idx}
+                          activeLang={activeLang}
+                          stepsCount={getStructuredData(activeLang).steps.length}
+                          updateStructuredData={updateStructuredData}
+                          getStructuredData={getStructuredData}
+                        />
+                      ))}
                     </Reorder.Group>
                   </div>
 
@@ -658,94 +775,15 @@ export const AdminFAQManager: React.FC = () => {
           }
         }} className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {faqs.map((faq) => {
-              const controls = useDragControls();
-              return (
-                <Reorder.Item
-                  key={faq.id}
-                  value={faq}
-                  dragListener={false}
-                  dragControls={controls}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  whileDrag={{ 
-                    scale: 1.02,
-                    backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    zIndex: 100,
-                    boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.5)"
-                  }}
-                  className="glass-card p-6 border-white/5 flex items-center justify-between group touch-none hover:border-amber-500/20 transition-all"
-                >
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-4">
-                      <div 
-                        onPointerDown={(e) => controls.start(e)}
-                        className="cursor-grab active:cursor-grabbing p-3 bg-white/5 rounded-2xl transition-all text-white/20 hover:text-amber-500 hover:bg-white/10"
-                      >
-                        <GripVertical size={20} />
-                      </div>
-                    </div>
-                  <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
-                      faq.category === 'technical' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
-                      faq.category === 'land' ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
-                      faq.category === 'billing' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                      "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                    )}>
-                      {t(`admin.faqs.categories.${faq.category}`)}
-                    </span>
-                  </div>
-                  <h4 className="text-lg font-bold text-white mb-2">{faq.question_en}</h4>
-                  <div className="flex flex-col gap-1 mt-2">
-                    <div className="flex gap-2 items-center">
-                      <span className="text-[6px] font-black uppercase text-white/20 w-4">Q:</span>
-                      {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
-                        <div 
-                          key={lang}
-                          title={`Question ${lang.toUpperCase()}`}
-                          className={cn(
-                            "w-1 h-1 rounded-full",
-                            faq[`question_${lang}`] ? "bg-amber-500" : "bg-white/10"
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <span className="text-[6px] font-black uppercase text-white/20 w-4">A:</span>
-                      {(['en', 'pt', 'es', 'nl'] as const).map(lang => (
-                        <div 
-                          key={lang}
-                          title={`Answer ${lang.toUpperCase()}`}
-                          className={cn(
-                            "w-1 h-1 rounded-full",
-                            faq[`answer_${lang}`] ? "bg-amber-500" : "bg-white/10"
-                          )}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleEdit(faq)}
-                  className="p-3 bg-white/5 text-white/40 rounded-xl hover:bg-white hover:text-black transition-all"
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button
-                  onClick={() => handleDelete(faq.id)}
-                  className="p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-                </Reorder.Item>
-              );
-            })}
+            {faqs.map((faq) => (
+              <FAQItem 
+                key={faq.id} 
+                faq={faq} 
+                t={t} 
+                handleEdit={handleEdit} 
+                handleDelete={handleDelete} 
+              />
+            ))}
           </AnimatePresence>
         </Reorder.Group>
         {faqs.length === 0 && !loading && (
