@@ -17,9 +17,18 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
   const [uuid, setUuid] = useState('');
   const [role, setRole] = useState<'manager' | 'resident'>('resident');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+
+    const trimmedUuid = uuid.trim();
+    if (!trimmedUuid) {
+      setError('Avatar UUID is required');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -31,7 +40,7 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
           parcel_id: casperletId,
           resident_uuid: residentUuid,
           avatar_name: name.trim(),
-          avatar_key: uuid.trim(),
+          avatar_key: trimmedUuid,
           role
         })
       });
@@ -41,10 +50,10 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
       if (response.ok) {
         onSuccess(data.data);
       } else {
-        console.error('Error adding avatar:', data.error);
+        setError(data.error || 'Error adding avatar');
       }
     } catch (err) {
-      console.error('Error adding avatar:', err);
+      setError('Connection error');
     }
     
     setLoading(false);
@@ -64,6 +73,11 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {error && (
+            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-[9px] text-red-500 font-bold uppercase tracking-wider text-center">{error}</p>
+            </div>
+          )}
           <div className="space-y-3">
             <div className="space-y-1.5">
               <label className="text-[9px] text-white/40 uppercase font-black tracking-widest px-1">

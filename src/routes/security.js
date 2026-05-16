@@ -489,6 +489,10 @@ async function accessActionHandler(req, res) {
     if (action === 'add' || action === 'add-manager') {
       const finalRole = action === 'add-manager' ? 'manager' : (role || 'resident');
       
+      if (!avatar_key || !avatar_key.trim()) {
+        return res.status(400).json({ error: 'Avatar UUID is required' });
+      }
+
       // Bloqueio extra: somente admin pode adicionar role 'manager'
       if (finalRole === 'manager' && authType !== 'orb') {
         const adminCheckToken = req.headers.authorization?.replace('Bearer ', '') ?? '';
@@ -606,6 +610,9 @@ async function accessActionHandler(req, res) {
     }
 
     if (action === 'ban') {
+      if (!avatar_key || !avatar_key.trim()) {
+        return res.status(400).json({ error: 'Avatar UUID is required' });
+      }
       const { data, error } = await supabase
         .from('security_ban_list')
         .insert({
