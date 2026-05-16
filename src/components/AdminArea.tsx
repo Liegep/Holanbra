@@ -16,7 +16,8 @@ import {
   AlertCircle,
   DollarSign,
   HelpCircle,
-  Box
+  Box,
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase, signOut } from '../lib/supabase';
@@ -43,6 +44,7 @@ import { AdminLinkManager } from './admin/AdminLinkManager';
 import { AdminFAQManager } from './admin/AdminFAQManager';
 import { AdminPrimManager } from './admin/AdminPrimManager';
 import { AdminSecurityManagers } from './admin/AdminSecurityManagers';
+import { AdminDecorationOrders } from './admin/AdminDecorationOrders';
 
 const INITIAL_FORM_DATA = {
   name: '',
@@ -71,7 +73,7 @@ export default function AdminArea() {
   const { t } = useTranslation();
   
   // UI State
-  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links' | 'faqs' | 'prims' | 'security'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'renters' | 'add' | 'covenant' | 'gallery' | 'team' | 'hero' | 'inbox' | 'tickets' | 'portfolio' | 'pricing' | 'links' | 'faqs' | 'prims' | 'security' | 'decoration'>('listings');
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
     type: 'success',
@@ -91,6 +93,7 @@ export default function AdminArea() {
   const [inboxMessages, setInboxMessages] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [decorationOrders, setDecorationOrders] = useState<any[]>([]);
   const [allPropertyTenants, setAllPropertyTenants] = useState<any[]>([]);
   const [selectedDescriptionLang, setSelectedDescriptionLang] = useState('en');
   const [heroContent, setHeroContent] = useState<any>({
@@ -270,7 +273,8 @@ export default function AdminArea() {
       // Explicit mapping of IDs
       const mappedData = data?.map(msg => ({
         ...msg,
-        id: msg.id.toString() // Ensuring string format
+        id: msg.id.toString(), // Ensuring string format
+        is_read: !!msg.is_read
       })) || [];
       
       setInboxMessages(mappedData);
@@ -287,6 +291,16 @@ export default function AdminArea() {
       setTeamMembers(data || []);
     } catch (err) {
       console.error("Fetch team error:", err);
+    }
+  };
+
+  const fetchDecorationOrders = async () => {
+    try {
+      const { data, error } = await supabase.from('decoration_orders').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      setDecorationOrders(data || []);
+    } catch (err) {
+      console.error("Fetch decoration orders error:", err);
     }
   };
 
@@ -343,6 +357,7 @@ export default function AdminArea() {
     fetchInboxMessages();
     fetchTeam();
     fetchTickets();
+    fetchDecorationOrders();
     fetchPropertyTenants();
   };
 
@@ -369,15 +384,16 @@ export default function AdminArea() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, (payload) => {
           if (payload.eventType === 'UPDATE') {
             setInboxMessages(current => current.map(msg => 
-              msg.id.toString() === payload.new.id.toString() ? { ...payload.new, id: payload.new.id.toString() } : msg
+              msg.id.toString() === payload.new.id.toString() ? { ...payload.new, id: payload.new.id.toString(), is_read: !!payload.new.is_read } : msg
             ));
           } else if (payload.eventType === 'INSERT') {
-            setInboxMessages(current => [{ ...payload.new, id: payload.new.id.toString() }, ...current]);
+            setInboxMessages(current => [{ ...payload.new, id: payload.new.id.toString(), is_read: !!payload.new.is_read }, ...current]);
           } else if (payload.eventType === 'DELETE') {
             setInboxMessages(current => current.filter(msg => msg.id.toString() !== payload.old.id.toString()));
           }
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'property_tenants' }, fetchPropertyTenants)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'decoration_orders' }, fetchDecorationOrders)
         .subscribe();
 
       return () => {
@@ -1074,8 +1090,9 @@ export default function AdminArea() {
     );
   }
 
-  const unreadInboxCount = inboxMessages.filter(m => !m.is_read).length;
+  const unreadInboxCount = inboxMessages.filter(m => m.is_read === false || m.is_read === 0 || !m.is_read).length;
   const openTicketsCount = tickets.filter(t => t.status === 'open').length;
+  const unreadOrdersCount = decorationOrders.filter(o => o.status === 'pending').length;
 
   return (
     <div className="pt-32 pb-24 px-6 md:px-12 bg-zinc-950 min-h-screen">
@@ -1109,6 +1126,7 @@ export default function AdminArea() {
             { id: 'gallery', name: t('admin.navigation.gallery'), icon: ImageIcon },
             { id: 'hero', name: t('admin.navigation.hero_section'), icon: ImageIcon },
             { id: 'team', name: t('admin.navigation.team'), icon: UserIcon },
+            { id: 'decoration', name: 'Decoration Orders', icon: Sparkles, hasNotification: unreadOrdersCount > 0 },
             { id: 'inbox', name: t('admin.navigation.inbox'), icon: Mail, hasNotification: unreadInboxCount > 0 },
             { id: 'tickets', name: t('admin.navigation.support'), icon: MessageSquare, hasNotification: openTicketsCount > 0 },
             { id: 'covenant', name: t('admin.navigation.covenant'), icon: FileText },
@@ -1159,6 +1177,13 @@ export default function AdminArea() {
               handleSendResponse={handleSendResponse}
               handleDeleteTicket={handleDeleteTicket}
               stats={stats}
+            />
+          )}
+
+          {activeTab === 'decoration' && (
+            <AdminDecorationOrders 
+              orders={decorationOrders} 
+              onRefresh={fetchDecorationOrders} 
             />
           )}
 

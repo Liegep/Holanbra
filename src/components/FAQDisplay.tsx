@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 interface FAQ {
   id: string;
@@ -269,7 +270,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                       <div className="space-y-10">
                                           {structured.intro && (
                                             <div className="text-xl leading-relaxed text-white/90 mb-8 border-l-2 border-amber-500/30 pl-6 rich-content faq-rich-content">
-                                              <ReactMarkdown>{structured.intro}</ReactMarkdown>
+                                              <ReactMarkdown rehypePlugins={[rehypeRaw]}>{structured.intro}</ReactMarkdown>
                                             </div>
                                           )}
                                         
@@ -282,7 +283,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                               <div className="space-y-2">
                                                 <h5 className="text-lg font-bold text-amber-500 tracking-tight">{step.title}</h5>
                                                 <div className="text-white/70 leading-relaxed rich-content faq-rich-content">
-                                                  <ReactMarkdown>{step.content}</ReactMarkdown>
+                                                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>{step.content}</ReactMarkdown>
                                                 </div>
                                               </div>
                                             </div>
@@ -293,7 +294,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                           <div className="pt-8 border-t border-white/5 space-y-6">
                                             {structured.footer && (
                                               <div className="text-white/50 text-sm italic leading-relaxed rich-content faq-rich-content">
-                                                <ReactMarkdown>{structured.footer}</ReactMarkdown>
+                                                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{structured.footer}</ReactMarkdown>
                                               </div>
                                             )}
                                             {structured.expertTip && (
@@ -306,7 +307,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                                   <div className="space-y-1">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/70">Expert Tip</span>
                                                     <div className="text-emerald-500/90 font-medium italic rich-content faq-rich-content">
-                                                      <ReactMarkdown>{structured.expertTip}</ReactMarkdown>
+                                                      <ReactMarkdown rehypePlugins={[rehypeRaw]}>{structured.expertTip}</ReactMarkdown>
                                                     </div>
                                                   </div>
                                                 </div>
@@ -321,7 +322,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
 
                                 return (
                                   <div className="rich-content faq-rich-content">
-                                    <ReactMarkdown>{answer}</ReactMarkdown>
+                                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>{answer}</ReactMarkdown>
                                   </div>
                                 );
                               })()}

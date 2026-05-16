@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Check, MessageSquare } from 'lucide-react';
+import { Check, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
+import { DecorationOrderForm } from './DecorationOrderForm';
 
 interface PricingPackage {
   id: string;
@@ -20,6 +21,7 @@ export default function Pricing() {
   const { t, i18n } = useTranslation();
   const [packages, setPackages] = useState<PricingPackage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
 
   // Use i18n language as the primary source for translation lookup
   const currentLang = i18n.language || paramLang || 'en';
@@ -85,20 +87,7 @@ export default function Pricing() {
   }, [currentLang]);
 
   const handleOrder = (packageName: string) => {
-    // @ts-ignore
-    if (window.Tawk_API) {
-      // @ts-ignore
-      window.Tawk_API.maximize();
-      setTimeout(() => {
-        // @ts-ignore
-        if (window.Tawk_API.addEvent) {
-          // @ts-ignore
-          window.Tawk_API.addEvent('package_selected', { package: packageName });
-        }
-      }, 500);
-    } else {
-      console.warn("Tawk_API not found. Chat not loaded.");
-    }
+    setSelectedPackage(packageName);
   };
 
   return (
@@ -178,7 +167,7 @@ export default function Pricing() {
                       : "bg-white/10 text-white hover:bg-white hover:text-black border border-white/5"
                   )}
                 >
-                  <MessageSquare size={14} />
+                  <Sparkles size={14} />
                   {t('pricing.order')}
                 </button>
               </motion.div>
@@ -186,6 +175,15 @@ export default function Pricing() {
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedPackage && (
+          <DecorationOrderForm 
+            packageName={selectedPackage} 
+            onClose={() => setSelectedPackage(null)} 
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }

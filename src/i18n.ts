@@ -141,6 +141,29 @@ const resources = {
               "Unlimited Revisions"
             ]
           }
+        },
+        "order_form": {
+          "title": "Request a Quote",
+          "subtitle": "Fill out the form below and we will contact you as soon as possible with a personalized quote for your project.",
+          "name_label": "Avatar Name",
+          "name_placeholder": "Your Second Life name",
+          "discord_label": "Discord ID (Optional)",
+          "discord_placeholder": "username#0000",
+          "region_label": "Region/Sim Name",
+          "region_placeholder": "Where should we decorate?",
+          "package_label": "Selected Package",
+          "environments_label": "How many environments?",
+          "environments_placeholder": "e.g., 2 rooms, living area...",
+          "style_label": "Preferred Style",
+          "style_placeholder": "Modern, Rustic, Minimalist...",
+          "prims_label": "Available Prims",
+          "prims_placeholder": "e.g., 200",
+          "deadline_label": "Do you have a deadline?",
+          "deadline_placeholder": "e.g., Next Friday, or No deadline",
+          "message_label": "Project Details",
+          "message_placeholder": "Describe your vision, specific styles, or any special requirements you have...",
+          "submit_btn": "Submit Request",
+          "success_msg": "Your request has been sent successfully! We will contact you soon."
         }
       },
       "admin": {
@@ -773,6 +796,29 @@ const resources = {
               "Revisões Ilimitadas"
             ]
           }
+        },
+        "order_form": {
+          "title": "Solicitar Orçamento",
+          "subtitle": "Preencha o formulário abaixo e entraremos em contato o mais breve possível com um orçamento personalizado para o seu projeto.",
+          "name_label": "Nome do Avatar",
+          "name_placeholder": "Seu nome no Second Life",
+          "discord_label": "ID do Discord (Opcional)",
+          "discord_placeholder": "usuario#0000",
+          "region_label": "Região/Nome da Sim",
+          "region_placeholder": "Onde devemos decorar?",
+          "package_label": "Pacote Selecionado",
+          "environments_label": "Quantos ambientes você deseja decorar?",
+          "environments_placeholder": "ex: 2 quartos, sala de estar...",
+          "style_label": "Estilo Preferido",
+          "style_placeholder": "Moderno, Rústico, Minimalista...",
+          "prims_label": "Prims Disponíveis",
+          "prims_placeholder": "ex: 200",
+          "deadline_label": "O projeto tem um prazo?",
+          "deadline_placeholder": "ex: Próxima sexta, ou Sem prazo",
+          "message_label": "Detalhes do Projeto",
+          "message_placeholder": "Descreva sua visão, estilos específicos ou qualquer requisito especial que você tenha...",
+          "submit_btn": "Enviar Solicitação",
+          "success_msg": "Sua solicitação foi enviada com sucesso! Entraremos em contato em breve."
         }
       },
       "admin": {
@@ -1411,6 +1457,29 @@ const resources = {
               "Revisiones Ilimitadas"
             ]
           }
+        },
+        "order_form": {
+          "title": "Solicitar Presupuesto",
+          "subtitle": "Complete el formulario a continuación y nos pondremos en contacto con usted lo antes posible con un presupuesto personalizado para su proyecto.",
+          "name_label": "Nombre del Avatar",
+          "name_placeholder": "Su nombre en Second Life",
+          "discord_label": "ID de Discord (Opcional)",
+          "discord_placeholder": "usuario#0000",
+          "region_label": "Región/Nombre de la Sim",
+          "region_placeholder": "¿Dónde debemos decorar?",
+          "package_label": "Paquete Seleccionado",
+          "environments_label": "¿Cuántos ambientes desea decorar?",
+          "environments_placeholder": "ej: 2 habitaciones, sala de estar...",
+          "style_label": "Estilo Preferido",
+          "style_placeholder": "Moderno, Rústico, Minimalista...",
+          "prims_label": "Prims Disponibles",
+          "prims_placeholder": "ej: 200",
+          "deadline_label": "¿El proyecto tiene un plazo?",
+          "deadline_placeholder": "ej: Próximo viernes, o Sin plazo",
+          "message_label": "Detalles del Proyecto",
+          "message_placeholder": "Describa su visión, estilos específicos o cualquier requisito especial que tenga...",
+          "submit_btn": "Enviar Solicitud",
+          "success_msg": "¡Su solicitud ha sido enviada con éxito! Nos pondremos en contacto pronto."
         }
       },
       "team": {

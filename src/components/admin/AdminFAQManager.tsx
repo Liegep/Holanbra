@@ -10,12 +10,15 @@ import {
   HelpCircle,
   GripVertical,
   Eye,
-  Info
+  Info,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles } from 'react-simple-wysiwyg';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import Toast, { ToastType } from '../Toast';
 
 const generateId = () => {
   if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
@@ -85,6 +88,15 @@ export const AdminFAQManager: React.FC = () => {
   const [useStructured, setUseStructured] = useState<Record<string, boolean>>({
     en: false, pt: false, es: false, nl: false
   });
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   const getStructuredData = (lang: string): StructuredAnswer => {
     const raw = formData[`answer_${lang}` as keyof typeof formData] as string;
@@ -121,6 +133,7 @@ export const AdminFAQManager: React.FC = () => {
       
       if (error) throw error;
       setFaqs(data || []);
+      if (!loading) showToast(t('admin.common.success.loaded', 'FAQs loaded successfully'));
     } catch (err) {
       console.error('Error fetching FAQs:', err);
     } finally {
@@ -161,16 +174,18 @@ export const AdminFAQManager: React.FC = () => {
       if (editingId) {
         const { error } = await supabase.from('faqs').update(formData).eq('id', editingId);
         if (error) throw error;
+        showToast(t('admin.common.success.saved', 'FAQ updated successfully'));
       } else {
         const { error } = await supabase.from('faqs').insert([formData]);
         if (error) throw error;
+        showToast(t('admin.common.success.created', 'FAQ created successfully'));
       }
       setFormData(INITIAL_FAQ);
       setEditingId(null);
       fetchFAQs();
     } catch (err: any) {
       console.error('Error saving FAQ:', err);
-      alert(t('admin.common.error.generic') + ': ' + err.message);
+      showToast(err.message || t('admin.common.error.generic'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -181,9 +196,11 @@ export const AdminFAQManager: React.FC = () => {
     try {
       const { error } = await supabase.from('faqs').delete().eq('id', id);
       if (error) throw error;
+      showToast(t('admin.common.success.deleted', 'FAQ deleted successfully'));
       fetchFAQs();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting FAQ:', err);
+      showToast(err.message || 'Error deleting FAQ', 'error');
     }
   };
 
@@ -293,19 +310,19 @@ export const AdminFAQManager: React.FC = () => {
                 <div className="p-8 bg-[#0a0a0a] border border-amber-500/20 rounded-3xl mb-6 rich-content">
                   {useStructured[activeLang] ? (
                     <div className="space-y-8">
-                      {getStructuredData(activeLang).intro && <ReactMarkdown>{getStructuredData(activeLang).intro}</ReactMarkdown>}
+                      {getStructuredData(activeLang).intro && <ReactMarkdown rehypePlugins={[rehypeRaw]}>{getStructuredData(activeLang).intro}</ReactMarkdown>}
                       <div className="space-y-6">
                         {getStructuredData(activeLang).steps.map((step, idx) => (
                           <div key={idx} className="relative pl-12 border-l border-white/5 pb-2">
                             <div className="absolute left-[-17px] top-0 w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold text-xs">{idx + 1}</div>
                             <h5 className="text-lg font-bold text-amber-500 mb-2">{step.title || 'Step ' + (idx + 1)}</h5>
-                            <ReactMarkdown>{step.content}</ReactMarkdown>
+                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>{step.content}</ReactMarkdown>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    <ReactMarkdown>{formData[`answer_${activeLang}` as keyof typeof formData] as string}</ReactMarkdown>
+                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>{formData[`answer_${activeLang}` as keyof typeof formData] as string}</ReactMarkdown>
                   )}
                 </div>
               )}
@@ -407,6 +424,13 @@ export const AdminFAQManager: React.FC = () => {
           </AnimatePresence>
         </Reorder.Group>
       </div>
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 };
