@@ -12,11 +12,14 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
-  Languages
+  Languages,
+  Eye,
+  Info
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
+import ReactMarkdown from 'react-markdown';
 
 const GUIDE_TEMPLATES = {
   pt: {
@@ -112,6 +115,7 @@ export const AdminFAQManager: React.FC = () => {
   const [formData, setFormData] = useState<Omit<FAQ, 'id'>>(INITIAL_FAQ);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeLang, setActiveLang] = useState<'en' | 'pt' | 'es' | 'nl'>('en');
+  const [showPreview, setShowPreview] = useState(false);
   const [useStructured, setUseStructured] = useState<Record<string, boolean>>({
     en: false, pt: false, es: false, nl: false
   });
@@ -369,8 +373,61 @@ export const AdminFAQManager: React.FC = () => {
                 <label className="text-[10px] font-black uppercase text-amber-500">
                   {t('admin.faqs.answer_label')} ({activeLang.toUpperCase()})
                 </label>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold text-white/30 uppercase tracking-tighter">
+                    <Info size={10} className="text-amber-500" /> Supports Markdown (* for lists, ** for bold)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(!showPreview)}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                      showPreview ? "bg-amber-500 text-black shadow-lg shadow-amber-500/20" : "bg-white/5 text-white/40 hover:bg-white/10"
+                    )}
+                  >
+                    <Eye size={12} /> {showPreview ? 'Hide Preview' : 'Show Preview'}
+                  </button>
+                </div>
               </div>
               
+              {showPreview && (
+                <div className="p-8 bg-[#0a0a0a] border border-amber-500/20 rounded-3xl mb-6 relative overflow-hidden group/preview">
+                  <div className="absolute top-0 right-0 p-2 opacity-20 group-hover/preview:opacity-100 transition-opacity">
+                    <div className="px-2 py-1 bg-amber-500 text-black text-[8px] font-black uppercase rounded">Preview Mode</div>
+                  </div>
+                  <div className="rich-content faq-rich-content">
+                    {useStructured[activeLang] ? (
+                      (() => {
+                        const data = getStructuredData(activeLang);
+                        return (
+                          <div className="space-y-8">
+                            {data.intro && <ReactMarkdown>{data.intro}</ReactMarkdown>}
+                            <div className="space-y-6">
+                              {data.steps.map((step, idx) => (
+                                <div key={idx} className="relative pl-12 border-l border-white/5 pb-2">
+                                  <div className="absolute left-[-17px] top-0 w-8 h-8 rounded-full bg-amber-500 text-black flex items-center justify-center font-bold text-xs">
+                                    {idx + 1}
+                                  </div>
+                                  <h5 className="text-lg font-bold text-amber-500 mb-2">{step.title || 'Step ' + (idx + 1)}</h5>
+                                  <ReactMarkdown>{step.content}</ReactMarkdown>
+                                </div>
+                              ))}
+                            </div>
+                            {data.footer && <div className="pt-6 border-t border-white/5 opacity-60 italic"><ReactMarkdown>{data.footer}</ReactMarkdown></div>}
+                            {data.expertTip && (
+                                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500 italic">
+                                    <ReactMarkdown>{'**Expert Tip:** ' + data.expertTip}</ReactMarkdown>
+                                </div>
+                            )}
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      <ReactMarkdown>{formData[`answer_${activeLang}` as keyof typeof formData] as string}</ReactMarkdown>
+                    )}
+                  </div>
+                </div>
+              )}
               {useStructured[activeLang] ? (
                 <div className="space-y-8 p-8 bg-black/40 rounded-3xl border border-white/5 shadow-2xl relative">
                   {/* Structured Builder UI */}

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 interface FAQ {
   id: string;
@@ -266,11 +267,11 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                   if (structured && structured.type === 'structured') {
                                     return (
                                       <div className="space-y-10">
-                                        {structured.intro && (
-                                          <p className="text-xl leading-relaxed text-white/90 mb-8 border-l-2 border-amber-500/30 pl-6">
-                                            {structured.intro}
-                                          </p>
-                                        )}
+                                          {structured.intro && (
+                                            <div className="text-xl leading-relaxed text-white/90 mb-8 border-l-2 border-amber-500/30 pl-6 rich-content faq-rich-content">
+                                              <ReactMarkdown>{structured.intro}</ReactMarkdown>
+                                            </div>
+                                          )}
                                         
                                         <div className="space-y-8">
                                           {structured.steps.map((step: any, sIdx: number) => (
@@ -280,7 +281,9 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                               </div>
                                               <div className="space-y-2">
                                                 <h5 className="text-lg font-bold text-amber-500 tracking-tight">{step.title}</h5>
-                                                <p className="text-white/70 leading-relaxed">{step.content}</p>
+                                                <div className="text-white/70 leading-relaxed rich-content faq-rich-content">
+                                                  <ReactMarkdown>{step.content}</ReactMarkdown>
+                                                </div>
                                               </div>
                                             </div>
                                           ))}
@@ -289,8 +292,8 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                         {(structured.footer || structured.expertTip) && (
                                           <div className="pt-8 border-t border-white/5 space-y-6">
                                             {structured.footer && (
-                                              <div className="text-white/50 text-sm italic leading-relaxed">
-                                                {structured.footer}
+                                              <div className="text-white/50 text-sm italic leading-relaxed rich-content faq-rich-content">
+                                                <ReactMarkdown>{structured.footer}</ReactMarkdown>
                                               </div>
                                             )}
                                             {structured.expertTip && (
@@ -302,7 +305,9 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                                   </div>
                                                   <div className="space-y-1">
                                                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/70">Expert Tip</span>
-                                                    <p className="text-emerald-500/90 font-medium italic">{structured.expertTip}</p>
+                                                    <div className="text-emerald-500/90 font-medium italic rich-content faq-rich-content">
+                                                      <ReactMarkdown>{structured.expertTip}</ReactMarkdown>
+                                                    </div>
                                                   </div>
                                                 </div>
                                               </div>
@@ -314,7 +319,11 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                   }
                                 } catch (e) {}
 
-                                return <div dangerouslySetInnerHTML={{ __html: answer }} />;
+                                return (
+                                  <div className="rich-content faq-rich-content">
+                                    <ReactMarkdown>{answer}</ReactMarkdown>
+                                  </div>
+                                );
                               })()}
                             </motion.div>
                             
