@@ -17,7 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Reorder } from 'motion/react';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
 import ReactMarkdown from 'react-markdown';
 
@@ -60,6 +60,7 @@ const BLANK_STRUCTURE = {
 };
 
 interface GuideStep {
+  id: string;
   title: string;
   content: string;
 }
@@ -75,7 +76,7 @@ interface StructuredAnswer {
 const INITIAL_STRUCTURED: StructuredAnswer = {
   type: 'structured',
   intro: '',
-  steps: [{ title: '', content: '' }],
+  steps: [{ id: crypto.randomUUID(), title: '', content: '' }],
   footer: '',
   expertTip: ''
 };
@@ -124,7 +125,14 @@ export const AdminFAQManager: React.FC = () => {
     const raw = formData[`answer_${lang}` as keyof typeof formData] as string;
     try {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.type === 'structured') return parsed;
+      if (parsed && parsed.type === 'structured') {
+        // Ensure all steps have IDs for reordering
+        const stepsWithIds = parsed.steps.map((s: any) => ({
+          ...s,
+          id: s.id || crypto.randomUUID()
+        }));
+        return { ...parsed, steps: stepsWithIds };
+      }
     } catch (e) {}
     return { ...INITIAL_STRUCTURED };
   };
@@ -450,7 +458,7 @@ export const AdminFAQManager: React.FC = () => {
                         onClick={() => {
                           const current = getStructuredData(activeLang);
                           updateStructuredData(activeLang, {
-                            steps: [...current.steps, { title: '', content: '' }]
+                            steps: [...current.steps, { id: crypto.randomUUID(), title: '', content: '' }]
                           });
                         }}
                         className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
@@ -459,11 +467,25 @@ export const AdminFAQManager: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="space-y-4">
+                    <Reorder.Group 
+                      axis="y" 
+                      values={getStructuredData(activeLang).steps} 
+                      onReorder={(newSteps) => updateStructuredData(activeLang, { steps: newSteps })}
+                      className="space-y-4"
+                    >
                       {getStructuredData(activeLang).steps.map((step, idx) => (
-                        <div key={idx} className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group">
+                        <Reorder.Item 
+                          key={step.id} 
+                          value={step}
+                          className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group relative"
+                        >
                           <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
+                            <div className="flex items-center gap-3">
+                              <div className="cursor-grab active:cursor-grabbing p-1 hover:bg-white/5 rounded transition-colors text-white/20 hover:text-amber-500">
+                                <GripVertical size={16} />
+                              </div>
+                              <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
+                            </div>
                             {getStructuredData(activeLang).steps.length > 1 && (
                               <button
                                 type="button"
@@ -503,9 +525,9 @@ export const AdminFAQManager: React.FC = () => {
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
                             placeholder="Describe what needs to be done..."
                           />
-                        </div>
+                        </Reorder.Item>
                       ))}
-                    </div>
+                    </Reorder.Group>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-white/5">
@@ -590,28 +612,49 @@ export const AdminFAQManager: React.FC = () => {
         </form>
       </div>
 
-      {/* List of FAQs */}
+      {/* List of FAQs with Drag and Drop */}
       <div className="grid grid-cols-1 gap-4">
-        <AnimatePresence mode="popLayout">
-          {faqs.map((faq) => (
-            <motion.div
-              key={faq.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-card p-6 border-white/5 flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-6">
-                <div className="flex flex-col gap-1 items-center">
-                  <button onClick={() => moveOrder(faq.id, faq.display_order, 'up')} className="text-white/20 hover:text-amber-500 transition-colors">
-                    <ChevronUp size={16} />
-                  </button>
-                  <span className="text-[10px] font-mono font-bold text-amber-500/50">{faq.display_order}</span>
-                  <button onClick={() => moveOrder(faq.id, faq.display_order, 'down')} className="text-white/20 hover:text-amber-500 transition-colors">
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
+        <Reorder.Group axis="y" values={faqs} onReorder={async (newFaqs) => {
+          setFaqs(newFaqs);
+          // Batch update order in database
+          try {
+            const updates = newFaqs.map((f, i) => ({
+              ...f,
+              display_order: i
+            }));
+            const { error } = await supabase
+              .from('faqs')
+              .upsert(updates);
+            if (error) throw error;
+          } catch (err) {
+            console.error('Error updating sequence:', err);
+          }
+        }} className="space-y-4">
+          <AnimatePresence mode="popLayout">
+            {faqs.map((faq) => (
+              <Reorder.Item
+                key={faq.id}
+                value={faq}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="glass-card p-6 border-white/5 flex items-center justify-between group"
+              >
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="cursor-grab active:cursor-grabbing p-2 hover:bg-white/5 rounded-xl transition-all text-white/20 hover:text-amber-500">
+                      <GripVertical size={20} />
+                    </div>
+                    <div className="flex flex-col gap-1 items-center">
+                      <button onClick={(e) => { e.stopPropagation(); moveOrder(faq.id, faq.display_order, 'up'); }} className="text-white/20 hover:text-amber-500 transition-colors">
+                        <ChevronUp size={16} />
+                      </button>
+                      <span className="text-[10px] font-mono font-bold text-amber-500/50">{faq.display_order}</span>
+                      <button onClick={(e) => { e.stopPropagation(); moveOrder(faq.id, faq.display_order, 'down'); }} className="text-white/20 hover:text-amber-500 transition-colors">
+                        <ChevronDown size={16} />
+                      </button>
+                    </div>
+                  </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className={cn(
@@ -669,9 +712,10 @@ export const AdminFAQManager: React.FC = () => {
                   <Trash2 size={16} />
                 </button>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              </Reorder.Item>
+            ))}
+          </AnimatePresence>
+        </Reorder.Group>
         {faqs.length === 0 && !loading && (
           <div className="glass-card p-12 text-center border-dashed border-white/5">
             <p className="text-white/20 text-[10px] font-black uppercase tracking-widest">{t('admin.common.no_items')}</p>
