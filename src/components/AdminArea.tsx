@@ -353,10 +353,30 @@ export default function AdminArea() {
       const channel = supabase.channel('admin_realtime_main')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'site_settings' }, fetchData)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'land_covenants' }, fetchData)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, fetchTickets)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'support_tickets' }, (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setTickets(current => current.map(t => 
+              t.id.toString() === payload.new.id.toString() ? { ...payload.new, id: payload.new.id.toString() } : t
+            ));
+          } else if (payload.eventType === 'INSERT') {
+            setTickets(current => [{ ...payload.new, id: payload.new.id.toString() }, ...current]);
+          } else if (payload.eventType === 'DELETE') {
+            setTickets(current => current.filter(t => t.id.toString() !== payload.old.id.toString()));
+          }
+        })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchProperties)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'renters' }, fetchRenters)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, fetchInboxMessages)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            setInboxMessages(current => current.map(msg => 
+              msg.id.toString() === payload.new.id.toString() ? { ...payload.new, id: payload.new.id.toString() } : msg
+            ));
+          } else if (payload.eventType === 'INSERT') {
+            setInboxMessages(current => [{ ...payload.new, id: payload.new.id.toString() }, ...current]);
+          } else if (payload.eventType === 'DELETE') {
+            setInboxMessages(current => current.filter(msg => msg.id.toString() !== payload.old.id.toString()));
+          }
+        })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'property_tenants' }, fetchPropertyTenants)
         .subscribe();
 

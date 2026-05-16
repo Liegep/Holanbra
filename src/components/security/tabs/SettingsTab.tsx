@@ -3,6 +3,7 @@ import { Settings, MapPin, Copy, RefreshCw, Save, CheckCircle2, AlertCircle, Tra
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
+import Toast, { ToastType } from '../../Toast';
 
 interface SettingsTabProps {
   selectedParcelId: string | null;
@@ -22,6 +23,15 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
   const [copied, setCopied] = useState(false);
   const [showConfirmRegen, setShowConfirmRegen] = useState(false);
   const [showConfirmClear, setShowConfirmClear] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   useEffect(() => {
     if (!selectedParcelId) return;
@@ -115,9 +125,11 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
       const result = await response.json();
       if (result.success && result.data) {
         setConfig(result.data);
+        showToast('Settings saved successfully');
       }
     } catch (err) {
       console.error('Error saving security settings:', err);
+      showToast('Error saving settings', 'error');
     } finally {
       setSaving(false);
     }
@@ -132,6 +144,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
     // Clear ban list
     await supabase.from('security_ban_list').delete().eq('casperlet_id', selectedParcelId);
     
+    showToast('All lists cleared successfully');
     setClearing(false);
     setShowConfirmClear(false);
   };
@@ -155,6 +168,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
       if (response.ok && result.success) {
         setConfig(result.data);
         setShowConfirmRegen(false);
+        showToast('Token regenerated successfully');
       } else {
         throw new Error(result.error || 'Failed to regenerate token');
       }
@@ -401,6 +415,13 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
           </div>
         </div>
       )}
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 }

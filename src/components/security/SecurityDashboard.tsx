@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Shield, Users, Ban, ScrollText, Settings, Power, ArrowRight, MapPin } from 'lucide-react';
+import { X, Shield, Users, Ban, ScrollText, Settings, Power, ArrowRight, MapPin, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
+import Toast, { ToastType } from '../Toast';
 
 // Import Tabs
 import { AccessListTab } from './tabs/AccessListTab';
@@ -29,6 +30,15 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
   const [logs, setLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [managersCount, setManagersCount] = useState<number | null>(null);
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   const fetchManagersCount = async () => {
     if (!selectedParcelId || !residentUuid) return;
@@ -234,6 +244,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           ...prev,
           [parcelId]: updatedSecurity
         }));
+        showToast(updatedSecurity.active ? 'Security Activated' : 'Security Disabled');
       } else {
         console.error('Toggle error', {
           status: response.status,
@@ -559,6 +570,13 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
           ))}
         </div>
       </motion.div>
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 }

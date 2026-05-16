@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
 import { AddAvatarForm } from '../forms/AddAvatarForm';
+import Toast, { ToastType } from '../../Toast';
 
 interface AccessListTabProps {
   selectedParcelId: string | null;
@@ -18,6 +19,15 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   const loadAccessList = async () => {
     if (!selectedParcelId || !residentUuid) return;
@@ -77,9 +87,11 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
       const result = await response.json();
       if (result.success) {
         setAvatars(prev => prev.filter(a => a.id !== id));
+        showToast('Access removed successfully');
       }
     } catch (err) {
       console.error('Error removing avatar:', err);
+      showToast('Error removing access', 'error');
     } finally {
       setLoading(false);
     }
@@ -184,9 +196,17 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
           onSuccess={(newAvatar) => {
             setAvatars(prev => [newAvatar, ...prev]);
             setShowAddForm(false);
+            showToast('Access granted successfully');
           }}
         />
       )}
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 }

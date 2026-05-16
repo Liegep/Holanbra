@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
 import { AddBanForm } from '../forms/AddBanForm';
+import Toast, { ToastType } from '../../Toast';
 
 interface BanListTabProps {
   selectedParcelId: string | null;
@@ -18,6 +19,15 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   useEffect(() => {
     if (!selectedParcelId) return;
@@ -45,6 +55,9 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
 
     if (!error) {
       setBans(prev => prev.filter(b => b.id !== id));
+      showToast('Ban removed successfully');
+    } else {
+      showToast('Error removing ban', 'error');
     }
   };
 
@@ -129,9 +142,17 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
           onSuccess={(newBan) => {
             setBans(prev => [newBan, ...prev]);
             setShowAddForm(false);
+            showToast('Resident banned successfully');
           }}
         />
       )}
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 }
