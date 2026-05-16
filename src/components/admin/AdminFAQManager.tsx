@@ -17,7 +17,7 @@ import {
   Info
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence, Reorder } from 'motion/react';
+import { motion, AnimatePresence, Reorder, useDragControls } from 'motion/react';
 import { Editor, EditorProvider, Toolbar, BtnBold, BtnItalic, BtnStrikeThrough, BtnLink, BtnBulletList, BtnNumberedList, BtnClearFormatting, BtnUndo, BtnRedo, BtnUnderline, BtnStyles, BtnStrikeThrough as BtnStrike } from 'react-simple-wysiwyg';
 import ReactMarkdown from 'react-markdown';
 
@@ -450,7 +450,7 @@ export const AdminFAQManager: React.FC = () => {
                     />
                   </div>
 
-                  <div className="space-y-6">
+                  <div className="space-y-6 px-1">
                     <div className="sticky top-0 z-30 py-4 mb-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5 -mx-8 px-8 flex items-center justify-between">
                       <label className="text-[10px] font-black uppercase text-white/40 ml-1">Steps / Instructions</label>
                       <button
@@ -471,62 +471,75 @@ export const AdminFAQManager: React.FC = () => {
                       axis="y" 
                       values={getStructuredData(activeLang).steps} 
                       onReorder={(newSteps) => updateStructuredData(activeLang, { steps: newSteps })}
-                      className="space-y-4"
+                      className="space-y-3"
                     >
-                      {getStructuredData(activeLang).steps.map((step, idx) => (
-                        <Reorder.Item 
-                          key={step.id} 
-                          value={step}
-                          className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group relative"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="cursor-grab active:cursor-grabbing p-1 hover:bg-white/5 rounded transition-colors text-white/20 hover:text-amber-500">
-                                <GripVertical size={16} />
+                      {getStructuredData(activeLang).steps.map((step, idx) => {
+                        const controls = useDragControls();
+                        return (
+                          <Reorder.Item 
+                            key={step.id} 
+                            value={step}
+                            dragListener={false}
+                            dragControls={controls}
+                            whileDrag={{ 
+                              scale: 1.02,
+                              backgroundColor: "rgba(255, 255, 255, 0.08)",
+                              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+                            }}
+                            className="bg-white/5 rounded-2xl p-6 border border-white/5 space-y-4 group relative touch-none hover:border-amber-500/20 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div 
+                                  onPointerDown={(e) => controls.start(e)}
+                                  className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/20 hover:text-amber-500 bg-black/20"
+                                >
+                                  <GripVertical size={16} />
+                                </div>
+                                <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
                               </div>
-                              <span className="text-[10px] font-black uppercase text-amber-500/50">Step {idx + 1}</span>
+                              {getStructuredData(activeLang).steps.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current = getStructuredData(activeLang);
+                                    updateStructuredData(activeLang, {
+                                      steps: current.steps.filter((_, i) => i !== idx)
+                                    });
+                                  }}
+                                  className="text-white/10 hover:text-red-500 transition-colors p-1"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
                             </div>
-                            {getStructuredData(activeLang).steps.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const current = getStructuredData(activeLang);
-                                  updateStructuredData(activeLang, {
-                                    steps: current.steps.filter((_, i) => i !== idx)
-                                  });
-                                }}
-                                className="text-white/10 hover:text-red-500 transition-colors"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
-                          </div>
-                          <input
-                            type="text"
-                            value={step.title}
-                            onChange={(e) => {
-                              const current = getStructuredData(activeLang);
-                              const newSteps = [...current.steps];
-                              newSteps[idx].title = e.target.value;
-                              updateStructuredData(activeLang, { steps: newSteps });
-                            }}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 text-sm font-bold"
-                            placeholder={`Step ${idx + 1} Title`}
-                          />
-                          <textarea
-                            value={step.content}
-                            onChange={(e) => {
-                              const current = getStructuredData(activeLang);
-                              const newSteps = [...current.steps];
-                              newSteps[idx].content = e.target.value;
-                              updateStructuredData(activeLang, { steps: newSteps });
-                            }}
-                            rows={3}
-                            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
-                            placeholder="Describe what needs to be done..."
-                          />
-                        </Reorder.Item>
-                      ))}
+                            <input
+                              type="text"
+                              value={step.title}
+                              onChange={(e) => {
+                                const current = getStructuredData(activeLang);
+                                const newSteps = [...current.steps];
+                                newSteps[idx].title = e.target.value;
+                                updateStructuredData(activeLang, { steps: newSteps });
+                              }}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 text-sm font-bold"
+                              placeholder={`Step ${idx + 1} Title`}
+                            />
+                            <textarea
+                              value={step.content}
+                              onChange={(e) => {
+                                const current = getStructuredData(activeLang);
+                                const newSteps = [...current.steps];
+                                newSteps[idx].content = e.target.value;
+                                updateStructuredData(activeLang, { steps: newSteps });
+                              }}
+                              rows={3}
+                              className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 resize-none text-sm"
+                              placeholder="Describe what needs to be done..."
+                            />
+                          </Reorder.Item>
+                        );
+                      })}
                     </Reorder.Group>
                   </div>
 
@@ -614,6 +627,12 @@ export const AdminFAQManager: React.FC = () => {
 
       {/* List of FAQs with Drag and Drop */}
       <div className="grid grid-cols-1 gap-4">
+        <div className="flex items-center gap-2 mb-2 ml-1">
+          <Info size={12} className="text-amber-500" />
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/40">
+            Drag the <span className="text-amber-500">handle</span> to reorder items
+          </p>
+        </div>
         <Reorder.Group axis="y" values={faqs} onReorder={async (newFaqs) => {
           setFaqs(newFaqs);
           // Batch update order in database
@@ -624,38 +643,42 @@ export const AdminFAQManager: React.FC = () => {
             }));
             const { error } = await supabase
               .from('faqs')
-              .upsert(updates);
+              .upsert(updates, { onConflict: 'id' });
             if (error) throw error;
           } catch (err) {
             console.error('Error updating sequence:', err);
           }
         }} className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {faqs.map((faq) => (
-              <Reorder.Item
-                key={faq.id}
-                value={faq}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="glass-card p-6 border-white/5 flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="cursor-grab active:cursor-grabbing p-2 hover:bg-white/5 rounded-xl transition-all text-white/20 hover:text-amber-500">
-                      <GripVertical size={20} />
+            {faqs.map((faq) => {
+              const controls = useDragControls();
+              return (
+                <Reorder.Item
+                  key={faq.id}
+                  value={faq}
+                  dragListener={false}
+                  dragControls={controls}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  whileDrag={{ 
+                    scale: 1.02,
+                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    zIndex: 100,
+                    boxShadow: "0 25px 50px -12px rgb(0 0 0 / 0.5)"
+                  }}
+                  className="glass-card p-6 border-white/5 flex items-center justify-between group touch-none hover:border-amber-500/20 transition-all"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4">
+                      <div 
+                        onPointerDown={(e) => controls.start(e)}
+                        className="cursor-grab active:cursor-grabbing p-3 bg-white/5 rounded-2xl transition-all text-white/20 hover:text-amber-500 hover:bg-white/10"
+                      >
+                        <GripVertical size={20} />
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1 items-center">
-                      <button onClick={(e) => { e.stopPropagation(); moveOrder(faq.id, faq.display_order, 'up'); }} className="text-white/20 hover:text-amber-500 transition-colors">
-                        <ChevronUp size={16} />
-                      </button>
-                      <span className="text-[10px] font-mono font-bold text-amber-500/50">{faq.display_order}</span>
-                      <button onClick={(e) => { e.stopPropagation(); moveOrder(faq.id, faq.display_order, 'down'); }} className="text-white/20 hover:text-amber-500 transition-colors">
-                        <ChevronDown size={16} />
-                      </button>
-                    </div>
-                  </div>
-                <div className="space-y-1">
+                  <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className={cn(
                       "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border",
@@ -712,8 +735,9 @@ export const AdminFAQManager: React.FC = () => {
                   <Trash2 size={16} />
                 </button>
               </div>
-              </Reorder.Item>
-            ))}
+                </Reorder.Item>
+              );
+            })}
           </AnimatePresence>
         </Reorder.Group>
         {faqs.length === 0 && !loading && (
