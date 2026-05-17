@@ -310,12 +310,19 @@ async function startServer() {
   // SmartBots Integration
   app.post('/api/smartbots/group-invite', async (req, res) => {
     try {
-      const { avatar_uuid } = req.body;
-      console.log(`[SmartBots] Group invite request received for avatar: ${avatar_uuid}`);
+      const { avatar_uuid, language } = req.body;
+      console.log(`[SmartBots] Group invite request received for avatar: ${avatar_uuid} - Language: ${language || 'not specified'}`);
       
       if (!avatar_uuid) {
         console.warn('[SmartBots] Rejected: Missing avatar_uuid');
         return res.status(400).json({ success: false, error: 'Avatar UUID is required' });
+      }
+
+      // UUID Validation format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+      const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!UUID_REGEX.test(avatar_uuid)) {
+        console.warn(`[SmartBots] Rejected: Invalid UUID format: ${avatar_uuid}`);
+        return res.status(400).json({ success: false, error: 'invalid avatar_uuid' });
       }
 
       const apiKey = process.env.SMARTBOTS_API_KEY;

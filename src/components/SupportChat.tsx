@@ -3,20 +3,48 @@ import { MessageCircle, X, Send, Shield, Layout, UserPlus, Home, Scroll, LifeBuo
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
+import { supabase } from '../lib/supabase';
 
 type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'contact_esc' | 'invite_prompt' | 'invite_sent';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function SupportChat() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isTawkLoaded, setIsTawkLoaded] = useState(false);
   const [chatState, setChatState] = useState<ChatState>('idle');
   const [uuid, setUuid] = useState('');
+  const [residentData, setResidentData] = useState<any>(null);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Check for existing resident session
+    const fetchResident = async () => {
+      const savedName = localStorage.getItem('sl_resident_name');
+      const savedPass = localStorage.getItem('sl_resident_pass');
+      
+      if (savedName && savedPass) {
+        try {
+          const { data } = await supabase
+            .from('renters')
+            .select('avatar_uuid, avatar_name')
+            .eq('avatar_name', savedName.trim())
+            .eq('password', savedPass.trim())
+            .maybeSingle();
+          
+          if (data) {
+            setResidentData(data);
+          }
+        } catch (e) {
+          console.warn('[SupportChat] Session fetch failed', e);
+        }
+      }
+    };
+    fetchResident();
+
     // Initialize Tawk.to
     // @ts-ignore
     window.Tawk_API = window.Tawk_API || {};
@@ -62,8 +90,17 @@ export default function SupportChat() {
     }
   };
 
-  const handleInvite = async () => {
-    if (!uuid || uuid.length < 32) return;
+  const handleInvite = async (forcedUuid?: string) => {
+    const targetUuid = (forcedUuid || uuid).trim();
+    
+    if (!targetUuid || !UUID_REGEX.test(targetUuid)) {
+      setInviteResult({ 
+        success: false, 
+        message: t('support.responses.invite_invalid') 
+      });
+      setChatState('invite_sent');
+      return;
+    }
     
     setIsSendingInvite(true);
     const endpoint = '/api/smartbots/group-invite';
@@ -71,27 +108,27 @@ export default function SupportChat() {
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatar_uuid: uuid })
+        body: JSON.stringify({ 
+          avatar_uuid: targetUuid,
+          language: i18n.language?.slice(0, 2) || 'en'
+        })
       });
 
       const data = await response.json();
       
       if (!response.ok) {
-        console.error(`[SupportChat] Request failed:`, {
-          endpoint,
-          status: response.status,
-          statusText: response.statusText,
-          error: data.error
-        });
+        console.error(`[SupportChat] API returned error status ${response.status}:`, data.error || 'Unknown error');
       }
 
       setInviteResult({ 
         success: data.success, 
-        message: data.success ? t('support.responses.invite_success') : t('support.responses.invite_error') 
+        message: data.success 
+          ? t('support.responses.invite_success') 
+          : (data.error === "invalid avatar_uuid" ? t('support.responses.invite_invalid') : t('support.responses.invite_error'))
       });
       setChatState('invite_sent');
     } catch (error) {
-      console.error(`[SupportChat] Network or Runtime ErrorCalling ${endpoint}:`, error);
+      console.error(`[SupportChat] Network or Runtime Error Calling ${endpoint}:`, error);
       setInviteResult({ success: false, message: t('support.responses.invite_error') });
       setChatState('invite_sent');
     } finally {
@@ -183,7 +220,13 @@ export default function SupportChat() {
                   {menuItems.map((item) => (
                     <button
                       key={item.id}
-                      onClick={() => setChatState(item.id as ChatState)}
+                      onClick={() => {
+                        if (item.id === 'invite_prompt' && residentData?.avatar_uuid) {
+                          handleInvite(residentData.avatar_uuid);
+                        } else {
+                          setChatState(item.id as ChatState);
+                        }
+                      }}
                       className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all text-left group"
                     >
                       <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -248,11 +291,11 @@ export default function SupportChat() {
                       className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-amber-500/50 transition-all font-mono"
                     />
                     <button 
-                      onClick={handleInvite}
-                      disabled={isSendingInvite || uuid.length < 32}
+                      onClick={() => handleInvite()}
+                      disabled={isSendingInvite}
                       className={cn(
                         "w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2",
-                        isSendingInvite || uuid.length < 32 
+                        isSendingInvite 
                           ? "bg-white/5 text-white/20 cursor-not-allowed" 
                           : "bg-amber-500 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95"
                       )}
