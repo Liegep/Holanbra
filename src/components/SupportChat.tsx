@@ -255,17 +255,34 @@ export default function SupportChat() {
 
   const getResidentPropertyContext = async (residentUuid: string) => {
     try {
-      // 1. Fetch properties linked to this resident (tenant_id)
-      const { data: properties, error: propErr } = await supabase
+      if (!residentUuid) return { residentUuid, property: null, casperletId: null, propertyName: null, primData: null };
+
+      // 1. Fetch properties linked via tenant_id
+      let { data: property, error: pErr } = await supabase
         .from('properties')
         .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
-        .or(`tenant_id.eq.${residentUuid},owner_id.eq.${residentUuid}`); // Simplified check, adapt based on real linkage if needed
+        .eq('tenant_id', residentUuid)
+        .maybeSingle();
 
-      if (propErr) console.warn('[ResidentAssistant] Property fetch error:', propErr);
-      
-      const property = properties && properties.length > 0 ? properties[0] : null;
+      // 2. Fallback: via property_tenants mapping
+      if (!property) {
+        const { data: mapping, error: mErr } = await supabase
+          .from('property_tenants')
+          .select('property_id')
+          .eq('tenant_id', residentUuid)
+          .maybeSingle();
+        
+        if (mapping && mapping.property_id) {
+            const { data: propData } = await supabase
+                .from('properties')
+                .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
+                .eq('id', mapping.property_id)
+                .maybeSingle();
+            property = propData;
+        }
+      }
 
-      // 2. Fetch prim record as fallback/supplement
+      // 3. Supplement: Get prim record (prims_used, prim_limit)
       const { data: primRes } = await supabase
         .from('prim_residents')
         .select('casperlet_id, prims_used, prim_limit')
@@ -276,11 +293,11 @@ export default function SupportChat() {
         residentUuid, 
         property, 
         casperletId: property?.casperlet_id || primRes?.casperlet_id || null, 
-        propertyName: property?.name || 'Unknown',
+        propertyName: property?.name || null,
         primData: primRes ? { prims_used: primRes.prims_used, prim_limit: primRes.prim_limit } : null
       };
 
-      console.log('[ResidentAssistant Property Context]', context);
+      console.log('[ResidentAssistant MyRental]', context);
       return context;
     } catch(e) {
       console.error('[ResidentAssistant] getResidentPropertyContext error', e);
@@ -301,34 +318,27 @@ export default function SupportChat() {
           console.log('[ResidentAssistant Action]', chatState, context);
           
           if (chatState === 'my_rental') {
-            console.log('[ResidentAssistant MyRental Context]', context);
             setRentalData(context);
           } else if (chatState === 'prim_usage') {
             setPrimData(context.primData || null);
           } else if (context.casperletId) {
             if (chatState === 'security_access') {
-              console.log('[ResidentAssistant Security Context]', context);
               const { data } = await supabase
                 .from('security_parcels')
                 .select('active, radius, warning_time, warn_before_ejecting, access_list, ban_list')
                 .eq('casperlet_id', context.casperletId)
                 .maybeSingle();
-              
-              if (!data) {
-                console.log('[ResidentAssistant Security] no security parcel found for casperletId:', context.casperletId);
-              }
+
               setSecurityData(data);
             } else if (chatState === 'security_logs') {
-              console.log('[ResidentAssistant Logs Context]', context);
               try {
-                const { data, error } = await supabase
+                const { data } = await supabase
                   .from('security_logs')
                   .select('avatar_name, action, created_at')
                   .eq('casperlet_id', context.casperletId)
                   .order('created_at', { ascending: false })
                   .limit(5);
                 
-                if (error) throw error;
                 setSecurityLogs(data || []);
               } catch (e) {
                 console.error('[ResidentAssistant] Logs fetch error', e);
@@ -413,8 +423,8 @@ export default function SupportChat() {
         );
         return (
               <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                <p><strong>{safeT('support.rental.name', 'Property')}:</strong> {rentalData.property?.name || rentalData.propertyName || 'Unknown'}</p>
-                <p><strong>{safeT('support.rental.status', 'Status')}:</strong> {rentalData.property?.status ? rentalData.property.status.charAt(0).toUpperCase() + rentalData.property.status.slice(1) : 'Unknown'}</p>
+                <p><strong>{safeT('support.rental.name', 'Property')}:</strong> {rentalData.property?.name ?? rentalData.propertyName ?? safeT('support.rental.unknown', 'Unknown')}</p>
+                <p><strong>{safeT('support.rental.status', 'Status')}:</strong> {rentalData.property?.status ? rentalData.property.status.charAt(0).toUpperCase() + rentalData.property.status.slice(1) : safeT('support.rental.unknown', 'Unknown')}</p>
                 
                 {rentalData.property?.rented_until 
                    ? <p><strong>{safeT('support.rental.expires', 'Expires')}:</strong> {new Date(rentalData.property.rented_until).toLocaleDateString()}</p>
