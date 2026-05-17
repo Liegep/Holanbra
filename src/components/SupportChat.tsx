@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
-type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket';
+type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket' | 'talk_to_support';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -16,6 +16,7 @@ export default function SupportChat() {
   const [chatState, setChatState] = useState<ChatState>('idle');
   const [uuid, setUuid] = useState('');
   const [residentData, setResidentData] = useState<any>(null);
+  const [ticketMsg, setTicketMsg] = useState('');
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null);
   const [availableRentals, setAvailableRentals] = useState<any[]>([]);
@@ -63,6 +64,13 @@ export default function SupportChat() {
     window.addEventListener('open-support-chat', handleOpenChat as EventListener);
     return () => window.removeEventListener('open-support-chat', handleOpenChat as EventListener);
   }, [isOpen, chatState]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setUuid('');
+      setInviteResult(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     // Check for existing resident session
@@ -226,76 +234,109 @@ export default function SupportChat() {
   const [securityLogs, setSecurityLogs] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(false);
 
+  // Robust detection
+  const isResident = useMemo(() => {
+      const isDataValid = !!residentData?.avatar_uuid;
+      const hasStorage = !!localStorage.getItem('sl_resident_uuid');
+      return isDataValid || hasStorage;
+  }, [residentData]);
+
   useEffect(() => {
-    if (['my_rental', 'prim_usage', 'security_access', 'security_logs'].includes(chatState) && residentData?.avatar_uuid) {
+    console.log('[SupportChat] detected mode', {
+      isResident,
+      residentUuid: residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid'),
+    });
+  }, [isResident, residentData]);
+
+  const safeT = (key: string, enFallback: string) => {
+    const val = t(key);
+    return val === key ? enFallback : val;
+  };
+
+  const getResidentPropertyContext = async (residentUuid: string) => {
+    try {
+      // 1. Fetch properties linked to this resident (tenant_id)
+      const { data: properties, error: propErr } = await supabase
+        .from('properties')
+        .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
+        .or(`tenant_id.eq.${residentUuid},owner_id.eq.${residentUuid}`); // Simplified check, adapt based on real linkage if needed
+
+      if (propErr) console.warn('[ResidentAssistant] Property fetch error:', propErr);
+      
+      const property = properties && properties.length > 0 ? properties[0] : null;
+
+      // 2. Fetch prim record as fallback/supplement
+      const { data: primRes } = await supabase
+        .from('prim_residents')
+        .select('casperlet_id, prims_used, prim_limit')
+        .eq('resident_key', residentUuid)
+        .maybeSingle();
+
+      const context = { 
+        residentUuid, 
+        property, 
+        casperletId: property?.casperlet_id || primRes?.casperlet_id || null, 
+        propertyName: property?.name || 'Unknown',
+        primData: primRes ? { prims_used: primRes.prims_used, prim_limit: primRes.prim_limit } : null
+      };
+
+      console.log('[ResidentAssistant Property Context]', context);
+      return context;
+    } catch(e) {
+      console.error('[ResidentAssistant] getResidentPropertyContext error', e);
+      return { residentUuid, property: null, casperletId: null, propertyName: null, primData: null };
+    }
+  };
+
+
+  useEffect(() => {
+    if (['my_rental', 'prim_usage', 'security_access', 'security_logs'].includes(chatState) && isResident) {
       const fetchData = async () => {
         setLoadingData(true);
         try {
-          const residentId = residentData.avatar_uuid;
+          const residentId = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+          if (!residentId) return;
+          
+          const context = await getResidentPropertyContext(residentId);
+          console.log('[ResidentAssistant Action]', chatState, context);
           
           if (chatState === 'my_rental') {
-              // Primary rental
-              const { data: primary } = await supabase
-                .from('properties')
-                .select('*')
-                .eq('tenant_id', residentId)
-                .maybeSingle();
-
-              // Shared rental
-              let finalRental = primary;
-              if (!finalRental) {
-                const { data: shared } = await supabase
-                  .from('property_tenants')
-                  .select('property_id')
-                  .eq('tenant_id', residentId)
-                  .maybeSingle();
-                
-                if (shared) {
-                    const { data: propData } = await supabase
-                        .from('properties')
-                        .select('*')
-                        .eq('id', shared.property_id)
-                        .maybeSingle();
-                    finalRental = propData;
-                }
-              }
-
-              console.log('[ResidentAssistant] My Rental', { residentUuid: residentId, propertyFound: !!finalRental, property: finalRental });
-              setRentalData(finalRental);
+            console.log('[ResidentAssistant MyRental Context]', context);
+            setRentalData(context);
           } else if (chatState === 'prim_usage') {
+            setPrimData(context.primData || null);
+          } else if (context.casperletId) {
+            if (chatState === 'security_access') {
+              console.log('[ResidentAssistant Security Context]', context);
               const { data } = await supabase
-                .from('prim_residents')
-                .select('prims_used, prim_limit, casperlet_id')
-                .eq('resident_key', residentId)
+                .from('security_parcels')
+                .select('active, radius, warning_time, warn_before_ejecting, access_list, ban_list')
+                .eq('casperlet_id', context.casperletId)
                 .maybeSingle();
-              setPrimData(data);
-          } else if (chatState === 'security_access' || chatState === 'security_logs') {
-              // Need casperlet_id first
-              const { data: primInfo } = await supabase
-                .from('prim_residents')
-                .select('casperlet_id')
-                .eq('resident_key', residentId)
-                .maybeSingle();
-
-              if (primInfo?.casperlet_id) {
-                  if (chatState === 'security_access') {
-                      const { data } = await supabase
-                        .from('security_parcels')
-                        .select('*')
-                        .eq('casperlet_id', primInfo.casperlet_id)
-                        .maybeSingle();
-                      setSecurityData(data);
-                  } else {
-                      const { data } = await supabase
-                        .from('security_logs')
-                        .select('avatar_name, action, created_at')
-                        .eq('casperlet_id', primInfo.casperlet_id)
-                        .order('created_at', { ascending: false })
-                        .limit(5);
-                      setSecurityLogs(data || []);
-                  }
+              
+              if (!data) {
+                console.log('[ResidentAssistant Security] no security parcel found for casperletId:', context.casperletId);
               }
+              setSecurityData(data);
+            } else if (chatState === 'security_logs') {
+              console.log('[ResidentAssistant Logs Context]', context);
+              try {
+                const { data, error } = await supabase
+                  .from('security_logs')
+                  .select('avatar_name, action, created_at')
+                  .eq('casperlet_id', context.casperletId)
+                  .order('created_at', { ascending: false })
+                  .limit(5);
+                
+                if (error) throw error;
+                setSecurityLogs(data || []);
+              } catch (e) {
+                console.error('[ResidentAssistant] Logs fetch error', e);
+                setSecurityLogs([]);
+              }
+            }
           }
+
         } catch (e) {
           console.error('[ResidentAssistant] Fetch error:', e);
         } finally {
@@ -304,80 +345,163 @@ export default function SupportChat() {
       };
       fetchData();
     }
-  }, [chatState, residentData]);
+  }, [chatState, residentData, isResident]);
 
-  const isResident = !!residentData?.avatar_uuid;
+  const visitorActions = useMemo(() => [
+    { id: 'available_rentals', label: t('support.menu.available_rentals', {defaultValue: 'Available Rentals'}), icon: Home },
+    { id: 'how_to_rent', label: t('support.menu.how_to_rent', {defaultValue: 'How to Rent'}), icon: Scroll },
+    { id: 'visit_properties', label: t('support.menu.visit_properties', {defaultValue: 'Visit Properties'}), icon: MapPin },
+    { id: 'join_group', label: t('support.menu.join_group', {defaultValue: 'Join Group'}), icon: UserPlus },
+    { id: 'rules', label: t('support.menu.rules', {defaultValue: 'Rules'}), icon: Scroll },
+    { id: 'talk_to_support', label: t('support.menu.talk_to_support', {defaultValue: 'Talk to Support'}), icon: LifeBuoy }
+  ], [t]);
 
-  const menuItems = useMemo(() => {
-    const baseMenu = [
-        { id: 'available_rentals', label: t('support.menu.available_rentals', {defaultValue: 'Available Rentals'}), icon: Home },
-        { id: 'how_to_rent', label: t('support.menu.how_to_rent', {defaultValue: 'How to Rent'}), icon: Scroll },
-        { id: 'visit_properties', label: t('support.menu.visit_properties', {defaultValue: 'Visit Properties'}), icon: MapPin },
-        { id: 'rules', label: t('support.menu.rules', {defaultValue: 'Rules'}), icon: Scroll },
-        { id: 'contact_esc', label: t('support.menu.contact', {defaultValue: 'Talk to Support'}), icon: LifeBuoy },
-    ];
-    
-    const residentMenu = [
-        { id: 'my_rental', label: t('support.menu.my_rental', {defaultValue: 'My Rental'}), icon: Home },
-        { id: 'prim_usage', label: t('support.menu.prim_usage', {defaultValue: 'Prim Usage'}), icon: Layout },
-        { id: 'security_access', label: t('support.menu.security_access', {defaultValue: 'Security Access'}), icon: Shield },
-        { id: 'security_logs', label: t('support.menu.security_logs', {defaultValue: 'Security Logs'}), icon: Scroll },
-        { id: 'invite_prompt', label: t('support.menu.invite', {defaultValue: 'Join Group'}), icon: UserPlus },
-        { id: 'open_support_ticket', label: t('support.menu.open_support_ticket', {defaultValue: 'Open Support Ticket'}), icon: LifeBuoy },
-        { id: 'contact_esc', label: t('support.menu.contact', {defaultValue: 'Talk to Support'}), icon: LifeBuoy },
-    ];
-    
-    return isResident ? residentMenu : baseMenu;
-  }, [isResident, t]);
+  const residentActions = useMemo(() => [
+    { id: 'my_rental', label: t('support.menu.my_rental', {defaultValue: 'My Rental'}), icon: Home },
+    { id: 'prim_usage', label: t('support.menu.prim_usage', {defaultValue: 'Prim Usage'}), icon: Layout },
+    { id: 'security_access', label: t('support.menu.security_access', {defaultValue: 'Security Access'}), icon: Shield },
+    { id: 'security_logs', label: t('support.menu.security_logs', {defaultValue: 'Security Logs'}), icon: Scroll },
+    { id: 'group_invite', label: t('support.menu.invite', {defaultValue: 'Join Group'}), icon: UserPlus },
+    { id: 'open_support_ticket', label: t('support.menu.open_support_ticket', {defaultValue: 'Open Support Ticket'}), icon: LifeBuoy },
+    { id: 'talk_to_support', label: t('support.menu.talk_to_support', {defaultValue: 'Talk to Support'}), icon: LifeBuoy }
+  ], [t]);
+
+  const actions = isResident ? residentActions : visitorActions;
+  
+  useEffect(() => {
+    console.log('[SupportChat Actions]', {
+      isResident,
+      actionsCount: actions.length,
+      actions
+    });
+  }, [isResident, actions]);
+
+  const handleAction = (id: string) => {
+    console.log('[SupportChat Action Click]', { actionId: id, chatMode: isResident ? 'resident' : 'visitor', residentUuid: residentData?.avatar_uuid });
+    if (id === 'talk_to_support') {
+        // @ts-ignore
+        if (window.Tawk_API && typeof window.Tawk_API.toggle === 'function') {
+            window.Tawk_API.showWidget();
+            window.Tawk_API.maximize();
+            setIsOpen(false);
+        } else {
+            setChatState('talk_to_support'); // Show fallback
+        }
+    } else if (id === 'group_invite') {
+      if (!residentData?.avatar_uuid) {
+        setInviteResult({ 
+          success: false, 
+          message: t('support.responses.invite_login_required') 
+        });
+        setChatState('invite_sent');
+        return;
+      }
+      setUuid(residentData.avatar_uuid);
+      setChatState('invite_confirm'); 
+    } else {
+      setChatState(id as ChatState);
+    }
+  };
 
   const renderExpandedContent = (state: ChatState) => {
     if (state === 'my_rental') {
-        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
-        if (!rentalData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_rental_found')}</div>
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (!rentalData) return (
+            <div className="p-4 text-white/50 text-sm">
+                {safeT('support.responses.no_rental_found', 'I found your resident account, but I couldn’t find a rental linked to it.')}
+            </div>
+        );
         return (
-            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                <p><strong>{t('support.rental.name')}:</strong> {rentalData.name}</p>
-                <p><strong>{t('support.rental.id')}:</strong> {rentalData.casperlet_id || 'N/A'}</p>
-                <p><strong>{t('support.rental.status')}:</strong> {rentalData.status}</p>
-                <button 
-                  onClick={() => window.open(rentalData.teleport_url || 'https://maps.secondlife.com/secondlife/Holanbra', '_blank')}
-                  className="w-full py-2 bg-amber-500 text-black font-bold uppercase rounded-lg text-xs"
-                >
-                  {t('support.rental.teleport')}
-                </button>
+              <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                <p><strong>{safeT('support.rental.name', 'Property')}:</strong> {rentalData.property?.name || rentalData.propertyName || 'Unknown'}</p>
+                <p><strong>{safeT('support.rental.status', 'Status')}:</strong> {rentalData.property?.status ? rentalData.property.status.charAt(0).toUpperCase() + rentalData.property.status.slice(1) : 'Unknown'}</p>
+                
+                {rentalData.property?.rented_until 
+                   ? <p><strong>{safeT('support.rental.expires', 'Expires')}:</strong> {new Date(rentalData.property.rented_until).toLocaleDateString()}</p>
+                   : null}
+                   
+                {rentalData.property?.prim_limit 
+                   ? <p><strong>{safeT('support.rental.prim_limit', 'Prim limit')}:</strong> {rentalData.property.prim_limit}</p>
+                   : null}
+                
+                {!rentalData.property && !rentalData.primData && 
+                    <p className="text-white/40">{safeT('support.responses.no_rental_details', 'Rental time details are not available here yet.')}</p>
+                }
+                
+                {rentalData.property?.teleport_url && (
+                    <button 
+                      onClick={() => window.open(rentalData.property.teleport_url, '_blank')}
+                      className="w-full py-2 bg-amber-500 text-black font-bold uppercase rounded-lg text-xs"
+                    >
+                      {safeT('support.rental.teleport', 'Teleport')}
+                    </button>
+                )}
             </div>
         );
     }
     if (state === 'prim_usage') {
-        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
-        if (!primData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_prim_data')}</div>
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (!primData) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_prim_data', 'I couldn’t find prim data for this rental yet.')}</div>
         return (
             <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                <p>{t('support.prim.used')}: {primData.prims_used} / {primData.prim_limit}</p>
-                <p>{t('support.prim.remaining')}: {primData.prim_limit - primData.prims_used}</p>
+                <p>{safeT('support.prim.used', 'Used prims')}: {primData.prims_used} / {primData.prim_limit}</p>
+                <p>{safeT('support.prim.remaining', 'Remaining prims')}: {primData.prim_limit - primData.prims_used}</p>
             </div>
         );
     }
     if (state === 'security_access') {
-        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
-        if (!securityData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_security_data')}</div>
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (!securityData) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_security_data', 'I found your rental, but I couldn’t find a Security Orb linked to it.')}</div>
         return (
             <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                <p>{t('support.security.status')}: {securityData.active ? 'ON' : 'OFF'}</p>
-                <p>{t('support.security.radius')}: {securityData.radius}</p>
+                <p><strong>{safeT('Status', 'Status')}:</strong> {securityData.active ? 'ON' : 'OFF'}</p>
+                <p><strong>{safeT('Radius', 'Radius')}:</strong> {securityData.radius}m</p>
+                <p><strong>{safeT('Warning time', 'Warning time')}:</strong> {securityData.warning_time}s</p>
+                <p><strong>{safeT('Allowed avatars', 'Allowed avatars')}:</strong> {securityData.access_list?.length || 0}</p>
+                <p><strong>{safeT('Banned avatars', 'Banned avatars')}:</strong> {securityData.ban_list?.length || 0}</p>
             </div>
         );
     }
     if (state === 'security_logs') {
-        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
-        if (securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_logs')}</div>
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (!Array.isArray(securityLogs) || securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_logs', 'No recent security events.')}</div>
         return (
             <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                {securityLogs.map((log: any, i: number) => (
-                    <p key={i}>{log.created_at.substring(0,10)} - {log.avatar_name}: {log.action}</p>
+                {(securityLogs || []).map((log: any, i: number) => (
+                    <p key={i}>
+                        {log.created_at?.substring(0,10)} - {log.avatar_name}: <span className="text-amber-500">{log.action || safeT('Action', 'Action')}</span>
+                    </p>
                 ))}
             </div>
         );
+    }
+    if (state === 'open_support_ticket') {
+        const sendTicket = async () => {
+          // Placeholder action
+          setChatState('menu');
+          setTicketMsg('');
+        };
+        return (
+            <div className="space-y-3">
+                <p className="text-white/80 text-sm">{safeT('support.responses.open_support_ticket', 'Tell me what you need help with, and I’ll create a support ticket.')}</p>
+                <input 
+                  type="text" 
+                  value={ticketMsg} 
+                  onChange={(e) => setTicketMsg(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white text-xs outline-none focus:border-amber-500/50 transition-all"
+                  placeholder={safeT('support.responses.ticket_placeholder', 'Describe your issue...')}
+                />
+                <button 
+                  onClick={sendTicket}
+                  className="w-full py-4 rounded-xl bg-amber-500 text-black text-[10px] font-black uppercase tracking-[0.2em] hover:scale-[1.02] transition-all shadow-xl shadow-amber-500/20"
+                >
+                  {safeT('support.actions.send_ticket', 'Send Ticket')}
+                </button>
+            </div>
+        );
+    }
+    if (state === 'talk_to_support') {
+        return <div className="p-4 text-white/80 text-sm">{safeT('support.responses.talk_to_support', 'Opening live support...')}</div>
     }
     // ... other states
     const response = t(`support.responses.${state}`, { returnObjects: true }) as any;
@@ -450,7 +574,9 @@ export default function SupportChat() {
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h3 className="text-white font-display font-black uppercase text-xs tracking-[0.2em]">{t('support.bot_name')}</h3>
+                  <h3 className="text-white font-display font-black uppercase text-xs tracking-[0.2em]">
+                    {isResident ? 'HOLANBRA RESIDENT' : t('support.bot_name')}
+                  </h3>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Online</span>
@@ -484,50 +610,30 @@ export default function SupportChat() {
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="grid grid-cols-1 gap-2"
+                  className="chat-quick-actions grid grid-cols-1 gap-2"
+                  style={{ display: 'block', opacity: 1, visibility: 'visible' }}
                 >
-                  {menuItems.map((item) => (
+                  <p className="text-white/20 text-[8px] uppercase tracking-widest pl-2">DEBUG: {actions.length} actions</p>
+                  {actions.map((action) => (
                     <motion.button
-                      key={item.id}
+                      key={action.id}
                       type="button"
                       whileHover={{ scale: 1.02, backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        if (item.id === 'invite_prompt') {
-                          if (!residentData?.avatar_uuid) {
-                            setInviteResult({ 
-                              success: false, 
-                              message: t('support.responses.invite_login_required') 
-                            });
-                            setChatState('invite_sent');
-                            return;
-                          }
-
-                          // Try both residentData state and localStorage as fallback
-                          const savedUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
-                          if (savedUuid && UUID_REGEX.test(savedUuid)) {
-                            setUuid(savedUuid); // Set the current uuid state for displaying in confirmation
-                            setChatState('invite_confirm');
-                          } else {
-                            setChatState('invite_prompt');
-                          }
-                        } else {
-                          setChatState(item.id as ChatState);
-                        }
-                      }}
+                      onClick={() => handleAction(action.id)}
                       className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 transition-all text-left group cursor-pointer relative z-10"
                     >
                       <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <item.icon size={18} />
+                        <action.icon size={18} />
                       </div>
-                      <span className="text-xs font-black uppercase tracking-widest">{item.label}</span>
+                      <span className="text-xs font-black uppercase tracking-widest">{action.label}</span>
                     </motion.button>
                   ))}
                 </motion.div>
               )}
 
               {/* Response State */}
-              {(chatState === 'security' || chatState === 'prims' || chatState === 'rentals' || chatState === 'rules' || chatState === 'faq') && (
+              {(['security', 'prims', 'rentals', 'rules', 'faq', 'my_rental', 'prim_usage', 'security_access', 'security_logs', 'open_support_ticket'].includes(chatState)) && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -535,7 +641,7 @@ export default function SupportChat() {
                 >
                   <div className="flex items-start gap-3 justify-end">
                     <div className="bg-amber-500 text-black rounded-2xl rounded-tr-none p-4 text-xs font-black uppercase tracking-widest shadow-lg">
-                      {menuItems.find(i => i.id === chatState)?.label}
+                      {actions.find(i => i.id === chatState)?.label || t(`support.menu.${chatState}`, {defaultValue: chatState})}
                     </div>
                   </div>
                   <div className="flex items-start gap-3 flex-col">
