@@ -117,11 +117,14 @@ export default function SupportChat() {
       const data = await response.json();
       
       if (!response.ok) {
-        console.error(`[SupportChat] Request failed:`, {
-          endpoint,
+        console.error('[SmartBots Invite Error]', {
           status: response.status,
           statusText: response.statusText,
-          body: data
+          body: data,
+          payload: {
+            avatar_uuid: targetUuid,
+            language: i18n.language?.slice(0, 2) || 'en'
+          }
         });
       }
 

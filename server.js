@@ -311,20 +311,28 @@ async function startServer() {
   app.post('/api/smartbots/group-invite', async (req, res) => {
     try {
       const { avatar_uuid, language } = req.body;
-      console.log(`[SmartBots] Group invite request received for avatar: ${avatar_uuid} - Language: ${language || 'not specified'}`);
       
+      // Step 1: Input Validation
       if (!avatar_uuid || String(avatar_uuid).trim() === "") {
         console.warn('[SmartBots] Rejected: Missing avatar_uuid');
-        return res.status(400).json({ success: false, error: 'avatar_uuid is required' });
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Avatar UUID is required',
+          code: 'MISSING_AVATAR_UUID'
+        });
       }
 
-      // UUID Validation format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
       const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!UUID_REGEX.test(avatar_uuid)) {
         console.warn(`[SmartBots] Rejected: Invalid UUID format: ${avatar_uuid}`);
-        return res.status(400).json({ success: false, error: 'invalid avatar_uuid' });
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid avatar UUID format. Must be xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+          code: 'INVALID_AVATAR_UUID'
+        });
       }
 
+      // Step 2: Environment Configuration
       const apiKey = process.env.SMARTBOTS_API_KEY;
       const botName = process.env.SMARTBOTS_BOT_NAME;
       const accessCode = process.env.SMARTBOTS_BOT_ACCESS_CODE || "";
@@ -340,55 +348,92 @@ async function startServer() {
         }
       }
 
-      if (!apiKey || !botName || !groupUuid) {
-        const missing = [];
-        if (!apiKey) missing.push('SMARTBOTS_API_KEY');
-        if (!botName) missing.push('SMARTBOTS_BOT_NAME');
-        if (!groupUuid) missing.push('SMARTBOTS_GROUP_UUID');
-        
-        console.error(`[SmartBots] Configuration missing: ${missing.join(', ')}`);
-        return res.status(500).json({ success: false, error: 'SmartBots configuration missing on server' });
+      // Step 3: Server-side validation of secrets
+      const missingConfigs = [];
+      if (!apiKey) missingConfigs.push('SMARTBOTS_API_KEY');
+      if (!botName) missingConfigs.push('SMARTBOTS_BOT_NAME');
+      if (!groupUuid) missingConfigs.push('SMARTBOTS_GROUP_UUID');
+      
+      if (missingConfigs.length > 0) {
+        console.error(`[SmartBots] Configuration missing: ${missingConfigs.join(', ')}`);
+        return res.status(500).json({ 
+          success: false, 
+          error: `SmartBots configuration missing: ${missingConfigs.join(', ')}`,
+          code: 'CONFIG_MISSING'
+        });
       }
 
-      // Secure Logging
-      console.log('[SmartBots] invite payload', {
-        avatar_uuid: avatar_uuid.trim(),
+      if (!UUID_REGEX.test(groupUuid)) {
+        console.error(`[SmartBots] Invalid group UUID in config: ${groupUuid}`);
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Internal server error: Invalid group UUID configuration',
+          code: 'INVALID_GROUP_CONFIG'
+        });
+      }
+
+      // Step 4: SmartBots API Call
+      const smartBotsUrl = `https://www.mysmartbots.com/api/bot.html`;
+      const params = {
+        action: 'group_invite',
+        apikey: apiKey,
+        botname: botName,
+        secret: accessCode,
         groupuuid: groupUuid,
-        hasApiKey: Boolean(apiKey),
-        hasBotAccessCode: Boolean(accessCode)
+        avatar: avatar_uuid.trim(),
+        roleuuid: roleUuid
+      };
+
+      // Secure Logging (Log key facts without revealing tokens)
+      console.log('[SmartBots] Dispatching Invite:', {
+        avatar: params.avatar,
+        group: params.groupuuid,
+        bot: params.botname,
+        hasApiKey: !!apiKey,
+        hasCode: !!accessCode,
+        lang: language
       });
 
-      // SmartBots Personal Bot HTTP API
-      const smartBotsUrl = `https://www.mysmartbots.com/api/bot.html`;
-      
-      const response = await axios.get(smartBotsUrl, {
-        params: {
-          action: 'group_invite',
-          apikey: apiKey,
-          botname: botName,
-          secret: accessCode,
-          groupuuid: groupUuid,
-          avatar: avatar_uuid.trim(), // Use trimmed UUID
-          roleuuid: roleUuid
-        }
-      });
+      const response = await axios.get(smartBotsUrl, { params, timeout: 10000 });
       
       const result = String(response.data);
-      console.log(`[SmartBots] API Status: ${response.status} - Response: ${result}`);
+      console.log(`[SmartBots] Response Body: ${result}`);
 
       if (result.toUpperCase().startsWith('OK')) {
-        return res.status(200).json({ success: true, message: result });
+        return res.status(200).json({ 
+          success: true, 
+          message: 'Invitation sent successfully',
+          smartbots_response: result 
+        });
       } else {
-        console.warn(`[SmartBots] API returned non-OK result: ${result}`);
-        return res.status(400).json({ success: false, error: result });
+        console.warn(`[SmartBots] Invitation failed: ${result}`);
+        // Return 400 with the actual error message from SmartBots
+        return res.status(400).json({ 
+          success: false, 
+          error: result,
+          smartbots_response: result,
+          code: 'SMARTBOTS_GATEWAY_ERROR'
+        });
       }
     } catch (err) {
       console.error('[SmartBots] Exception:', err.message);
       if (err.response) {
-        console.error('[SmartBots] Error Response Body:', err.response.data);
-        console.error('[SmartBots] Error Response Status:', err.response.status);
+        console.error('[SmartBots] HTTP Error Response:', {
+          status: err.response.status,
+          data: err.response.data
+        });
+        return res.status(err.response.status || 502).json({ 
+          success: false, 
+          error: 'SmartBots gateway error',
+          details: err.response.data,
+          code: 'GATEWAY_HTTP_ERROR'
+        });
       }
-      return res.status(500).json({ success: false, error: 'Service temporarily unavailable' });
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Communication failure with SmartBots service',
+        code: 'INTERNAL_EXCEPTION'
+      });
     }
   });
 
