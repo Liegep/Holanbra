@@ -117,22 +117,29 @@ export default function SupportChat() {
       const data = await response.json();
       
       if (!response.ok) {
-        console.error('[SmartBots Invite Error]', {
-          status: response.status,
-          statusText: response.statusText,
-          body: data,
-          payload: {
-            avatar_uuid: targetUuid,
-            language: i18n.language?.slice(0, 2) || 'en'
-          }
-        });
+        console.error('[SmartBots Invite Error RAW]', JSON.stringify(data, null, 2));
+      }
+
+      let finalMessage = data.success ? t('support.responses.invite_success') : t('support.responses.invite_error');
+      
+      if (!data.success) {
+        const errorText = (data.error || '').toLowerCase();
+        if (errorText.includes('wrong resident uuid')) {
+          finalMessage = "This avatar UUID was not accepted by SmartBots. Please check the Second Life avatar UUID.";
+        } else if (errorText.includes('bot not found')) {
+          finalMessage = "The SmartBots bot name or access settings are incorrect.";
+        } else if (errorText.includes('wrong access code')) {
+          finalMessage = "The SmartBots access code is incorrect.";
+        } else if (errorText.includes('group not found')) {
+          finalMessage = "The group UUID is incorrect.";
+        } else if (data.error) {
+          finalMessage = `SmartBots could not send the invite: ${data.error}`;
+        }
       }
 
       setInviteResult({ 
         success: data.success, 
-        message: data.success 
-          ? t('support.responses.invite_success') 
-          : (data.error?.includes('avatar_uuid') ? t('support.responses.invite_invalid') : t('support.responses.invite_error'))
+        message: finalMessage
       });
       setChatState('invite_sent');
     } catch (error) {

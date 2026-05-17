@@ -396,22 +396,50 @@ async function startServer() {
 
       const response = await axios.get(smartBotsUrl, { params, timeout: 10000 });
       
-      const result = String(response.data);
-      console.log(`[SmartBots] Response Body: ${result}`);
+      const rawResponse = String(response.data);
+      console.log(`[SmartBots] Response Body: ${rawResponse}`);
 
-      if (result.toUpperCase().startsWith('OK')) {
+      // SmartBots often returns a query string format even for errors
+      // Use URLSearchParams to parse the response
+      // Example: action=group_invite&avatar=...&result=FAIL&resulttext=wrong+resident+UUID
+      let sbResult = null;
+      let sbAction = null;
+      let sbResultText = null;
+      let sbAvatar = null;
+
+      if (rawResponse.includes('result=')) {
+        try {
+          const sbParams = new URLSearchParams(rawResponse);
+          sbResult = sbParams.get('result');
+          sbAction = sbParams.get('action');
+          sbResultText = sbParams.get('resulttext');
+          sbAvatar = sbParams.get('avatar');
+        } catch (e) {
+          console.warn('[SmartBots] Failed to parse query string response', e);
+        }
+      }
+
+      const isSuccess = rawResponse.toUpperCase().startsWith('OK') || sbResult === 'OK';
+
+      if (isSuccess) {
         return res.status(200).json({ 
           success: true, 
           message: 'Invitation sent successfully',
-          smartbots_response: result 
+          smartbots_result: sbResult || 'OK',
+          smartbots_action: sbAction || 'group_invite',
+          avatar_uuid: sbAvatar || avatar_uuid,
+          raw: rawResponse 
         });
       } else {
-        console.warn(`[SmartBots] Invitation failed: ${result}`);
+        console.warn(`[SmartBots] Invitation failed: ${rawResponse}`);
         // Return 400 with the actual error message from SmartBots
         return res.status(400).json({ 
           success: false, 
-          error: result,
-          smartbots_response: result,
+          error: sbResultText || rawResponse,
+          smartbots_result: sbResult || 'FAIL',
+          smartbots_action: sbAction || 'group_invite',
+          avatar_uuid: sbAvatar || avatar_uuid,
+          raw: rawResponse,
           code: 'SMARTBOTS_GATEWAY_ERROR'
         });
       }
