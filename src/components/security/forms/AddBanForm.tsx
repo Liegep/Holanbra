@@ -24,7 +24,7 @@ export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: Ad
 
     const trimmedUuid = uuid.trim();
     if (!trimmedUuid) {
-      setError('Avatar UUID is required');
+      setError(t('security.uuid_required'));
       return;
     }
 
@@ -40,7 +40,7 @@ export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: Ad
           resident_uuid: residentUuid,
           avatar_name: name.trim(),
           avatar_key: trimmedUuid,
-          reason: "Manual ban"
+          reason: t('security.manual_ban')
         })
       });
 
@@ -49,10 +49,10 @@ export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: Ad
       if (response.ok) {
         onSuccess(data.data);
       } else {
-        setError(data.error || 'Error banning avatar');
+        setError(data.error || t('security.error_banning_avatar'));
       }
     } catch (err) {
-      setError('Connection error');
+      setError(t('security.connection_error'));
     }
     
     setLoading(false);
@@ -86,7 +86,7 @@ export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: Ad
                 required
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="Avatar Resident"
+                placeholder={t('team.placeholder_name')}
                 className="w-full px-3 py-2 bg-white/5 border border-white/5 rounded-lg text-[11px] text-white placeholder:text-white/10 focus:outline-none focus:border-red-500/50 transition-all font-medium"
               />
             </div>
@@ -99,7 +99,7 @@ export function AddBanForm({ casperletId, residentUuid, onClose, onSuccess }: Ad
                 required
                 value={uuid}
                 onChange={e => setUuid(e.target.value)}
-                placeholder="00000000-0000..."
+                placeholder={t('security.uuid_placeholder')}
                 className="w-full px-3 py-2 bg-white/5 border border-white/5 rounded-lg text-[9px] font-mono text-white placeholder:text-white/10 focus:outline-none focus:border-red-500/50 transition-all truncate"
               />
             </div>

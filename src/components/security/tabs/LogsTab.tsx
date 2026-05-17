@@ -67,6 +67,9 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
   const getActionInfo = (action: string) => {
     switch (action) {
       case 'allowed': return { icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: t('security.action_allowed') };
+      case 'allowed_once': return { icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: t('security.action_allowed_once') };
+      case 'added_access': return { icon: ShieldCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: t('security.action_added_access') };
+      case 'manager_denied': return { icon: ShieldCheck, color: 'text-red-500', bg: 'bg-red-500/10', label: t('security.action_manager_denied') };
       case 'warned': return { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: t('security.action_warned') };
       case 'ejected': return { icon: UserMinus, color: 'text-orange-500', bg: 'bg-orange-500/10', label: t('security.action_ejected') };
       case 'banned': return { icon: UserX, color: 'text-red-500', bg: 'bg-red-500/10', label: t('security.action_banned') };
@@ -98,7 +101,7 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
           className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest text-white/40 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
         >
           <ScrollText size={12} className={cn(loading && "animate-spin")} />
-          <span>Sync</span>
+          <span>{t('security.sync')}</span>
         </button>
       </div>
 

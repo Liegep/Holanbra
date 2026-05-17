@@ -125,11 +125,11 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
       const result = await response.json();
       if (result.success && result.data) {
         setConfig(result.data);
-        showToast('Settings saved successfully');
+        showToast(t('security.success_settings_saved'));
       }
     } catch (err) {
       console.error('Error saving security settings:', err);
-      showToast('Error saving settings', 'error');
+      showToast(t('security.error_settings_saved'), 'error');
     } finally {
       setSaving(false);
     }
@@ -144,7 +144,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
     // Clear ban list
     await supabase.from('security_ban_list').delete().eq('casperlet_id', selectedParcelId);
     
-    showToast('All lists cleared successfully');
+    showToast(t('security.success_lists_cleared'));
     setClearing(false);
     setShowConfirmClear(false);
   };
@@ -168,12 +168,13 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
       if (response.ok && result.success) {
         setConfig(result.data);
         setShowConfirmRegen(false);
-        showToast('Token regenerated successfully');
+        showToast(t('security.success_token_regen'));
       } else {
-        throw new Error(result.error || 'Failed to regenerate token');
+        throw new Error(result.error || t('security.error_token_regen'));
       }
     } catch (err) {
       console.error('Error regenerating token:', err);
+      showToast(t('security.error_token_regen'), 'error');
     }
   };
 
@@ -181,6 +182,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
     if (!config?.orb_token) return;
     navigator.clipboard.writeText(config.orb_token);
     setCopied(true);
+    showToast(t('security.token_copied'));
     setTimeout(() => setCopied(false), 2000);
   };
 

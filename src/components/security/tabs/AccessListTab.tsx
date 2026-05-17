@@ -87,11 +87,11 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
       const result = await response.json();
       if (result.success) {
         setAvatars(prev => prev.filter(a => a.id !== id));
-        showToast('Access removed successfully');
+        showToast(t('security.success_access_removed'));
       }
     } catch (err) {
       console.error('Error removing avatar:', err);
-      showToast('Error removing access', 'error');
+      showToast(t('security.error_access_removed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
           className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest text-black transition-all flex items-center gap-2 shadow-lg shadow-amber-500/10 active:scale-95"
         >
           <UserPlus size={14} />
-          <span className="hidden sm:inline">Add Avatar</span>
+          <span className="hidden sm:inline">{t('security.add_avatar')}</span>
         </button>
       </div>
 
@@ -155,7 +155,7 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
                       </h4>
                       {avatar.role === 'manager' && (
                         <span className="px-1 py-0.5 rounded-[4px] bg-amber-500/10 text-amber-500 text-[6px] font-black uppercase tracking-widest border border-amber-500/10">
-                          Manager
+                          {t('security.role_manager')}
                         </span>
                       )}
                     </div>
@@ -176,7 +176,7 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
                   <button
                     onClick={() => removeAvatar(avatar.id, avatar.avatar_key, avatar.avatar_name)}
                     className="p-2 text-white/10 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all active:scale-90"
-                    title="Remover Acesso"
+                    title={t('security.remove_access')}
                     disabled={loading}
                   >
                     <Trash2 size={14} />
@@ -196,7 +196,7 @@ export function AccessListTab({ selectedParcelId, properties, onParcelSelect, re
           onSuccess={(newAvatar) => {
             setAvatars(prev => [newAvatar, ...prev]);
             setShowAddForm(false);
-            showToast('Access granted successfully');
+            showToast(t('security.success_access_granted'));
           }}
         />
       )}

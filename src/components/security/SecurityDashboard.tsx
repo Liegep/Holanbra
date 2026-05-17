@@ -306,10 +306,10 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                   "px-1.5 py-0.5 rounded-[4px] text-[7px] font-black uppercase tracking-widest",
                   currentSecurity?.active ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
                 )}>
-                  {currentSecurity?.active ? "ACTIVE" : "STANDBY"}
+                  {currentSecurity?.active ? t('security.active') : t('security.standby')}
                 </div>
                 <p className="text-[9px] text-white/30 uppercase tracking-widest font-bold truncate max-w-[200px]">
-                  {selectedParcelName || "No Linked Node"}
+                  {selectedParcelName || t('security.no_linked_node')}
                 </p>
               </div>
             </div>
@@ -354,14 +354,14 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                 <div className="w-32 h-32 rounded-full border-2 border-white/5 border-t-amber-500 animate-spin" />
                 <Shield size={48} className="absolute inset-0 m-auto text-amber-500/50 animate-pulse" />
               </div>
-              <p className="text-lg font-black uppercase tracking-[0.4em] text-amber-500">Initializing Grid</p>
+              <p className="text-lg font-black uppercase tracking-[0.4em] text-amber-500">{t('security.initializing_grid')}</p>
             </div>
           ) : properties.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center gap-8 text-center px-6 sm:px-12">
               <Shield size={64} className="text-white/5" />
               <div className="space-y-2">
-                <h3 className="text-xl font-black uppercase tracking-[0.2em] text-white">No Active Nodes</h3>
-                <p className="text-xs text-white/30 uppercase tracking-widest break-words max-w-[300px] text-center mx-auto">Unable to detect security orbs linked to your account.</p>
+                <h3 className="text-xl font-black uppercase tracking-[0.2em] text-white">{t('security.no_active_nodes')}</h3>
+                <p className="text-xs text-white/30 uppercase tracking-widest break-words max-w-[300px] text-center mx-auto">{t('security.no_nodes_desc')}</p>
               </div>
             </div>
           ) : (
@@ -378,7 +378,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
 
                       <div className="relative z-10 flex flex-col items-center gap-4 w-full">
                         <div className="text-center">
-                          <h4 className="text-[9px] font-black text-amber-500/50 uppercase tracking-[0.4em]">Core Control</h4>
+                          <h4 className="text-[9px] font-black text-amber-500/50 uppercase tracking-[0.4em]">{t('security.core_control')}</h4>
                           <h3 className="text-lg font-black text-white uppercase tracking-tight mt-1">{selectedParcelName}</h3>
                         </div>
 
@@ -415,11 +415,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                         <div className="flex gap-4">
                           <div className="flex items-center gap-1.5">
                              <div className={cn("w-1.5 h-1.5 rounded-full", currentSecurity?.active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,1)]" : "bg-zinc-800")} />
-                             <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">Active</span>
+                             <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">{t('security.active')}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                              <div className={cn("w-1.5 h-1.5 rounded-full", currentSecurity?.orb_token ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,1)]" : "bg-zinc-800")} />
-                             <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">Linked</span>
+                             <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">{t('properties.perks.security_orb')}</span>
                           </div>
                         </div>
                       </div>
@@ -428,16 +428,16 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                     {/* Quick Stats Grid */}
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: 'Radius', value: `${currentSecurity?.radius || 0}m`, color: 'text-blue-400' },
-                        { label: 'Warn Time', value: `${currentSecurity?.warn_time || 0}s`, color: 'text-amber-400' },
-                        { label: 'Ask Before', value: currentSecurity?.ask_before ? 'YES' : 'NO', color: 'text-purple-400' },
+                        { label: t('security.radius'), value: `${currentSecurity?.radius || 0}${t('security.meters')[0]}`, color: 'text-blue-400' },
+                        { label: t('security.timer_label'), value: `${currentSecurity?.warn_time || 0}s`, color: 'text-amber-400' },
+                        { label: t('security.ask_before'), value: currentSecurity?.ask_before ? t('admin.common.yes', 'YES') : t('admin.common.no', 'NO'), color: 'text-purple-400' },
                         { 
-                          label: 'Managers', 
+                          label: t('security.managers_display'), 
                           value: managersCount === null 
-                            ? 'Loading...' 
+                            ? t('security.loading') 
                             : managersCount === 0 
-                              ? 'No managers' 
-                              : `${managersCount} configured`, 
+                              ? t('security.no_managers') 
+                              : `${managersCount} ${t('security.configured')}`, 
                           color: 'text-zinc-400'
                         }
                       ].map((stat, i) => (
@@ -459,14 +459,14 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                     {/* Compact Logs Sub-Panel */}
                     <div className="bg-zinc-900/30 border border-white/5 p-4 rounded-2xl flex flex-col gap-3 h-full max-h-[300px]">
                       <div className="flex items-center justify-between shrink-0">
-                        <h4 className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Live Activity</h4>
-                        <button onClick={fetchLogs} className="text-[8px] font-black text-amber-500 uppercase tracking-widest hover:text-white">Refresh</button>
+                        <h4 className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">{t('security.live_activity')}</h4>
+                        <button onClick={fetchLogs} className="text-[8px] font-black text-amber-500 uppercase tracking-widest hover:text-white">{t('security.refresh')}</button>
                       </div>
                       <div className="flex-1 space-y-1.5 overflow-y-auto no-scrollbar">
                         {loadingLogs ? (
-                          <div className="text-white/10 text-[9px] uppercase text-center mt-8">Monitoring sync...</div>
+                          <div className="text-white/10 text-[9px] uppercase text-center mt-8">{t('security.monitoring_sync')}</div>
                         ) : logs.length === 0 ? (
-                          <div className="text-white/10 text-[9px] uppercase text-center mt-8">No activity detected.</div>
+                          <div className="text-white/10 text-[9px] uppercase text-center mt-8">{t('security.no_activity')}</div>
                         ) : (
                           logs.map((log) => (
                             <div key={log.id} className="flex items-center justify-between text-[8px] bg-black/20 p-2 rounded-lg border border-white/[0.03]">
@@ -482,16 +482,16 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
                           ))
                         )}
                       </div>
-                      <button onClick={() => setActiveTab('logs')} className="w-full py-1.5 text-[7px] font-black text-white/20 uppercase hover:text-white hover:bg-white/5 rounded-lg border border-white/5 transition-all shrink-0">View All Logs</button>
+                      <button onClick={() => setActiveTab('logs')} className="w-full py-1.5 text-[7px] font-black text-white/20 uppercase hover:text-white hover:bg-white/5 rounded-lg border border-white/5 transition-all shrink-0">{t('security.view_all_logs')}</button>
                     </div>
 
                     {/* Quick Access Grid */}
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { id: 'access', label: 'Access Control', icon: Users, color: 'text-blue-400', desc: 'Residents' },
-                        { id: 'ban', label: 'Restriction', icon: Ban, color: 'text-red-400', desc: 'Blacklist' },
-                        { id: 'settings', label: 'Configuration', icon: Settings, color: 'text-zinc-400', desc: 'Orb tuning' },
-                        { id: 'logs', label: 'History', icon: ScrollText, color: 'text-amber-400', desc: 'Audit trails' }
+                        { id: 'access', label: t('security.access_control'), icon: Users, color: 'text-blue-400', desc: t('security.residents') },
+                        { id: 'ban', label: t('security.restriction'), icon: Ban, color: 'text-red-400', desc: t('security.blacklist') },
+                        { id: 'settings', label: t('security.setup'), icon: Settings, color: 'text-zinc-400', desc: t('security.orb_tuning') },
+                        { id: 'logs', label: t('security.history'), icon: ScrollText, color: 'text-amber-400', desc: t('security.audit_trails') }
                       ].map((item) => (
                         <button
                           key={item.id}
@@ -545,11 +545,11 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
         {/* Global Tab Navigation */}
         <div className="flex bg-[#0d0d0f] border-t border-white/5 px-2 py-2 gap-1 shrink-0 overflow-x-auto no-scrollbar">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: Shield },
-            { id: 'access', label: 'Access', icon: Users },
-            { id: 'ban', label: 'Bans', icon: Ban },
-            { id: 'logs', label: 'Logs', icon: ScrollText },
-            { id: 'settings', label: 'Setup', icon: Settings }
+            { id: 'dashboard', label: t('security.dashboard'), icon: Shield },
+            { id: 'access', label: t('security.access_list'), icon: Users },
+            { id: 'ban', label: t('security.ban_list'), icon: Ban },
+            { id: 'logs', label: t('security.event_log'), icon: ScrollText },
+            { id: 'settings', label: t('security.setup'), icon: Settings }
           ].map((tab) => (
             <button
               key={tab.id}

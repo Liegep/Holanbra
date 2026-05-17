@@ -55,9 +55,9 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
 
     if (!error) {
       setBans(prev => prev.filter(b => b.id !== id));
-      showToast('Ban removed successfully');
+      showToast(t('security.success_ban_removed'));
     } else {
-      showToast('Error removing ban', 'error');
+      showToast(t('security.error_ban_removed'), 'error');
     }
   };
 
@@ -83,7 +83,7 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
           className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest text-white transition-all flex items-center gap-2 shadow-lg shadow-red-500/10 active:scale-95 shrink-0"
         >
           <UserX size={14} />
-          <span className="hidden sm:inline">Ban Avatar</span>
+          <span className="hidden sm:inline">{t('security.add_ban')}</span>
         </button>
       </div>
 
@@ -94,7 +94,7 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
           ))
         ) : filteredBans.length === 0 ? (
           <div className="h-32 flex items-center justify-center border border-dashed border-white/5 rounded-xl text-white/10 uppercase font-black text-[10px] tracking-[0.3em] bg-white/[0.01]">
-            No Entities Banned
+            {t('security.no_entities_banned')}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-1">
@@ -142,7 +142,7 @@ export function BanListTab({ selectedParcelId, properties, onParcelSelect, resid
           onSuccess={(newBan) => {
             setBans(prev => [newBan, ...prev]);
             setShowAddForm(false);
-            showToast('Resident banned successfully');
+            showToast(t('security.success_ban_added'));
           }}
         />
       )}
