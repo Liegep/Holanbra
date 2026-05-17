@@ -514,8 +514,6 @@ const ResidentDashboard:FC = () => {
                     <ShieldCheck size={14} className="text-amber-500/50" />
                     {t('resident.welcome')}
                   </p>
-                  <div className="h-3 w-px bg-white/5" />
-                  <p className="text-[10px] md:text-xs text-white/40 font-mono tracking-tighter">#{residentData?.avatar_uuid?.slice(0, 8)}</p>
                 </div>
               </div>
             </div>
@@ -531,11 +529,11 @@ const ResidentDashboard:FC = () => {
                </button>
 
                <button 
-                 onClick={() => window.dispatchEvent(new CustomEvent('holanradio', { detail: { action: 'open' } }))}
+                 onClick={() => window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }))}
                  className="w-full md:w-auto px-6 md:px-8 py-4 md:py-5 bg-white/5 hover:bg-white/10 text-white rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all backdrop-blur-md border border-white/10 active:scale-95"
                >
                  <Music size={16} />
-                 Radio
+                 {t('hero.radio', "Holanbra's Radio")}
                </button>
 
                <button 

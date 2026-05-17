@@ -23,7 +23,7 @@ const resources = {
       "hero": {
         "rentals": "New Rentals Available",
         "tour": "Virtual Tour",
-        "radio": "Holanbra Radio"
+        "radio": "Holanbra's Radio"
       },
       "properties": {
         "title": "Available",
@@ -749,7 +749,7 @@ const resources = {
       "hero": {
         "rentals": "Novos Aluguéis Disponíveis",
         "tour": "Tour Virtual",
-        "radio": "Rádio Holanbra"
+        "radio": "Holanbra's Radio"
       },
       "properties": {
         "title": "Disponíveis",
@@ -1478,7 +1478,8 @@ const resources = {
       },
       "hero": {
         "tour": "Tour Virtual",
-        "rentals": "Nuevos Alquileres Disponibles"
+        "rentals": "Nuevos Alquileres Disponibles",
+        "radio": "Holanbra's Radio"
       },
       "properties": {
         "title": "Disponibles",
@@ -2163,7 +2164,8 @@ const resources = {
       },
       "hero": {
         "rentals": "Nieuwe Woningen Beschikbaar",
-        "tour": "Virtuele Tour"
+        "tour": "Virtuele Tour",
+        "radio": "Holanbra's Radio"
       },
       "properties": {
         "title": "Beschikbaar",
