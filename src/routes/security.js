@@ -415,7 +415,7 @@ async function accessActionHandler(req, res) {
         
       if (!renterError && renter) {
         // Validar property para ações que exigem vínculo
-        const needsPropertyCheck = ['add', 'ban', 'remove', 'unban', 'logs', 'add-manager', 'remove-manager', 'list', 'access-list', 'ban-list', 'manager-list'].includes(action);
+        const needsPropertyCheck = ['add', 'ban', 'remove', 'unban', 'logs', 'purge-logs', 'add-manager', 'remove-manager', 'list', 'access-list', 'ban-list', 'manager-list'].includes(action);
         
         if (parcel_id && needsPropertyCheck) {
           const { data: property, error: propError } = await supabase
@@ -437,7 +437,27 @@ async function accessActionHandler(req, res) {
       }
     } 
     
-    // 2. Se não autorizado via web, tentar orb_token
+    // 2. Se não autorizado via web ou se for admin, tentar token JWT para bypass
+    if (!isAuthorized && token) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      if (!userError && user) {
+        const userEmail = user.email?.toLowerCase();
+        const hardcodedAdmins = ['hello@liegepaschoalini.design', 'slmariew@gmail.com', 'victoriaholanbra@gmail.com', 'meiga1975@gmail.com'];
+        let isAdminUser = (userEmail && hardcodedAdmins.includes(userEmail)) || user.app_metadata?.is_admin;
+        
+        if (!isAdminUser && userEmail) {
+          const { data: dbAdmin } = await supabase.from('admins').select('email').eq('email', userEmail).maybeSingle();
+          if (dbAdmin) isAdminUser = true;
+        }
+        
+        if (isAdminUser) {
+          isAuthorized = true;
+          authType = 'web';
+        }
+      }
+    }
+
+    // 3. Se não autorizado via web/admin, tentar orb_token
     if (!isAuthorized && token) {
       const orbData = await validateOrbToken(token, parcel_id);
       if (orbData) {
@@ -656,6 +676,16 @@ async function accessActionHandler(req, res) {
 
       if (error) throw error;
       return res.json({ success: true, data });
+    }
+
+    if (action === 'purge-logs') {
+      const { error } = await supabase
+        .from('security_logs')
+        .delete()
+        .eq('casperlet_id', parcel_id);
+
+      if (error) throw error;
+      return res.json({ success: true });
     }
 
     if (action === 'status' && authType === 'web') {

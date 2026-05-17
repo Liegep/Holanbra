@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollText, MapPin, Search, AlertTriangle, ShieldCheck, UserMinus, UserX } from 'lucide-react';
+import { ScrollText, MapPin, Search, AlertTriangle, ShieldCheck, UserMinus, UserX, Trash2, AlertCircle, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { cn } from '../../../lib/utils';
 import { format } from 'date-fns';
+import Toast, { ToastType } from '../../Toast';
 
 interface LogsTabProps {
   selectedParcelId: string | null;
@@ -16,7 +17,18 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
   const { t } = useTranslation();
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [purging, setPurging] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showConfirmPurge, setShowConfirmPurge] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
+    message: '',
+    type: 'success',
+    isVisible: false
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   const loadLogs = async () => {
     if (!selectedParcelId || !residentUuid) return;
@@ -40,6 +52,36 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
       console.error('Error loading logs:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePurgeLogs = async () => {
+    if (!selectedParcelId || !residentUuid) return;
+    setPurging(true);
+    try {
+      const response = await fetch('/api/security/access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'purge-logs',
+          parcel_id: selectedParcelId,
+          resident_uuid: residentUuid
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setLogs([]);
+        showToast(t('security.success_logs_purged'));
+        setShowConfirmPurge(false);
+      } else {
+        throw new Error(result.error || t('security.error_logs_purged'));
+      }
+    } catch (err) {
+      console.error('Error purging logs:', err);
+      showToast(t('security.error_logs_purged'), 'error');
+    } finally {
+      setPurging(false);
     }
   };
 
@@ -103,6 +145,14 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
           <ScrollText size={12} className={cn(loading && "animate-spin")} />
           <span>{t('security.sync')}</span>
         </button>
+        <button
+          onClick={() => setShowConfirmPurge(true)}
+          disabled={loading || logs.length === 0}
+          className="px-4 py-2 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest text-red-500 transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          <Trash2 size={12} />
+          <span>{t('security.purge_button')}</span>
+        </button>
       </div>
 
       <div className="space-y-1">
@@ -150,6 +200,46 @@ export function LogsTab({ selectedParcelId, properties, onParcelSelect, resident
           })
         )}
       </div>
+
+      {/* Purge Confirmation Dialog */}
+      {showConfirmPurge && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-sm bg-zinc-900 border border-red-500/40 rounded-3xl p-8 text-center space-y-6 shadow-[0_0_50px_rgba(239,68,68,0.2)]">
+            <div className="w-20 h-20 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto ring-4 ring-red-500/5 transition-all">
+              <AlertCircle size={40} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-white font-black uppercase tracking-[0.2em] text-lg">{t('security.system_purge')}</h3>
+              <p className="text-[10px] text-white/40 uppercase leading-relaxed font-bold px-4">
+                {t('security.purge_events_confirm', 'Clear all security logs for this property?')}
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handlePurgeLogs}
+                disabled={purging}
+                className="w-full py-4 bg-red-500 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-red-600 shadow-lg shadow-red-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {purging ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
+                {t('security.execute_purge')}
+              </button>
+              <button
+                onClick={() => setShowConfirmPurge(false)}
+                className="w-full py-4 text-white/30 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:text-white"
+              >
+                {t('security.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        isVisible={toast.isVisible} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
     </div>
   );
 }
