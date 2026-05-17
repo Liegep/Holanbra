@@ -119,20 +119,20 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
       {/* Search and Filter */}
       <div className="flex flex-col gap-8">
         <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-white/5 to-amber-500/20 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-white/5 to-amber-500/20 rounded-2xl md:rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative flex items-center">
-            <Search className="absolute left-6 text-white/20 group-focus-within:text-amber-500/50 transition-colors" size={24} />
+            <Search className="absolute left-5 md:left-6 text-white/20 group-focus-within:text-amber-500/50 transition-colors" size={20} />
             <input 
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('resident.search_help', 'Search for help...')}
-              className="w-full bg-white/[0.03] border border-white/10 rounded-[2rem] py-6 pl-16 pr-8 text-white text-lg focus:border-amber-500/50 outline-none transition-all placeholder:text-white/10"
+              className="w-full bg-white/[0.03] border border-white/10 rounded-2xl md:rounded-[2rem] py-4 md:py-6 pl-12 md:pl-16 pr-6 md:pr-8 text-white text-base md:text-lg focus:border-amber-500/50 outline-none transition-all placeholder:text-white/10"
             />
           </div>
         </div>
         
-        <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide px-2 md:justify-center">
+        <div className="flex gap-2 md:gap-3 overflow-x-auto pb-4 scrollbar-hide px-1 md:justify-center">
           {categories.map(cat => {
             const info = CATEGORY_INFO[cat as keyof typeof CATEGORY_INFO];
             const Icon = info?.icon || Layout;
@@ -143,7 +143,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={cn(
-                  "flex items-center gap-3 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all border shrink-0",
+                  "flex items-center gap-2 md:gap-3 px-4 md:px-6 py-3 md:py-4 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] whitespace-nowrap transition-all border shrink-0",
                   isActive 
                     ? "bg-amber-500 text-black border-amber-400 shadow-xl shadow-amber-500/20 scale-105" 
                     : cn(
@@ -153,10 +153,10 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                 )}
               >
                 <div className={cn(
-                  "p-2 rounded-lg transition-colors",
+                  "p-1.5 md:p-2 rounded-lg transition-colors",
                   isActive ? "bg-black/10" : info ? info.bg : "bg-white/5"
                 )}>
-                  <Icon size={14} className={isActive ? "text-black" : info ? info.text : "text-white/20"} />
+                  <Icon size={12} className={isActive ? "text-black" : info ? info.text : "text-white/20"} />
                 </div>
                 {cat === 'all' ? t('properties.filter_all') : t(`admin.faqs.categories.${cat}`)}
               </button>
@@ -196,16 +196,16 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                 </AnimatePresence>
 
                 <div className={cn(
-                  "relative bg-[#0A0A0A] border rounded-[2rem] overflow-hidden transition-all duration-500",
+                  "relative bg-[#0A0A0A] border rounded-2xl md:rounded-[2rem] overflow-hidden transition-all duration-500",
                   isExpanded ? cn("border-amber-500/50 shadow-2xl", info.glow) : "border-white/5 group-hover:border-white/10"
                 )}>
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : faq.id)}
-                    className="w-full p-8 flex items-center justify-between text-left group/btn"
+                    className="w-full p-5 md:p-8 flex items-center justify-between text-left group/btn"
                   >
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-4 md:gap-6">
                       <div className={cn(
-                        "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 relative overflow-hidden",
+                        "w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-500 relative overflow-hidden shrink-0",
                         isExpanded ? "bg-amber-500 text-black rotate-12 shadow-inner" : cn("bg-white/5 text-white/40 group-hover/btn:scale-110", info.bg, info.text)
                       )}>
                         {isExpanded && (
@@ -219,14 +219,14 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                         </div>
                       </div>
                       <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className={cn("text-[8px] font-black uppercase tracking-[0.4em]", info.text)}>
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className={cn("text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em]", info.text)}>
                             {t(`admin.faqs.categories.${faq.category}`)}
                           </span>
                           <div className={cn("w-1 h-1 rounded-full", isExpanded ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" : "bg-white/10")} />
                         </div>
                         <h4 className={cn(
-                          "text-2xl font-bold tracking-tight leading-tight transition-colors duration-500",
+                          "text-lg md:text-2xl font-bold tracking-tight leading-tight transition-colors duration-500",
                           isExpanded ? "text-white" : "text-white/60 group-hover/btn:text-white"
                         )}>
                           {question}
@@ -234,12 +234,12 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                       </div>
                     </div>
                     <div className={cn(
-                      "w-12 h-12 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
+                      "w-10 h-10 md:w-12 md:h-12 rounded-full border flex items-center justify-center transition-all duration-500 shrink-0",
                       isExpanded 
                         ? "rotate-180 bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20" 
                         : "border-white/10 text-white/20 group-hover/btn:text-white group-hover/btn:border-white/30"
                     )}>
-                      <ChevronDown size={24} />
+                      <ChevronDown size={20} className="md:w-6 md:h-6" />
                     </div>
                   </button>
 
@@ -251,8 +251,8 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                       >
-                        <div className="px-8 pb-10 pt-2">
-                          <div className={cn("h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-10 transition-all duration-1000", isExpanded ? "via-amber-500/50" : "")} />
+                        <div className="px-5 md:px-8 pb-10 pt-2">
+                          <div className={cn("h-px w-full bg-gradient-to-r from-transparent via-white/5 to-transparent mb-6 md:mb-10 transition-all duration-1000", isExpanded ? "via-amber-500/50" : "")} />
                           <div className="max-w-3xl mx-auto">
                             <motion.div 
                               initial={{ y: 20, opacity: 0 }}
@@ -267,21 +267,21 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                                   const structured = JSON.parse(answer);
                                   if (structured && structured.type === 'structured') {
                                     return (
-                                      <div className="space-y-10">
+                                      <div className="space-y-6 md:space-y-10">
                                           {structured.intro && (
-                                            <div className="text-xl leading-relaxed text-white/90 mb-8 border-l-2 border-amber-500/30 pl-6 rich-content faq-rich-content">
+                                            <div className="text-lg md:text-xl leading-relaxed text-white/90 mb-6 md:mb-8 border-l-2 border-amber-500/30 pl-4 md:pl-6 rich-content faq-rich-content">
                                               <ReactMarkdown rehypePlugins={[rehypeRaw]}>{structured.intro}</ReactMarkdown>
                                             </div>
                                           )}
                                         
-                                        <div className="space-y-8">
+                                        <div className="space-y-6 md:space-y-8">
                                           {structured.steps.map((step: any, sIdx: number) => (
-                                            <div key={sIdx} className="relative pl-12 group/step">
-                                              <div className="absolute left-0 top-0 w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-black text-xs group-hover/step:bg-amber-500 group-hover/step:text-black transition-all">
+                                            <div key={sIdx} className="relative pl-10 md:pl-12 group/step">
+                                              <div className="absolute left-0 top-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-black text-[10px] md:text-xs group-hover/step:bg-amber-500 group-hover/step:text-black transition-all">
                                                 {sIdx + 1}
                                               </div>
-                                              <div className="space-y-2">
-                                                <h5 className="text-lg font-bold text-amber-500 tracking-tight">{step.title}</h5>
+                                              <div className="space-y-1 md:space-y-2">
+                                                <h5 className="text-base md:text-lg font-bold text-amber-500 tracking-tight">{step.title}</h5>
                                                 <div className="text-white/70 leading-relaxed rich-content faq-rich-content">
                                                   <ReactMarkdown rehypePlugins={[rehypeRaw]}>{step.content}</ReactMarkdown>
                                                 </div>
@@ -376,15 +376,15 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
       </div>
 
       {/* Global Support CTA */}
-      <div className="bg-amber-500 rounded-[40px] p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+      <div className="bg-amber-500 rounded-3xl md:rounded-[40px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden mb-12">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent scale-150" />
         </div>
-        <div className="space-y-3 relative z-10 text-center md:text-left">
-          <h3 className="text-3xl font-display font-bold text-black tracking-tighter">
+        <div className="space-y-2 md:space-y-3 relative z-10 text-center md:text-left">
+          <h3 className="text-2xl md:text-3xl font-display font-bold text-black tracking-tighter">
             {t('resident.still_need_help', 'Still need assistance?')}
           </h3>
-          <p className="text-black/60 font-medium">{t('admin.faqs.support_cta', 'Our support staff is ready to help you with any specific issue.')}</p>
+          <p className="text-black/60 font-medium text-sm md:text-base">{t('admin.faqs.support_cta', 'Our support staff is ready to help you with any specific issue.')}</p>
         </div>
         <button 
            onClick={() => {
@@ -394,7 +394,7 @@ export const FAQDisplay: React.FC<FAQDisplayProps> = ({ onSupportClick }) => {
                window.scrollTo({ top: 300, behavior: 'smooth' });
              }
            }}
-           className="px-8 py-5 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center gap-3 hover:bg-zinc-900 transition-all shadow-2xl relative z-10"
+           className="w-full md:w-auto px-8 py-4 md:py-5 bg-black text-white rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[9px] md:text-[10px] flex items-center justify-center gap-3 hover:bg-zinc-900 transition-all shadow-2xl relative z-10"
         >
           <MessageSquare size={16} /> {t('resident.support')}
         </button>

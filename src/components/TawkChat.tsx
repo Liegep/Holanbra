@@ -51,7 +51,7 @@ export default function TawkChat() {
           whileHover={{ scale: 1.1, backgroundColor: '#ffffff' }}
           whileTap={{ scale: 0.9 }}
           onClick={toggleChat}
-          className="fixed bottom-8 right-8 z-[100] w-14 h-14 flex items-center justify-center bg-[#fad02c] text-black rounded-full shadow-[0_10px_40px_rgba(250,208,44,0.3)] transition-all border-2 border-black/5 cursor-pointer"
+          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-[100] w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-[#fad02c] text-black rounded-full shadow-[0_10px_40px_rgba(250,208,44,0.3)] transition-all border-2 border-black/5 cursor-pointer"
         >
           <MessageCircle size={24} strokeWidth={2.5} />
         </motion.button>

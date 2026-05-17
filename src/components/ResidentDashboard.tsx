@@ -475,17 +475,17 @@ const ResidentDashboard:FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background-dark text-white pt-32 pb-20 px-6">
+    <div className="min-h-screen bg-background-dark text-white pt-20 md:pt-32 pb-32 md:pb-20 px-4 md:px-6">
       <div className="max-w-[1440px] mx-auto space-y-12">
         
         {/* User Info Header Section */}
-        <div className="pt-20 pb-4 px-6 md:px-12">
-          <div className="max-w-[1440px] mx-auto flex flex-col items-center justify-center gap-10">
+        <div className="pt-10 md:pt-20 pb-4 px-4 md:px-12">
+          <div className="max-w-[1440px] mx-auto flex flex-col items-center justify-center gap-6 md:gap-10">
             {/* Centered Avatar and Info */}
-            <div className="flex flex-col items-center gap-6 text-center group">
+            <div className="flex flex-col items-center gap-4 md:gap-6 text-center group">
               <div className="relative">
                 <div className="absolute -inset-1.5 bg-gradient-to-r from-amber-500 to-amber-600 rounded-full blur-xl opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-zinc-900 border border-white/10 overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.2)] flex items-center justify-center p-1">
+                <div className="relative w-24 h-24 md:w-40 md:h-40 rounded-full bg-zinc-900 border border-white/10 overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.2)] flex items-center justify-center p-1">
                   <div className="w-full h-full rounded-full overflow-hidden bg-zinc-800">
                     <img 
                       src={slAvatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(residentData?.avatar_name || 'Resident')}&background=111111&color=f59e0b&size=256&bold=true&format=svg`} 
@@ -494,55 +494,55 @@ const ResidentDashboard:FC = () => {
                     />
                   </div>
                 </div>
-                <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 border-4 border-[#0a0a0a] rounded-full flex items-center justify-center shadow-lg">
-                  <ShieldCheck size={20} className="text-white" />
+                <div className="absolute -bottom-1 -right-1 w-8 h-8 md:w-10 md:h-10 bg-emerald-500 border-4 border-[#0a0a0a] rounded-full flex items-center justify-center shadow-lg">
+                  <ShieldCheck size={16} className="text-white" />
                 </div>
               </div>
               
-              <div className="space-y-3 flex flex-col items-center">
-                <div className="flex flex-col items-center gap-3">
-                  <h1 className="text-4xl md:text-5xl font-display font-black text-white leading-none tracking-tighter mix-blend-screen drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+              <div className="space-y-2 md:space-y-3 flex flex-col items-center">
+                <div className="flex flex-col items-center gap-2 md:gap-3">
+                  <h1 className="text-3xl md:text-5xl font-display font-black text-white leading-none tracking-tighter mix-blend-screen drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
                     {residentData?.avatar_name}
                   </h1>
-                  <div className="flex items-center gap-2 px-4 py-1.5 bg-amber-500 text-black text-[10px] font-black tracking-widest rounded-full uppercase shadow-lg shadow-amber-500/20">
-                    <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
+                  <div className="flex items-center gap-2 px-3 py-1 bg-amber-500 text-black text-[8px] md:text-[10px] font-black tracking-widest rounded-full uppercase shadow-lg shadow-amber-500/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
                     {t('resident.session', 'SESSION ACTIVE')}
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-4">
-                  <p className="text-xs text-white/40 uppercase font-bold tracking-[0.2em] flex items-center gap-2">
-                    <ShieldCheck size={16} className="text-amber-500/50" />
+                <div className="flex items-center justify-center gap-3 md:gap-4">
+                  <p className="text-[10px] md:text-xs text-white/40 uppercase font-bold tracking-[0.2em] flex items-center gap-2">
+                    <ShieldCheck size={14} className="text-amber-500/50" />
                     {t('resident.welcome')}
                   </p>
-                  <div className="h-4 w-px bg-white/5" />
-                  <p className="text-xs text-white/40 font-mono tracking-tighter">#{residentData?.avatar_uuid?.slice(0, 8)}</p>
+                  <div className="h-3 w-px bg-white/5" />
+                  <p className="text-[10px] md:text-xs text-white/40 font-mono tracking-tighter">#{residentData?.avatar_uuid?.slice(0, 8)}</p>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-center gap-4 w-full px-4">
+            <div className="flex flex-wrap items-center justify-center gap-3 w-full px-2">
                <button 
                  onClick={() => setIsHomeManagementOpen(true)}
-                 className="w-full md:w-auto px-8 py-5 bg-amber-500 text-black hover:bg-amber-400 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-[0_0_30px_rgba(245,158,11,0.3)] active:scale-95 hover:shadow-[0_0_40px_rgba(245,158,11,0.5)]"
+                 className="w-full md:w-auto px-6 md:px-8 py-4 md:py-5 bg-amber-500 text-black hover:bg-amber-400 rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-[0_0_30px_rgba(245,158,11,0.3)] active:scale-95 hover:shadow-[0_0_40px_rgba(245,158,11,0.5)]"
                >
-                 <Home size={18} />
-                 Home Management System
+                 <Home size={16} />
+                 Home Management
                </button>
 
                <button 
-                 onClick={() => window.dispatchEvent(new CustomEvent('holanbra-radio', { detail: { action: 'open' } }))}
-                 className="w-full md:w-auto px-8 py-5 bg-white/5 hover:bg-white/10 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all backdrop-blur-md border border-white/10 active:scale-95"
+                 onClick={() => window.dispatchEvent(new CustomEvent('holanradio', { detail: { action: 'open' } }))}
+                 className="w-full md:w-auto px-6 md:px-8 py-4 md:py-5 bg-white/5 hover:bg-white/10 text-white rounded-xl md:rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all backdrop-blur-md border border-white/10 active:scale-95"
                >
-                 <Music size={18} />
-                 Holanbra Radio
+                 <Music size={16} />
+                 Radio
                </button>
 
                <button 
                  onClick={handleLogout}
-                 className="w-full md:w-auto px-8 py-5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-2xl border border-red-500/20 text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95"
+                 className="w-full md:w-auto px-6 md:px-8 py-4 md:py-5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-xl md:rounded-2xl border border-red-500/20 text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95"
                >
-                 <LogOut size={18} />
+                 <LogOut size={16} />
                  {t('resident.logout')}
                </button>
             </div>
@@ -663,9 +663,9 @@ const ResidentDashboard:FC = () => {
         </AnimatePresence>
 
         {/* Tab Navigation Section */}
-        <div className="sticky top-28 z-40 bg-background-dark/80 backdrop-blur-3xl border-y border-white/5 px-6">
-          <div className="max-w-[1440px] mx-auto flex items-center justify-center py-2">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide w-full sm:w-auto px-2 justify-center">
+        <div className="md:sticky md:top-28 z-40 bg-zinc-950/80 backdrop-blur-3xl border-y border-white/5 px-2 md:px-6">
+          <div className="max-w-[1440px] mx-auto flex items-center justify-center py-2 md:py-3">
+            <div className="flex gap-1 md:gap-2 overflow-x-auto scrollbar-hide w-full sm:w-auto px-1 justify-start md:justify-center">
               {[
                 { id: 'rentals', label: t('resident.my_rentals'), icon: Home },
                 { id: 'support', label: t('resident.support'), icon: MessageSquare },
@@ -675,13 +675,13 @@ const ResidentDashboard:FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={cn(
-                    "flex items-center gap-3 px-8 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap shrink-0 group relative overflow-hidden active:scale-95",
+                    "flex items-center gap-2 md:gap-3 px-5 md:px-8 py-3 md:py-5 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.2em] transition-all whitespace-nowrap shrink-0 group relative overflow-hidden active:scale-95",
                     activeTab === tab.id
                       ? "bg-amber-500 text-black shadow-[0_10px_30px_rgba(245,158,11,0.2)]"
                       : "text-white/40 hover:text-white hover:bg-white/5"
                   )}
                 >
-                  <tab.icon size={18} className={cn("transition-transform group-hover:scale-110", activeTab === tab.id ? "animate-pulse" : "")} />
+                  <tab.icon size={14} className={cn("transition-transform group-hover:scale-110 md:w-4 md:h-4", activeTab === tab.id ? "animate-pulse" : "")} />
                   {tab.label}
                   {activeTab === tab.id && (
                     <motion.div layoutId="active-tab-bg" className="absolute inset-0 bg-amber-500 -z-10" />
@@ -693,7 +693,7 @@ const ResidentDashboard:FC = () => {
         </div>
 
         {/* Main Content Sections */}
-        <div className="px-6 md:px-12 py-16 min-h-[60vh] flex flex-col">
+        <div className="px-5 md:px-12 py-8 md:py-16 min-h-[60vh] flex flex-col">
           <AnimatePresence mode="wait">
             {activeTab === 'rentals' ? (
               <motion.div 
@@ -1087,7 +1087,14 @@ const ResidentDashboard:FC = () => {
               exit={{ opacity: 0, y: -20 }}
               className="max-w-[1440px] mx-auto w-full flex flex-col items-center"
             >
-              <div className="w-full max-w-5xl">
+              <div className="w-full max-w-5xl space-y-12">
+                <div className="text-center space-y-4 mb-2">
+                  <div className="flex items-center justify-center gap-3 text-amber-500">
+                    <HelpCircle size={24} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]">{t('resident.self_help')}</span>
+                  </div>
+                  <h2 className="text-4xl md:text-6xl font-display font-bold tracking-tighter uppercase">{t('resident.help_center', 'Help & Resources')}</h2>
+                </div>
                 <FAQDisplay onSupportClick={handleSupportTabClick} />
               </div>
             </motion.div>
