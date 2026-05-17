@@ -32,7 +32,7 @@ import AdminArea from './components/AdminArea';
 import Covenant from './components/Covenant';
 import ResidentDashboard from './components/ResidentDashboard';
 import Portfolio from './components/Portfolio';
-import TawkChat from './components/TawkChat';
+import SupportChat from './components/SupportChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
@@ -105,7 +105,7 @@ export default function App() {
         </Routes>
       </main>
       <TeleportCTA />
-      <TawkChat />
+      <SupportChat />
       <SpotifyPlayer />
       <Footer />
     </div>

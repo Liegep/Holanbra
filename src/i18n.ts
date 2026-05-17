@@ -70,6 +70,33 @@ const resources = {
         "ready_msg_singular": "Property ready for occupancy",
         "ready_msg_plural": "Properties ready for occupancy"
       },
+      "support": {
+        "bot_name": "Holanbra Support",
+        "welcome": "Hello! I am your Holanbra automated assistant. How can I help you today?",
+        "menu": {
+          "security": "Security Orb",
+          "prims": "Prim Counter",
+          "invite": "Join Group",
+          "rentals": "Rentals",
+          "rules": "Rules",
+          "contact": "Contact Support"
+        },
+        "responses": {
+          "security": "Our Security Orb allows you to manage access to your property. You can add/remove residents and managers via the Resident Portal.",
+          "prims": "The Prim Counter monitors your land capacity. Each property has a specific prim limit shown on the rental box.",
+          "rentals": "You can find all available properties in the 'Properties' section of our website. Just teleport to the one you like and pay the rental box.",
+          "rules": "Please read our Rules section carefully to understand the guidelines for living in Holanbra.",
+          "contact_esc": "Would you like to talk to Holanbra human support?",
+          "contact_yes": "Yes, talk to human",
+          "contact_no": "No, thanks",
+          "invite_prompt": "Please enter your Second Life Avatar UUID to receive an invitation:",
+          "invite_success": "I've sent your group invitation! Please check your notifications in Second Life.",
+          "invite_error": "Oops, something went wrong. Please try again later or contact support.",
+          "invite_invalid": "Please enter a valid UUID (e.g., 00000000-0000-0000-0000-000000000000)",
+          "sending": "Sending..."
+        }
+
+      },
       "about": {
         "history": "History",
         "title1": "ABOUT",
@@ -795,6 +822,32 @@ const resources = {
         "contact_agent_btn": "CONTATAR AGENTE",
         "ready_msg_singular": "Propriedade pronta para morar",
         "ready_msg_plural": "Propriedades prontas para morar"
+      },
+      "support": {
+        "bot_name": "Suporte Holanbra",
+        "welcome": "Olá! Eu sou o assistente automatizado da Holanbra. Como posso ajudar você hoje?",
+        "menu": {
+          "security": "Security Orb",
+          "prims": "Contador de Prims",
+          "invite": "Entrar no Grupo",
+          "rentals": "Aluguéis",
+          "rules": "Regras",
+          "contact": "Falar com Suporte"
+        },
+        "responses": {
+          "security": "Nosso Security Orb permite gerenciar o acesso à sua propriedade. Você pode adicionar/remover residentes e gerentes pelo Portal do Residente.",
+          "prims": "O Contador de Prims monitora a capacidade do seu terreno. Cada propriedade tem um limite específico mostrado na caixa de aluguel.",
+          "rentals": "Você pode encontrar todas as propriedades disponíveis na seção 'Propriedades' do nosso site. Basta teleportar para a que você gostar e pagar a caixa.",
+          "rules": "Por favor, leia nossa seção de Regras cuidadosamente para entender as diretrizes de convivência em Holanbra.",
+          "contact_esc": "Você gostaria de falar com o suporte humano da Holanbra?",
+          "contact_yes": "Sim, falar com humano",
+          "contact_no": "Não, obrigado",
+          "invite_prompt": "Por favor, insira o UUID do seu Avatar no Second Life para receber o convite:",
+          "invite_success": "Enviei seu convite do grupo! Por favor, verifique suas notificações no Second Life.",
+          "invite_error": "Ops, algo deu errado. Por favor, tente novamente mais tarde ou contate o suporte.",
+          "invite_invalid": "Por favor, insira um UUID válido (ex: 00000000-0000-0000-0000-000000000000)",
+          "sending": "Enviando..."
+        }
       },
       "about": {
         "history": "História",
@@ -1526,6 +1579,32 @@ const resources = {
         "ready_msg_singular": "Propiedad lista para ocupar",
         "ready_msg_plural": "Propiedades listas para ocupar"
       },
+      "support": {
+        "bot_name": "Soporte Holanbra",
+        "welcome": "¡Hola! Soy el asistente automatizado de Holanbra. ¿Cómo puedo ayudarte hoy?",
+        "menu": {
+          "security": "Security Orb",
+          "prims": "Contador de Prims",
+          "invite": "Unirse al Grupo",
+          "rentals": "Alquileres",
+          "rules": "Reglas",
+          "contact": "Contactar Soporte"
+        },
+        "responses": {
+          "security": "Nuestro Security Orb le permite administrar el acceso a su propiedad. Puede agregar/eliminar residentes y gerentes a través del Portal del Residente.",
+          "prims": "El Contador de Prims monitorea la capacidad de su terreno. Cada propiedad tiene un límite de prims específico que se muestra en la caja de alquiler.",
+          "rentals": "Puede encontrar todas las propiedades disponibles en la sección 'Propiedades' de nuestro sitio web. Simplemente teletranspórtese a la que le guste y pague la caja.",
+          "rules": "Lea atentamente nuestra sección de Reglas para comprender las pautas de convivencia en Holanbra.",
+          "contact_esc": "¿Le gustaría hablar con el soporte humano de Holanbra?",
+          "contact_yes": "Sí, hablar con humano",
+          "contact_no": "No, gracias",
+          "invite_prompt": "Ingrese el UUID de su Avatar de Second Life para recibir la invitación:",
+          "invite_success": "¡He enviado tu invitación al grupo! Por favor revisa tus notificaciones en Second Life.",
+          "invite_error": "Vaya, algo salió mal. Inténtelo de nuevo más tarde o póngase en contacto con el soporte.",
+          "invite_invalid": "Ingrese un UUID válido (ej: 00000000-0000-0000-0000-000000000000)",
+          "sending": "Enviando..."
+        }
+      },
       "about": {
         "history": "Historia",
         "title1": "SOBRE",
@@ -2211,6 +2290,32 @@ const resources = {
         "contact_agent_btn": "CONTACTEER AGENT",
         "ready_msg_singular": "Woning klaar voor bewoning",
         "ready_msg_plural": "Woningen klaar voor bewoning"
+      },
+      "support": {
+        "bot_name": "Holanbra Support",
+        "welcome": "Hallo! Ik ben uw geautomatiseerde Holanbra-assistent. Hoe kan ik u vandaag helpen?",
+        "menu": {
+          "security": "Security Orb",
+          "prims": "Prim Teller",
+          "invite": "Groep Joinen",
+          "rentals": "Huurwoningen",
+          "rules": "Regels",
+          "contact": "Contact Support"
+        },
+        "responses": {
+          "security": "Onze Security Orb stelt u in staat om de toegang tot uw eigendom te beheren. U kunt bewoners en managers toevoegen/verwijderen via de Resident Portal.",
+          "prims": "De Prim Teller houdt de capaciteit van uw land in de gaten. Elke woning heeft een specifieke prim-limiet dat op de verhuurbox staat.",
+          "rentals": "U kunt alle beschikbare woningen vinden in de sectie 'Woningen' op onze website. Teleporteer gewoon naar de woning die u leuk vindt en betaal de verhuurbox.",
+          "rules": "Lees onze sectie Regels zorgvuldig door om de richtlijnen voor het wonen in Holanbra te begrijpen.",
+          "contact_esc": "Wilt u met de menselijke ondersteuning van Holanbra spreken?",
+          "contact_yes": "Ja, spreek met een mens",
+          "contact_no": "Nee, bedankt",
+          "invite_prompt": "Voer uw Second Life Avatar UUID in om een uitnodiging te ontvangen:",
+          "invite_success": "Ik heb je groepsuitnodiging verzonden! Controleer je meldingen in Second Life.",
+          "invite_error": "Oeps, er is iets misgegaan. Probeer het later opnieuw of neem contact op.",
+          "invite_invalid": "Voer een geldig UUID in (bijv. 00000000-0000-0000-0000-000000000000)",
+          "sending": "Verzenden..."
+        }
       },
       "about": {
         "history": "Geschiedenis",

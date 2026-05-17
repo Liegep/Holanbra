@@ -307,6 +307,51 @@ async function startServer() {
     }
   });
 
+  // SmartBots Integration
+  app.post('/api/smartbots/group-invite', async (req, res) => {
+    try {
+      const { avatar_uuid } = req.body;
+      
+      if (!avatar_uuid) {
+        return res.status(400).json({ success: false, error: 'Avatar UUID is required' });
+      }
+
+      const apiKey = process.env.SMARTBOTS_API_KEY;
+      const botName = process.env.SMARTBOTS_BOT_NAME;
+      const accessCode = process.env.SMARTBOTS_BOT_ACCESS_CODE || "";
+      const groupUuid = process.env.SMARTBOTS_GROUP_UUID;
+      const roleUuid = process.env.SMARTBOTS_EVERYONE_ROLE_UUID || '00000000-0000-0000-0000-000000000000';
+
+      if (!apiKey || !botName || !groupUuid) {
+        return res.status(500).json({ success: false, error: 'SmartBots configuration missing on server' });
+      }
+
+      // SmartBots Personal Bot HTTP API
+      const smartBotsUrl = `https://www.mysmartbots.com/api/bot.html`;
+      const response = await axios.get(smartBotsUrl, {
+        params: {
+          action: 'group_invite',
+          apikey: apiKey,
+          botname: botName,
+          secret: accessCode,
+          groupuuid: groupUuid,
+          avataruuid: avatar_uuid,
+          roleuuid: roleUuid
+        }
+      });
+      
+      const result = String(response.data);
+      if (result.toUpperCase().startsWith('OK')) {
+        return res.status(200).json({ success: true, message: result });
+      } else {
+        return res.status(400).json({ success: false, error: result });
+      }
+    } catch (err) {
+      console.error('SmartBots API Error:', err.message);
+      return res.status(500).json({ success: false, error: 'Service temporarily unavailable' });
+    }
+  });
+
   app.get("/api/casperlet/status", async (req, res) => {
     try {
       const { data, error } = await supabase
