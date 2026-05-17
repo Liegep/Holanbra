@@ -114,7 +114,7 @@ export function AddAvatarForm({ casperletId, residentUuid, onClose, onSuccess }:
                   {t('security.role_resident')}
                 </div>
                 <div className="text-[7px] font-bold text-white/20 uppercase tracking-tight mt-0.5">
-                  Regular access entry
+                  {t('security.role_resident_desc', 'Regular access entry')}
                 </div>
               </div>
             </div>

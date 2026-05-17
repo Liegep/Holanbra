@@ -220,7 +220,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                 className="text-[8px] text-white/20 hover:text-red-400 font-bold uppercase tracking-widest transition-colors flex items-center gap-1"
               >
                 <RefreshCw size={10} />
-                Regenerate
+                {t('security.regenerate_button', 'Regenerate')}
               </button>
             </div>
             <div className="flex gap-2">
@@ -250,7 +250,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                     onChange={e => setConfig({ ...config, radius: parseInt(e.target.value) })}
                     className="w-full px-4 py-3 bg-white/5 border border-white/5 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500/50 transition-all font-mono"
                   />
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-white/20 uppercase">Meters</div>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-white/20 uppercase">{t('security.meters', 'Meters')}</div>
                 </div>
               </div>
 
@@ -336,7 +336,7 @@ export function SettingsTab({ selectedParcelId, properties, onParcelSelect, resi
                 className="flex-[0.4] py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 border border-red-500/20"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                Purge
+                {t('security.purge_button', 'Purge')}
               </button>
               
               <button
