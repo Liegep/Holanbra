@@ -117,7 +117,12 @@ export default function SupportChat() {
       const data = await response.json();
       
       if (!response.ok) {
-        console.error(`[SupportChat] API returned error status ${response.status}:`, data.error || 'Unknown error');
+        console.error(`[SupportChat] Request failed:`, {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+          body: data
+        });
       }
 
       setInviteResult({ 
@@ -226,9 +231,10 @@ export default function SupportChat() {
                       onClick={() => {
                         if (item.id === 'invite_prompt') {
                           if (residentData?.avatar_uuid && UUID_REGEX.test(residentData.avatar_uuid)) {
-                            setUuid(residentData.avatar_uuid);
+                            handleInvite(residentData.avatar_uuid);
+                          } else {
+                            setChatState('invite_prompt');
                           }
-                          setChatState('invite_prompt');
                         } else {
                           setChatState(item.id as ChatState);
                         }

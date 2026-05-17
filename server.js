@@ -328,8 +328,17 @@ async function startServer() {
       const apiKey = process.env.SMARTBOTS_API_KEY;
       const botName = process.env.SMARTBOTS_BOT_NAME;
       const accessCode = process.env.SMARTBOTS_BOT_ACCESS_CODE || "";
-      const groupUuid = process.env.SMARTBOTS_GROUP_UUID;
+      let groupUuid = process.env.SMARTBOTS_GROUP_UUID || "";
       const roleUuid = process.env.SMARTBOTS_EVERYONE_ROLE_UUID || '00000000-0000-0000-0000-000000000000';
+
+      // Normalize Group UUID (Extract PURE UUID from URL if needed)
+      if (groupUuid && (groupUuid.includes('secondlife://') || groupUuid.includes('/') || groupUuid.includes('about'))) {
+        const uuidMatch = groupUuid.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+        if (uuidMatch) {
+          groupUuid = uuidMatch[0];
+          console.log(`[SmartBots] Normalized group UUID to: ${groupUuid}`);
+        }
+      }
 
       if (!apiKey || !botName || !groupUuid) {
         const missing = [];
@@ -341,9 +350,16 @@ async function startServer() {
         return res.status(500).json({ success: false, error: 'SmartBots configuration missing on server' });
       }
 
+      // Secure Logging
+      console.log('[SmartBots] invite payload', {
+        avatar_uuid: avatar_uuid.trim(),
+        groupuuid: groupUuid,
+        hasApiKey: Boolean(apiKey),
+        hasBotAccessCode: Boolean(accessCode)
+      });
+
       // SmartBots Personal Bot HTTP API
       const smartBotsUrl = `https://www.mysmartbots.com/api/bot.html`;
-      console.log(`[SmartBots] Calling SmartBots API for bot: ${botName}...`);
       
       const response = await axios.get(smartBotsUrl, {
         params: {
@@ -352,7 +368,7 @@ async function startServer() {
           botname: botName,
           secret: accessCode,
           groupuuid: groupUuid,
-          avataruuid: avatar_uuid,
+          avatar: avatar_uuid.trim(), // Use trimmed UUID
           roleuuid: roleUuid
         }
       });
