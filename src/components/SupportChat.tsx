@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
-type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'contact_esc' | 'invite_prompt' | 'invite_sent';
+type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -230,8 +230,11 @@ export default function SupportChat() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         if (item.id === 'invite_prompt') {
-                          if (residentData?.avatar_uuid && UUID_REGEX.test(residentData.avatar_uuid)) {
-                            handleInvite(residentData.avatar_uuid);
+                          // Try both residentData state and localStorage as fallback
+                          const savedUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+                          if (savedUuid && UUID_REGEX.test(savedUuid)) {
+                            setUuid(savedUuid); // Set the current uuid state for displaying in confirmation
+                            setChatState('invite_confirm');
                           } else {
                             setChatState('invite_prompt');
                           }
@@ -280,6 +283,47 @@ export default function SupportChat() {
               )}
 
               {/* Invite Prompt State */}
+              {chatState === 'invite_confirm' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 shrink-0 mt-1">
+                      <Bot size={14} />
+                    </div>
+                    <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium">
+                      {t('support.responses.invite_confirm', { uuid: uuid })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <button 
+                      onClick={() => handleInvite(uuid)}
+                      disabled={isSendingInvite}
+                      className={cn(
+                        "w-full py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2",
+                        isSendingInvite 
+                          ? "bg-white/5 text-white/20 cursor-not-allowed" 
+                          : "bg-amber-500 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95"
+                      )}
+                    >
+                      {isSendingInvite ? t('support.responses.sending') : <><Send size={14} /> {t('support.responses.invite_yes')}</>}
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setUuid('');
+                        setChatState('invite_prompt');
+                      }}
+                      className="w-full py-4 rounded-xl bg-white/5 text-white/60 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5"
+                    >
+                      {t('support.responses.invite_no')}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Invite Entry State */}
               {chatState === 'invite_prompt' && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
