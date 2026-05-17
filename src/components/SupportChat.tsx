@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { MessageCircle, X, Send, Shield, Layout, UserPlus, Home, Scroll, LifeBuoy, ChevronLeft, Bot, ExternalLink, MapPin, Eye, Loader2, ChevronRight, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
-type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent';
+type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -56,11 +56,22 @@ export default function SupportChat() {
   }, [chatState]);
 
   useEffect(() => {
+    const handleOpenChat = () => {
+        if (!isOpen) setIsOpen(true);
+        if (chatState === 'idle') setChatState('menu');
+    };
+    window.addEventListener('open-support-chat', handleOpenChat as EventListener);
+    return () => window.removeEventListener('open-support-chat', handleOpenChat as EventListener);
+  }, [isOpen, chatState]);
+
+  useEffect(() => {
     // Check for existing resident session
     const fetchResident = async () => {
       const savedName = localStorage.getItem('sl_resident_name');
       const savedPass = localStorage.getItem('sl_resident_pass');
       
+      console.log('[SupportChat] Checking resident session', { hasName: !!savedName, hasPass: !!savedPass });
+
       if (savedName && savedPass) {
         try {
           const { data } = await supabase
@@ -71,7 +82,10 @@ export default function SupportChat() {
             .maybeSingle();
           
           if (data) {
+            console.log('[SupportChat] Resident detected', data);
             setResidentData(data);
+          } else {
+            console.log('[SupportChat] No resident data found');
           }
         } catch (e) {
           console.warn('[SupportChat] Session fetch failed', e);
@@ -106,6 +120,13 @@ export default function SupportChat() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    console.log('[SupportChat] detected mode', {
+      isResident: !!residentData?.avatar_uuid,
+      residentUuid: residentData?.avatar_uuid,
+    });
+  }, [residentData]);
 
   const toggleBot = () => {
     setIsOpen(!isOpen);
@@ -199,17 +220,166 @@ export default function SupportChat() {
     }
   };
 
-  const menuItems = [
-    { id: 'security', label: t('support.menu.security'), icon: Shield },
-    { id: 'prims', label: t('support.menu.prims'), icon: Layout },
-    { id: 'invite_prompt', label: t('support.menu.invite'), icon: UserPlus },
-    { id: 'available_rentals', label: t('support.menu.available_rentals'), icon: Home },
-    { id: 'rules', label: t('support.menu.rules'), icon: Scroll },
-    { id: 'faq', label: t('support.menu.faq'), icon: LifeBuoy },
-    { id: 'contact_esc', label: t('support.menu.contact'), icon: LifeBuoy },
-  ];
+  const [rentalData, setRentalData] = useState<any>(null);
+  const [primData, setPrimData] = useState<any>(null);
+  const [securityData, setSecurityData] = useState<any>(null);
+  const [securityLogs, setSecurityLogs] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(false);
+
+  useEffect(() => {
+    if (['my_rental', 'prim_usage', 'security_access', 'security_logs'].includes(chatState) && residentData?.avatar_uuid) {
+      const fetchData = async () => {
+        setLoadingData(true);
+        try {
+          const residentId = residentData.avatar_uuid;
+          
+          if (chatState === 'my_rental') {
+              // Primary rental
+              const { data: primary } = await supabase
+                .from('properties')
+                .select('*')
+                .eq('tenant_id', residentId)
+                .maybeSingle();
+
+              // Shared rental
+              let finalRental = primary;
+              if (!finalRental) {
+                const { data: shared } = await supabase
+                  .from('property_tenants')
+                  .select('property_id')
+                  .eq('tenant_id', residentId)
+                  .maybeSingle();
+                
+                if (shared) {
+                    const { data: propData } = await supabase
+                        .from('properties')
+                        .select('*')
+                        .eq('id', shared.property_id)
+                        .maybeSingle();
+                    finalRental = propData;
+                }
+              }
+
+              console.log('[ResidentAssistant] My Rental', { residentUuid: residentId, propertyFound: !!finalRental, property: finalRental });
+              setRentalData(finalRental);
+          } else if (chatState === 'prim_usage') {
+              const { data } = await supabase
+                .from('prim_residents')
+                .select('prims_used, prim_limit, casperlet_id')
+                .eq('resident_key', residentId)
+                .maybeSingle();
+              setPrimData(data);
+          } else if (chatState === 'security_access' || chatState === 'security_logs') {
+              // Need casperlet_id first
+              const { data: primInfo } = await supabase
+                .from('prim_residents')
+                .select('casperlet_id')
+                .eq('resident_key', residentId)
+                .maybeSingle();
+
+              if (primInfo?.casperlet_id) {
+                  if (chatState === 'security_access') {
+                      const { data } = await supabase
+                        .from('security_parcels')
+                        .select('*')
+                        .eq('casperlet_id', primInfo.casperlet_id)
+                        .maybeSingle();
+                      setSecurityData(data);
+                  } else {
+                      const { data } = await supabase
+                        .from('security_logs')
+                        .select('avatar_name, action, created_at')
+                        .eq('casperlet_id', primInfo.casperlet_id)
+                        .order('created_at', { ascending: false })
+                        .limit(5);
+                      setSecurityLogs(data || []);
+                  }
+              }
+          }
+        } catch (e) {
+          console.error('[ResidentAssistant] Fetch error:', e);
+        } finally {
+          setLoadingData(false);
+        }
+      };
+      fetchData();
+    }
+  }, [chatState, residentData]);
+
+  const isResident = !!residentData?.avatar_uuid;
+
+  const menuItems = useMemo(() => {
+    const baseMenu = [
+        { id: 'available_rentals', label: t('support.menu.available_rentals', {defaultValue: 'Available Rentals'}), icon: Home },
+        { id: 'how_to_rent', label: t('support.menu.how_to_rent', {defaultValue: 'How to Rent'}), icon: Scroll },
+        { id: 'visit_properties', label: t('support.menu.visit_properties', {defaultValue: 'Visit Properties'}), icon: MapPin },
+        { id: 'rules', label: t('support.menu.rules', {defaultValue: 'Rules'}), icon: Scroll },
+        { id: 'contact_esc', label: t('support.menu.contact', {defaultValue: 'Talk to Support'}), icon: LifeBuoy },
+    ];
+    
+    const residentMenu = [
+        { id: 'my_rental', label: t('support.menu.my_rental', {defaultValue: 'My Rental'}), icon: Home },
+        { id: 'prim_usage', label: t('support.menu.prim_usage', {defaultValue: 'Prim Usage'}), icon: Layout },
+        { id: 'security_access', label: t('support.menu.security_access', {defaultValue: 'Security Access'}), icon: Shield },
+        { id: 'security_logs', label: t('support.menu.security_logs', {defaultValue: 'Security Logs'}), icon: Scroll },
+        { id: 'invite_prompt', label: t('support.menu.invite', {defaultValue: 'Join Group'}), icon: UserPlus },
+        { id: 'open_support_ticket', label: t('support.menu.open_support_ticket', {defaultValue: 'Open Support Ticket'}), icon: LifeBuoy },
+        { id: 'contact_esc', label: t('support.menu.contact', {defaultValue: 'Talk to Support'}), icon: LifeBuoy },
+    ];
+    
+    return isResident ? residentMenu : baseMenu;
+  }, [isResident, t]);
 
   const renderExpandedContent = (state: ChatState) => {
+    if (state === 'my_rental') {
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
+        if (!rentalData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_rental_found')}</div>
+        return (
+            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                <p><strong>{t('support.rental.name')}:</strong> {rentalData.name}</p>
+                <p><strong>{t('support.rental.id')}:</strong> {rentalData.casperlet_id || 'N/A'}</p>
+                <p><strong>{t('support.rental.status')}:</strong> {rentalData.status}</p>
+                <button 
+                  onClick={() => window.open(rentalData.teleport_url || 'https://maps.secondlife.com/secondlife/Holanbra', '_blank')}
+                  className="w-full py-2 bg-amber-500 text-black font-bold uppercase rounded-lg text-xs"
+                >
+                  {t('support.rental.teleport')}
+                </button>
+            </div>
+        );
+    }
+    if (state === 'prim_usage') {
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
+        if (!primData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_prim_data')}</div>
+        return (
+            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                <p>{t('support.prim.used')}: {primData.prims_used} / {primData.prim_limit}</p>
+                <p>{t('support.prim.remaining')}: {primData.prim_limit - primData.prims_used}</p>
+            </div>
+        );
+    }
+    if (state === 'security_access') {
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
+        if (!securityData) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_security_data')}</div>
+        return (
+            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                <p>{t('support.security.status')}: {securityData.active ? 'ON' : 'OFF'}</p>
+                <p>{t('support.security.radius')}: {securityData.radius}</p>
+            </div>
+        );
+    }
+    if (state === 'security_logs') {
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{t('common.loading')}</div>
+        if (securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{t('support.responses.no_logs')}</div>
+        return (
+            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                {securityLogs.map((log: any, i: number) => (
+                    <p key={i}>{log.created_at.substring(0,10)} - {log.avatar_name}: {log.action}</p>
+                ))}
+            </div>
+        );
+    }
+    // ... other states
     const response = t(`support.responses.${state}`, { returnObjects: true }) as any;
     
     if (typeof response === 'string') {
@@ -260,7 +430,7 @@ export default function SupportChat() {
               isOpen ? "bg-red-500 text-white border-red-400 rotate-90" : "bg-amber-500 text-black border-amber-400"
             )}
           >
-            {isOpen ? <X size={24} /> : <MessageCircle size={24} strokeWidth={2.5} />}
+            {isOpen ? <X size={24} /> : (isResident ? <Bot size={24} strokeWidth={2.5} /> : <MessageCircle size={24} strokeWidth={2.5} />)}
           </motion.button>
         )}
       </AnimatePresence>
@@ -276,8 +446,8 @@ export default function SupportChat() {
             {/* Header */}
             <div className="p-6 bg-gradient-to-b from-amber-500/10 to-transparent border-b border-white/5 flex items-center justify-between z-20">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-black overflow-hidden border-2 border-amber-400">
-                  <img src="/bot-avatar.png" alt="Bot Avatar" className="w-full h-full object-cover" />
+                <div className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-black overflow-hidden border-2 border-amber-400 shrink-0">
+                  <Bot size={24} />
                 </div>
                 <div>
                   <h3 className="text-white font-display font-black uppercase text-xs tracking-[0.2em]">{t('support.bot_name')}</h3>
@@ -305,7 +475,7 @@ export default function SupportChat() {
                   <Bot size={14} />
                 </div>
                 <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5">
-                  {t('support.welcome')}
+                  {isResident ? t('support.welcome_resident', {defaultValue: 'Hi, I’m your Holanbra Resident Assistant. What would you like to do today?'}) : t('support.welcome')}
                 </div>
               </div>
 

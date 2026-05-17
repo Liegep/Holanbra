@@ -74,6 +74,26 @@ const ResidentDashboard:FC = () => {
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isHomeManagementOpen, setIsHomeManagementOpen] = useState(false);
+  const [showTeaser, setShowTeaser] = useState(false);
+
+  useEffect(() => {
+    // Only show if logged in and not dismissed by user in this session
+    const dismissed = sessionStorage.getItem('teaser_dismissed');
+    if (isLoggedIn && !dismissed) {
+        const timer = setTimeout(() => setShowTeaser(true), 3000); 
+        return () => clearTimeout(timer);
+    }
+  }, [isLoggedIn]);
+
+  const dismissTeaser = () => {
+    sessionStorage.setItem('teaser_dismissed', 'true');
+    setShowTeaser(false);
+  }
+
+  const handleOpenAssistant = () => {
+    window.dispatchEvent(new CustomEvent('open-support-chat'));
+    dismissTeaser();
+  }
 
   // Auto-login if session exists
   useEffect(() => {
@@ -476,6 +496,22 @@ const ResidentDashboard:FC = () => {
 
   return (
     <div className="min-h-screen bg-background-dark text-white pt-20 md:pt-32 pb-32 md:pb-20 px-4 md:px-6">
+      <AnimatePresence>
+        {showTeaser && (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-24 right-8 z-[100] w-64 glass-card bg-zinc-900 border border-white/10 p-4 rounded-2xl shadow-xl space-y-3"
+            >
+                <p className="text-white/80 text-xs font-bold leading-relaxed">{t('resident.teaser_msg', {defaultValue: 'Need help with your rental?'})}</p>
+                <div className="flex gap-2">
+                    <button onClick={handleOpenAssistant} className="flex-1 py-1.5 bg-amber-500 text-black text-[10px] font-bold rounded-lg uppercase">Open Assistant</button>
+                    <button onClick={dismissTeaser} className="flex-1 py-1.5 bg-white/5 text-white/50 text-[10px] font-bold rounded-lg uppercase">Dismiss</button>
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
       <div className="max-w-[1440px] mx-auto space-y-12">
         
         {/* User Info Header Section */}
