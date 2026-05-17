@@ -79,13 +79,29 @@ const resources = {
           "invite": "Join Group",
           "rentals": "Rentals",
           "rules": "Rules",
+          "faq": "FAQ",
+          "available_rentals": "Available Rentals",
           "contact": "Contact Support"
         },
         "responses": {
-          "security": "Our Security Orb allows you to manage access to your property. You can add/remove residents and managers via the Resident Portal.",
-          "prims": "The Prim Counter monitors your land capacity. Each property has a specific prim limit shown on the rental box.",
-          "rentals": "You can find all available properties in the 'Properties' section of our website. Just teleport to the one you like and pay the rental box.",
-          "rules": "Please read our Rules section carefully to understand the guidelines for living in Holanbra.",
+          "no_available_rentals": "There are no available rentals right now. Please check again soon or contact support.",
+          "security": {
+            "content": "The Holanbra Security Orb is a professional-grade protection system for your virtual property. It allows you to control exactly who can enter your parcel and automatically manages visitors.",
+            "steps": "To manage access: 1. Log in to the Resident Portal. 2. Navigate to 'Security'. 3. Add Allowed avatars by name or UUID. 4. Set your preferred protection Radius and Warning Time.",
+            "details": "UUIDs are required for 100% accuracy. You can define Managers to help you. Changes sync automatically between the site and Second Life. If someone is ejected by mistake, just add them to the Allowed List."
+          },
+          "prims": {
+            "content": "The Prim Counter monitors your land capacity in real-time. It shows exactly how many objects you and your guests have rezzed.",
+            "steps": "1. Find the physical counter on your land. 2. It updates automatically. 3. Touch it in SL to force a manual sync. 4. Check the 'Prim Counter' tab in your Portal for avatar-specific usage.",
+            "details": "Accurate tracking depends on the Casperlet/Property ID. If sync stops, click the counter in-world to refresh the connection."
+          },
+          "rentals": "You can find all available properties in the 'Properties' section of our website. Just teleport to the one you like and pay the rental box. Your group invite and security access will be provisioned automatically within seconds.",
+          "rules": "Living in Holanbra means being part of an elite community. Our rules cover behavior, building heights, and terraforming. Please check the 'Rules' page on our site for the full Covenant document.",
+          "faq": {
+             "content": "Frequently Asked Questions",
+             "steps": "Q: How do I pay rent? A: Visit your property and pay the physical rental box. Q: How do I get more prims? A: Contact an agent for an upgrade or move to a larger parcel.",
+             "details": "Q: Can I share my house? A: Yes, just add your partner to the Security Orb Allowed List!"
+          },
           "contact_esc": "Would you like to talk to Holanbra human support?",
           "contact_yes": "Yes, talk to human",
           "contact_no": "No, thanks",
@@ -837,13 +853,29 @@ const resources = {
           "invite": "Entrar no Grupo",
           "rentals": "Aluguéis",
           "rules": "Regras",
+          "faq": "FAQ",
+          "available_rentals": "Aluguéis Disponíveis",
           "contact": "Falar com Suporte"
         },
         "responses": {
-          "security": "Nosso Security Orb permite gerenciar o acesso à sua propriedade. Você pode adicionar/remover residentes e gerentes pelo Portal do Residente.",
-          "prims": "O Contador de Prims monitora a capacidade do seu terreno. Cada propriedade tem um limite específico mostrado na caixa de aluguel.",
-          "rentals": "Você pode encontrar todas as propriedades disponíveis na seção 'Propriedades' do nosso site. Basta teleportar para a que você gostar e pagar a caixa.",
-          "rules": "Por favor, leia nossa seção de Regras cuidadosamente para entender as diretrizes de convivência em Holanbra.",
+          "no_available_rentals": "Não há imóveis disponíveis no momento. Verifique novamente em breve ou fale com o suporte.",
+          "security": {
+            "content": "O Holanbra Security Orb é um sistema de proteção profissional para sua propriedade virtual. Ele permite controlar exatamente quem pode entrar no seu terreno e gerencia visitantes automaticamente.",
+            "steps": "Para gerenciar o acesso: 1. Faça login no Portal do Residente. 2. Vá em 'Security'. 3. Adicione avatares permitidos por nome ou UUID. 4. Configure o Raio de alcance e o Tempo de Aviso.",
+            "details": "UUIDs são necessários para identificação precisa. Você pode definir Gerentes (Managers). As alterações sincronizam instantaneamente entre o site e o Second Life. Se alguém for expulso por engano, basta adicionar à lista 'Allowed'."
+          },
+          "prims": {
+            "content": "O Contador de Prims monitora sua capacidade de terra em tempo real. Ele mostra exatamente quantos objetos você e seus convidados usaram.",
+            "steps": "1. Localize o contador físico no seu terreno. 2. Ele atualiza automaticamente. 3. Toque nele no SL para forçar uma sincronização manual. 4. Veja o uso detalhado por avatar na aba 'Prims' do Portal.",
+            "details": "O rastreio depende do ID da Propriedade/Casperlet. Se a sincronia parar, clique no contador in-world para restaurar a conexão."
+          },
+          "rentals": "Você pode encontrar todos os imóveis disponíveis na seção 'Propriedades'. Basta teleportar e pagar a caixa de aluguel. Seu convite de grupo e acesso de segurança serão liberados automaticamente em segundos.",
+          "rules": "Viver em Holanbra significa respeitar nossa comunidade de elite. Nossas regras cobrem comportamento, altura de construções e terraformação. Verifique a página 'Regras' para o documento completo do Covenant.",
+          "faq": {
+            "content": "Perguntas Frequentes",
+            "steps": "P: Como pago o aluguel? R: Visite sua casa e pague a caixa física. P: Preciso de mais prims? R: Contate um agente para upgrade ou mude para um terreno maior.",
+            "details": "P: Posso dividir minha casa? R: Sim, basta adicionar seu parceiro(a) na lista 'Allowed' do Security Orb!"
+          },
           "contact_esc": "Você gostaria de falar com o suporte humano da Holanbra?",
           "contact_yes": "Sim, falar com humano",
           "contact_no": "Não, obrigado",
@@ -1598,13 +1630,29 @@ const resources = {
           "invite": "Unirse al Grupo",
           "rentals": "Alquileres",
           "rules": "Reglas",
+          "faq": "FAQ",
+          "available_rentals": "Alquileres Disponibles",
           "contact": "Contactar Soporte"
         },
         "responses": {
-          "security": "Nuestro Security Orb le permite administrar el acceso a su propiedad. Puede agregar/eliminar residentes y gerentes a través del Portal del Residente.",
-          "prims": "El Contador de Prims monitorea la capacidad de su terreno. Cada propiedad tiene un límite de prims específico que se muestra en la caja de alquiler.",
-          "rentals": "Puede encontrar todas las propiedades disponibles en la sección 'Propiedades' de nuestro sitio web. Simplemente teletranspórtese a la que le guste y pague la caja.",
-          "rules": "Lea atentamente nuestra sección de Reglas para comprender las pautas de convivencia en Holanbra.",
+          "no_available_rentals": "No hay alquileres disponibles en este momento. Vuelve a revisar pronto o contacta con soporte.",
+          "security": {
+            "content": "El Holanbra Security Orb es un sistema de protección profesional para su propiedad virtual. Le permite controlar exactamente quién puede ingresar a su terreno y gestiona a los visitantes automáticamente.",
+            "steps": "Para gestionar el acceso: 1. Inicie sesión en el Portal del Residente. 2. Vaya a 'Security'. 3. Agregue avatares permitidos por nombre o UUID. 4. Configure el Radio y el Tiempo de advertencia.",
+            "details": "Se requieren UUID para una identificación precisa. Puede asignar Gerentes (Managers). Los cambios se sincronizan instantáneamente entre el sitio y Second Life. Si alguien es expulsado por error, simplemente agréguelo a la lista 'Allowed'."
+          },
+          "prims": {
+            "content": "El contador de prims monitorea la capacidad de su terreno en tiempo real. Muestra exactamente cuántos objetos han colocado usted y sus invitados.",
+            "steps": "1. Localice el contador físico en su terreno. 2. Se actualiza automáticamente. 3. Tócalo en SL para forzar una sincronización manual. 4. Vea el uso detallado por avatar en la pestaña 'Prims' del Portal.",
+            "details": "El seguimiento depende de la ID de propiedad/Casperlet. Si la sincronización se detiene, haga clic en el contador del mundo virtual para restaurar la conexión."
+          },
+          "rentals": "Puede encontrar todas las propiedades disponibles en la sección 'Propiedades'. Simplemente teletranspórtese y pague la caja de alquiler. Su invitación al grupo y su acceso de seguridad se habilitarán automáticamente en segundos.",
+          "rules": "Vivir en Holanbra significa respetar a nuestra comunidad de élite. Nuestras reglas cubren el comportamiento, la altura de las construcciones y la terraformación. Consulte la página 'Reglas' para obtener el documento completo del Covenant.",
+          "faq": {
+            "content": "Preguntas Frecuentes",
+            "steps": "P: ¿Cómo pago el alquiler? R: Visite su propiedad y pague la caja física. P: ¿Necesito más prims? R: Contacte a un agente para una actualización o múdese a un terreno más grande.",
+            "details": "P: ¿Puedo compartir mi casa? R: ¡Sí, solo agrega a tu pareja a la lista 'Allowed' del Security Orb!"
+          },
           "contact_esc": "¿Le gustaría hablar con el soporte humano de Holanbra?",
           "contact_yes": "Sí, hablar con humano",
           "contact_no": "No, gracias",
@@ -2315,13 +2363,29 @@ const resources = {
           "invite": "Groep Joinen",
           "rentals": "Huurwoningen",
           "rules": "Regels",
+          "faq": "FAQ",
+          "available_rentals": "Beschikbare Huurwoningen",
           "contact": "Contact Support"
         },
         "responses": {
-          "security": "Onze Security Orb stelt u in staat om de toegang tot uw eigendom te beheren. U kunt bewoners en managers toevoegen/verwijderen via de Resident Portal.",
-          "prims": "De Prim Teller houdt de capaciteit van uw land in de gaten. Elke woning heeft een specifieke prim-limiet dat op de verhuurbox staat.",
-          "rentals": "U kunt alle beschikbare woningen vinden in de sectie 'Woningen' op onze website. Teleporteer gewoon naar de woning die u leuk vindt en betaal de verhuurbox.",
-          "rules": "Lees onze sectie Regels zorgvuldig door om de richtlijnen voor het wonen in Holanbra te begrijpen.",
+          "no_available_rentals": "Er zijn momenteel geen beschikbare huurwoningen. Controleer later opnieuw of neem contact op met support.",
+          "security": {
+            "content": "De Holanbra Security Orb is een professioneel beveiligingssysteem voor uw virtuele eigendom. Het stelt u in staat om precies te bepalen wie uw perceel mag betreden en beheert bezoekers automatisch.",
+            "steps": "Toegang beheren: 1. Log in op het Resident Portal. 2. Ga naar 'Security'. 3. Voeg toegestane avatars toe op naam of UUID. 4. Stel de Radius en de waarschuwingstijd in.",
+            "details": "UUID's zijn vereist voor een nauwkeurige identificatie. U kunt Managers toewijzen. Wijzigingen worden direct gesynchroniseerd tussen de site en Second Life. Als iemand per ongeluk wordt verwijderd, voeg hem dan gewoon toe aan de lijst 'Allowed'."
+          },
+          "prims": {
+            "content": "De Prim Teller bewaakt uw landcapaciteit in realtime. Het laat precies zien hoeveel objecten u en voorafgaande gasten hebben neergezet.",
+            "steps": "1. Zoek de fysieke teller op uw land. 2. Deze wordt automatisch bijgewerkt. 3. Raak hem aan in SL om een handmatige synchronisatie te forceren. 4. Bekijk het gedetailleerde verbruik per bewoner in het Portal-dashboard.",
+            "details": "Nauwkeurige tracking hangt af van het Casperlet/Property ID. Als de synchronisatie stopt, klikt u op de teller in Second Life om de verbinding te herstellen."
+          },
+          "rentals": "U kunt alle beschikbare woningen vinden in de sectie 'Woningen' op onze website. Teleporteer gewoon naar de woning die u leuk vindt en betaal de verhuurbox. Uw groepsuitnodiging en beveiligingstoegang worden binnen enkele seconden automatisch geregeld.",
+          "rules": "Wonen in Holanbra betekent deel uitmaken van een elite-gemeenschap. Onze regels hebben betrekking op gedrag, bouwhoogtes en terraforming. Raadpleeg de pagina 'Regels' op onze site voor het volledige Covenant-document.",
+          "faq": {
+            "content": "Veelgestelde Vragen",
+            "steps": "V: Hoe betaal ik de huur? A: Bezoek uw woning en betaal de fysieke verhuurbox. V: Heb ik meer prims nodig? A: Neem contact op met een agent voor een upgrade of verhuis naar een groter perceel.",
+            "details": "V: Kan ik mijn huis delen? A: Ja, voeg gewoon uw partner toe aan de Security Orb Allowed List!"
+          },
           "contact_esc": "Wilt u met de menselijke ondersteuning van Holanbra spreken?",
           "contact_yes": "Ja, spreek met een mens",
           "contact_no": "Nee, bedankt",

@@ -80,20 +80,17 @@ export default function Navbar() {
 
   return (
     <nav className={cn(
-      "fixed top-0 left-0 right-0 transition-[background-color,padding,border-color] duration-300 px-6 py-4",
-      isScrolled ? "bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 py-3" : "bg-transparent sm:bg-transparent",
-      // On mobile, even if not scrolled, having a tiny bit of background can help touch events
-      !isScrolled && "md:bg-transparent max-md:bg-black/5",
+      "fixed top-0 left-0 right-0 z-[1000] w-full bg-zinc-950/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 transition-colors duration-300",
       mobileMenuOpen ? "z-[25000]" : "z-[20000]"
     )}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center -rotate-6 group-hover:rotate-0 transition-transform shadow-[0_0_20px_rgba(247,203,69,0.3)]">
-            <span className="text-black font-black text-xl">H</span>
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500 rounded-lg sm:rounded-xl flex items-center justify-center -rotate-6 group-hover:rotate-0 transition-transform shadow-[0_0_20px_rgba(247,203,69,0.3)]">
+            <span className="text-black font-black text-lg sm:text-xl">H</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-display font-bold tracking-tighter uppercase whitespace-nowrap leading-none">HOLANBRA <span className="font-light text-amber-500">SL</span></span>
-            <span className="text-[8px] font-mono tracking-[0.3em] text-white/40 uppercase">Virtual Estates</span>
+            <span className="text-base sm:text-xl font-display font-bold tracking-tighter uppercase whitespace-nowrap leading-none">HOLANBRA <span className="font-light text-amber-500">SL</span></span>
+            <span className="hidden sm:block text-[8px] font-mono tracking-[0.3em] text-white/40 uppercase">Virtual Estates</span>
           </div>
         </Link>
 
