@@ -543,7 +543,7 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
             </div>
 
         {/* Global Tab Navigation */}
-        <div className="flex bg-[#0d0d0f] border-t border-white/5 px-2 py-2 gap-1 shrink-0 overflow-x-auto no-scrollbar">
+        <div className="grid grid-cols-5 bg-zinc-950/90 border-t border-white/5 p-2 gap-1.5 md:gap-2 shrink-0">
           {[
             { id: 'dashboard', label: t('security.dashboard'), icon: Shield },
             { id: 'access', label: t('security.access_list'), icon: Users },
@@ -555,16 +555,18 @@ export function SecurityDashboard({ onClose, residentUuid }: SecurityDashboardPr
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all relative shrink-0 min-w-[80px]",
+                "min-w-0 h-14 md:h-16 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-xl md:rounded-2xl transition-all relative shrink-0",
                 activeTab === tab.id
                   ? "bg-amber-500 text-black shadow-lg shadow-amber-500/10"
-                  : "bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.05]"
+                  : "bg-white/[0.02] text-white/40 hover:text-white hover:bg-white/[0.04]"
               )}
             >
-              <tab.icon size={12} className="shrink-0" />
-              <span>{tab.label}</span>
+              <tab.icon size={16} className="shrink-0 md:w-5 md:h-5" />
+              <span className="truncate w-full md:w-auto text-center md:text-left text-[7px] md:text-[9px] font-black uppercase tracking-widest px-0.5">
+                {tab.label}
+              </span>
               {activeTab === tab.id && (
-                <motion.div layoutId="global-tab" className="absolute inset-0 bg-amber-500 rounded-lg -z-10" />
+                <motion.div layoutId="global-tab" className="absolute inset-0 bg-amber-500 rounded-xl md:rounded-2xl -z-10" />
               )}
             </button>
           ))}
