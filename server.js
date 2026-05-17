@@ -313,9 +313,9 @@ async function startServer() {
       const { avatar_uuid, language } = req.body;
       console.log(`[SmartBots] Group invite request received for avatar: ${avatar_uuid} - Language: ${language || 'not specified'}`);
       
-      if (!avatar_uuid) {
+      if (!avatar_uuid || String(avatar_uuid).trim() === "") {
         console.warn('[SmartBots] Rejected: Missing avatar_uuid');
-        return res.status(400).json({ success: false, error: 'Avatar UUID is required' });
+        return res.status(400).json({ success: false, error: 'avatar_uuid is required' });
       }
 
       // UUID Validation format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

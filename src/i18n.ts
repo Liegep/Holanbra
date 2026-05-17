@@ -89,11 +89,12 @@ const resources = {
           "contact_esc": "Would you like to talk to Holanbra human support?",
           "contact_yes": "Yes, talk to human",
           "contact_no": "No, thanks",
-          "invite_prompt": "Please enter your Second Life Avatar UUID to receive an invitation:",
-          "invite_success": "I've sent your group invitation! Please check your notifications in Second Life.",
+          "invite_prompt": "Please enter your Second Life avatar UUID.",
+          "invite_success": "Group invite sent. Please check your Second Life notifications.",
           "invite_error": "Oops, something went wrong. Please try again later or contact support.",
-          "invite_invalid": "Please enter a valid UUID (e.g., 00000000-0000-0000-0000-000000000000)",
-          "sending": "Sending..."
+          "invite_invalid": "Please enter a valid Second Life avatar UUID.",
+          "sending": "Sending...",
+          "send_invite": "Send Invite"
         }
 
       },
@@ -842,11 +843,12 @@ const resources = {
           "contact_esc": "Você gostaria de falar com o suporte humano da Holanbra?",
           "contact_yes": "Sim, falar com humano",
           "contact_no": "Não, obrigado",
-          "invite_prompt": "Por favor, insira o UUID do seu Avatar no Second Life para receber o convite:",
-          "invite_success": "Enviei seu convite do grupo! Por favor, verifique suas notificações no Second Life.",
+          "invite_prompt": "Por favor, informe o UUID do seu avatar no Second Life.",
+          "invite_success": "Convite do grupo enviado. Verifique suas notificações no Second Life.",
           "invite_error": "Ops, algo deu errado. Por favor, tente novamente mais tarde ou contate o suporte.",
-          "invite_invalid": "Por favor, insira um UUID válido (ex: 00000000-0000-0000-0000-000000000000)",
-          "sending": "Enviando..."
+          "invite_invalid": "Por favor, informe um UUID de avatar válido.",
+          "sending": "Enviando...",
+          "send_invite": "Enviar Convite"
         }
       },
       "about": {
@@ -1598,11 +1600,12 @@ const resources = {
           "contact_esc": "¿Le gustaría hablar con el soporte humano de Holanbra?",
           "contact_yes": "Sí, hablar con humano",
           "contact_no": "No, gracias",
-          "invite_prompt": "Ingrese el UUID de su Avatar de Second Life para recibir la invitación:",
-          "invite_success": "¡He enviado tu invitación al grupo! Por favor revisa tus notificaciones en Second Life.",
+          "invite_prompt": "Por favor, introduce el UUID de tu avatar en Second Life.",
+          "invite_success": "Invitación del grupo enviada. Revisa tus notificaciones en Second Life.",
           "invite_error": "Vaya, algo salió mal. Inténtelo de nuevo más tarde o póngase en contacto con el soporte.",
-          "invite_invalid": "Ingrese un UUID válido (ej: 00000000-0000-0000-0000-000000000000)",
-          "sending": "Enviando..."
+          "invite_invalid": "Por favor, introduce un UUID de avatar válido.",
+          "sending": "Enviando...",
+          "send_invite": "Enviar Invitación"
         }
       },
       "about": {
@@ -2310,11 +2313,12 @@ const resources = {
           "contact_esc": "Wilt u met de menselijke ondersteuning van Holanbra spreken?",
           "contact_yes": "Ja, spreek met een mens",
           "contact_no": "Nee, bedankt",
-          "invite_prompt": "Voer uw Second Life Avatar UUID in om een uitnodiging te ontvangen:",
-          "invite_success": "Ik heb je groepsuitnodiging verzonden! Controleer je meldingen in Second Life.",
+          "invite_prompt": "Voer de UUID van je Second Life-avatar in.",
+          "invite_success": "Groepsuitnodiging verzonden. Controleer je meldingen in Second Life.",
           "invite_error": "Oeps, er is iets misgegaan. Probeer het later opnieuw of neem contact op.",
-          "invite_invalid": "Voer een geldig UUID in (bijv. 00000000-0000-0000-0000-000000000000)",
-          "sending": "Verzenden..."
+          "invite_invalid": "Voer een geldige avatar-UUID in.",
+          "sending": "Verzenden...",
+          "send_invite": "Uitnodiging Verzenden"
         }
       },
       "about": {

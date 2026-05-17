@@ -124,7 +124,7 @@ export default function SupportChat() {
         success: data.success, 
         message: data.success 
           ? t('support.responses.invite_success') 
-          : (data.error === "invalid avatar_uuid" ? t('support.responses.invite_invalid') : t('support.responses.invite_error'))
+          : (data.error?.includes('avatar_uuid') ? t('support.responses.invite_invalid') : t('support.responses.invite_error'))
       });
       setChatState('invite_sent');
     } catch (error) {
@@ -218,22 +218,28 @@ export default function SupportChat() {
                   className="grid grid-cols-1 gap-2"
                 >
                   {menuItems.map((item) => (
-                    <button
+                    <motion.button
                       key={item.id}
+                      type="button"
+                      whileHover={{ scale: 1.02, backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        if (item.id === 'invite_prompt' && residentData?.avatar_uuid) {
-                          handleInvite(residentData.avatar_uuid);
+                        if (item.id === 'invite_prompt') {
+                          if (residentData?.avatar_uuid && UUID_REGEX.test(residentData.avatar_uuid)) {
+                            setUuid(residentData.avatar_uuid);
+                          }
+                          setChatState('invite_prompt');
                         } else {
                           setChatState(item.id as ChatState);
                         }
                       }}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 hover:bg-amber-500/10 hover:border-amber-500/30 transition-all text-left group"
+                      className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 transition-all text-left group cursor-pointer relative z-10"
                     >
                       <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <item.icon size={18} />
                       </div>
                       <span className="text-xs font-black uppercase tracking-widest">{item.label}</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </motion.div>
               )}
@@ -300,7 +306,7 @@ export default function SupportChat() {
                           : "bg-amber-500 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95"
                       )}
                     >
-                      {isSendingInvite ? t('support.responses.sending') : <><Send size={14} /> Enviar Convite</>}
+                      {isSendingInvite ? t('support.responses.sending') : <><Send size={14} /> {t('support.responses.send_invite')}</>}
                     </button>
                   </div>
                 </motion.div>
