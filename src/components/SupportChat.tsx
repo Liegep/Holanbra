@@ -66,19 +66,32 @@ export default function SupportChat() {
     if (!uuid || uuid.length < 32) return;
     
     setIsSendingInvite(true);
+    const endpoint = '/api/smartbots/group-invite';
     try {
-      const response = await fetch('/api/smartbots/group-invite', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar_uuid: uuid })
       });
+
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.error(`[SupportChat] Request failed:`, {
+          endpoint,
+          status: response.status,
+          statusText: response.statusText,
+          error: data.error
+        });
+      }
+
       setInviteResult({ 
         success: data.success, 
         message: data.success ? t('support.responses.invite_success') : t('support.responses.invite_error') 
       });
       setChatState('invite_sent');
     } catch (error) {
+      console.error(`[SupportChat] Network or Runtime ErrorCalling ${endpoint}:`, error);
       setInviteResult({ success: false, message: t('support.responses.invite_error') });
       setChatState('invite_sent');
     } finally {

@@ -311,8 +311,10 @@ async function startServer() {
   app.post('/api/smartbots/group-invite', async (req, res) => {
     try {
       const { avatar_uuid } = req.body;
+      console.log(`[SmartBots] Group invite request received for avatar: ${avatar_uuid}`);
       
       if (!avatar_uuid) {
+        console.warn('[SmartBots] Rejected: Missing avatar_uuid');
         return res.status(400).json({ success: false, error: 'Avatar UUID is required' });
       }
 
@@ -323,11 +325,19 @@ async function startServer() {
       const roleUuid = process.env.SMARTBOTS_EVERYONE_ROLE_UUID || '00000000-0000-0000-0000-000000000000';
 
       if (!apiKey || !botName || !groupUuid) {
+        const missing = [];
+        if (!apiKey) missing.push('SMARTBOTS_API_KEY');
+        if (!botName) missing.push('SMARTBOTS_BOT_NAME');
+        if (!groupUuid) missing.push('SMARTBOTS_GROUP_UUID');
+        
+        console.error(`[SmartBots] Configuration missing: ${missing.join(', ')}`);
         return res.status(500).json({ success: false, error: 'SmartBots configuration missing on server' });
       }
 
       // SmartBots Personal Bot HTTP API
       const smartBotsUrl = `https://www.mysmartbots.com/api/bot.html`;
+      console.log(`[SmartBots] Calling SmartBots API for bot: ${botName}...`);
+      
       const response = await axios.get(smartBotsUrl, {
         params: {
           action: 'group_invite',
@@ -341,13 +351,20 @@ async function startServer() {
       });
       
       const result = String(response.data);
+      console.log(`[SmartBots] API Status: ${response.status} - Response: ${result}`);
+
       if (result.toUpperCase().startsWith('OK')) {
         return res.status(200).json({ success: true, message: result });
       } else {
+        console.warn(`[SmartBots] API returned non-OK result: ${result}`);
         return res.status(400).json({ success: false, error: result });
       }
     } catch (err) {
-      console.error('SmartBots API Error:', err.message);
+      console.error('[SmartBots] Exception:', err.message);
+      if (err.response) {
+        console.error('[SmartBots] Error Response Body:', err.response.data);
+        console.error('[SmartBots] Error Response Status:', err.response.status);
+      }
       return res.status(500).json({ success: false, error: 'Service temporarily unavailable' });
     }
   });
