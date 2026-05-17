@@ -96,6 +96,7 @@ const resources = {
           "invite_success": "Group invite sent. Please check your Second Life notifications.",
           "invite_error": "Oops, something went wrong. Please try again later or contact support.",
           "invite_invalid": "Please enter a valid Second Life avatar UUID.",
+          "invite_login_required": "Please log in as a resident to request a group invite.",
           "sending": "Sending...",
           "send_invite": "Send Invite"
         }
@@ -853,6 +854,7 @@ const resources = {
           "invite_success": "Convite do grupo enviado. Verifique suas notificações no Second Life.",
           "invite_error": "Ops, algo deu errado. Por favor, tente novamente mais tarde ou contate o suporte.",
           "invite_invalid": "Por favor, informe um UUID de avatar válido.",
+          "invite_login_required": "Faça login como residente para pedir o convite do grupo.",
           "sending": "Enviando...",
           "send_invite": "Enviar Convite"
         }
@@ -1613,6 +1615,7 @@ const resources = {
           "invite_success": "Invitación del grupo enviada. Revisa tus notificaciones en Second Life.",
           "invite_error": "Vaya, algo salió mal. Inténtelo de nuevo más tarde o póngase en contacto con el soporte.",
           "invite_invalid": "Por favor, introduce un UUID de avatar válido.",
+          "invite_login_required": "Inicia sesión como residente para solicitar la invitación al grupo.",
           "sending": "Enviando...",
           "send_invite": "Enviar Invitación"
         }
@@ -2329,6 +2332,7 @@ const resources = {
           "invite_success": "Groepsuitnodiging verzonden. Controleer je meldingen in Second Life.",
           "invite_error": "Oeps, er is iets misgegaan. Probeer het later opnieuw of neem contact op.",
           "invite_invalid": "Voer een geldige avatar-UUID in.",
+          "invite_login_required": "Log in als bewoner om een groepsuitnodiging aan te vragen.",
           "sending": "Verzenden...",
           "send_invite": "Uitnodiging Verzenden"
         }

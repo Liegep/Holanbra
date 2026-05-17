@@ -310,7 +310,33 @@ async function startServer() {
   // SmartBots Integration
   app.post('/api/smartbots/group-invite', async (req, res) => {
     try {
-      const { avatar_uuid, language } = req.body;
+      const { avatar_uuid, resident_uuid, language } = req.body;
+      
+      // Step 0: Resident Validation (Requirement)
+      if (!resident_uuid) {
+        console.warn('[SmartBots] Rejected: No resident_uuid provided');
+        return res.status(403).json({ 
+          success: false, 
+          error: "Resident login required", 
+          code: "LOGIN_REQUIRED" 
+        });
+      }
+
+      // Check if this resident_uuid actually exists in our database as a Renter
+      const { data: resident, error: residentError } = await supabase
+        .from('renters')
+        .select('avatar_uuid')
+        .eq('avatar_uuid', resident_uuid)
+        .maybeSingle();
+
+      if (residentError || !resident) {
+        console.warn(`[SmartBots] Rejected: Resident validation failed for ${resident_uuid}.`);
+        return res.status(403).json({ 
+          success: false, 
+          error: "Resident login required", 
+          code: "INVALID_RESIDENT" 
+        });
+      }
       
       // Step 1: Input Validation
       if (!avatar_uuid || String(avatar_uuid).trim() === "") {

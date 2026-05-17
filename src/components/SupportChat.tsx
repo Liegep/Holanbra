@@ -93,6 +93,16 @@ export default function SupportChat() {
   const handleInvite = async (forcedUuid?: string) => {
     const targetUuid = (forcedUuid || uuid).trim();
     
+    // Requirement 1: Check for resident login
+    if (!residentData?.avatar_uuid) {
+      setInviteResult({ 
+        success: false, 
+        message: t('support.responses.invite_login_required') 
+      });
+      setChatState('invite_sent');
+      return;
+    }
+
     if (!targetUuid || !UUID_REGEX.test(targetUuid)) {
       setInviteResult({ 
         success: false, 
@@ -110,6 +120,7 @@ export default function SupportChat() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           avatar_uuid: targetUuid,
+          resident_uuid: residentData.avatar_uuid,
           language: i18n.language?.slice(0, 2) || 'en'
         })
       });
@@ -124,7 +135,9 @@ export default function SupportChat() {
       
       if (!data.success) {
         const errorText = (data.error || '').toLowerCase();
-        if (errorText.includes('wrong resident uuid')) {
+        if (errorText.includes('resident login required')) {
+          finalMessage = t('support.responses.invite_login_required');
+        } else if (errorText.includes('wrong resident uuid')) {
           finalMessage = "This avatar UUID was not accepted by SmartBots. Please check the Second Life avatar UUID.";
         } else if (errorText.includes('bot not found')) {
           finalMessage = "The SmartBots bot name or access settings are incorrect.";
@@ -240,6 +253,15 @@ export default function SupportChat() {
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         if (item.id === 'invite_prompt') {
+                          if (!residentData?.avatar_uuid) {
+                            setInviteResult({ 
+                              success: false, 
+                              message: t('support.responses.invite_login_required') 
+                            });
+                            setChatState('invite_sent');
+                            return;
+                          }
+
                           // Try both residentData state and localStorage as fallback
                           const savedUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
                           if (savedUuid && UUID_REGEX.test(savedUuid)) {
