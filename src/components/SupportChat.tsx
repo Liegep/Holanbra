@@ -9,8 +9,12 @@ type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+import { useResidentContext } from '../context/ResidentContext';
+// ...
 export default function SupportChat() {
+  const { residentProperty } = useResidentContext();
   const { t, i18n } = useTranslation();
+// ...
   const [isOpen, setIsOpen] = useState(false);
   const [isTawkLoaded, setIsTawkLoaded] = useState(false);
   const [chatState, setChatState] = useState<ChatState>('idle');
@@ -24,8 +28,22 @@ export default function SupportChat() {
   const [rentalsPage, setRentalsPage] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    console.log('[ResidentAssistant received resident rental prop]', residentProperty);
+  }, [residentProperty]);
+
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>?/gm, '');
+  };
+  const getSafeImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    const cleanUrl = String(url).trim();
+
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    return null;
   };
 
   const fetchAvailableRentals = async () => {
@@ -257,16 +275,28 @@ export default function SupportChat() {
     try {
       if (!residentUuid) return { residentUuid, property: null, casperletId: null, propertyName: null, primData: null };
 
-      // 1. Fetch properties linked via tenant_id
-      let { data: property, error: pErr } = await supabase
+      // 1. Use prop as primary if available and matches tenant
+      if (residentProperty && residentProperty.tenant_id === residentUuid) {
+        console.log('[ResidentAssistant] Using prop as property source');
+        return {
+          residentUuid,
+          property: residentProperty,
+          casperletId: residentProperty.casperlet_id || null,
+          propertyName: residentProperty.name || null,
+          primData: null // Need to be careful here: prop doesn't have prim data
+        };
+      }
+
+      // 2. Try to find property directly via properties.tenant_id
+      let { data: property } = await supabase
         .from('properties')
         .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
         .eq('tenant_id', residentUuid)
         .maybeSingle();
 
-      // 2. Fallback: via property_tenants mapping
+      // 2. Fallback: Lookup via property_tenants mapping
       if (!property) {
-        const { data: mapping, error: mErr } = await supabase
+        const { data: mapping } = await supabase
           .from('property_tenants')
           .select('property_id')
           .eq('tenant_id', residentUuid)
@@ -292,12 +322,16 @@ export default function SupportChat() {
       const context = { 
         residentUuid, 
         property, 
-        casperletId: property?.casperlet_id || primRes?.casperlet_id || null, 
+        casperletId: property?.casperlet_id || null, 
         propertyName: property?.name || null,
         primData: primRes ? { prims_used: primRes.prims_used, prim_limit: primRes.prim_limit } : null
       };
 
-      console.log('[ResidentAssistant MyRental]', context);
+      console.log('[ResidentAssistant property source]', {
+          residentUuid,
+          sharedProperty: property,
+          sharedCasperletId: context.casperletId
+      });
       return context;
     } catch(e) {
       console.error('[ResidentAssistant] getResidentPropertyContext error', e);

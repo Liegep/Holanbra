@@ -36,8 +36,11 @@ import { SpotifyPlayer } from './SpotifyPlayer';
 
 import { SecurityButton } from './security/SecurityButton';
 
+import { useResidentContext } from '../context/ResidentContext';
+// ...
 const ResidentDashboard:FC = () => {
   const { t, i18n } = useTranslation();
+  const { setResidentProperty } = useResidentContext();
 
   const [toast, setToast] = useState<{ message: string, type: ToastType, isVisible: boolean }>({
     message: '',
@@ -48,6 +51,16 @@ const ResidentDashboard:FC = () => {
   const showToast = (message: string, type: ToastType = 'success') => {
     setToast({ message, type, isVisible: true });
   };
+  const getSafeImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    const cleanUrl = String(url).trim();
+
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+      return cleanUrl;
+    }
+
+    return null;
+  };
   const [avatarName, setAvatarName] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -56,9 +69,6 @@ const ResidentDashboard:FC = () => {
   const [properties, setProperties] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'rentals' | 'support' | 'help'>('rentals');
-  const [hasNewReply, setHasNewReply] = useState(false);
-  const [error, setError] = useState('');
-  const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
   const [primInfo, setPrimInfo] = useState<{ prims_used: number, prim_limit: number, casperlet_id?: string } | null>(null);
   const [groupPrims, setGroupPrims] = useState<any[]>([]);
 
@@ -161,16 +171,7 @@ const ResidentDashboard:FC = () => {
           }
         }
 
-        // Fetch SL profile picture via server proxy
-        try {
-          const proxyUrl = `/api/avatar/${residentId}`;
-          const img = new Image();
-          img.onload = () => setSlAvatarUrl(proxyUrl);
-          img.onerror = () => setSlAvatarUrl(null);
-          img.src = proxyUrl;
-        } catch (err) {
-          console.warn('Failed to fetch SL profile picture', err);
-        }
+        setSlAvatarUrl(null);
       };
       fetchInitialData();
     }
@@ -262,6 +263,7 @@ const ResidentDashboard:FC = () => {
 
       setTickets(userTickets || []);
       setProperties(mappedProperties);
+      if (mappedProperties.length > 0) setResidentProperty(mappedProperties[0]);
       setIsLoggedIn(true);
       
       // Persist session
@@ -754,6 +756,7 @@ const ResidentDashboard:FC = () => {
                         <div className="grid grid-cols-1 md:gap-12 gap-8">
                           {properties.map((prop) => {
                           const expiresAt = prop.expiry_date || prop.expiry || prop.expires_at || prop.next_payment;
+                          const propertyImageUrl = getSafeImageUrl(prop.image_url);
                           let timeRemainingLabel = t('resident.expired');
                           let isExpired = true;
 
@@ -784,7 +787,18 @@ const ResidentDashboard:FC = () => {
                               {/* Property Image Header */}
                               <div className="relative h-72 md:h-96 overflow-hidden">
                                 <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent z-10" />
-                                <img src={prop.image_url} alt="" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" referrerPolicy="no-referrer" />
+                                {propertyImageUrl ? (
+                                  <img
+                                    src={propertyImageUrl}
+                                    alt=""
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-white/20">
+                                    <Home size={56} />
+                                  </div>
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent" />
                                 <div className="absolute bottom-10 left-10 text-left">
                                   <div className="flex items-center gap-3 mb-2">

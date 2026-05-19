@@ -37,6 +37,7 @@ import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 import { SpotifyPlayer } from './components/SpotifyPlayer';
+import { ResidentProvider } from './context/ResidentContext';
  
 export default function App() {
   const location = useLocation();
@@ -75,39 +76,41 @@ export default function App() {
   }, [location.pathname, location.hash]);
 
   return (
-    <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
-      <ScrollToTop />
-      <Navbar />
-      <main>
-        <Routes>
-          <Route path="/" element={
-            <>
-              <Hero />
-              <Properties />
-              <Gallery />
-              <QuoteSection />
-              <AboutUs />
-              <Decoration />
-              <Pricing />
-              <Team />
-            </>
-          } />
-          <Route path="/admin/*" element={<AdminArea />} />
-          <Route path="/resident/*" element={<ResidentDashboard />} />
-          <Route path="/properties" element={
-            <div className="pt-20">
-              <Properties />
-            </div>
-          } />
-          <Route path="/covenant" element={<Covenant />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-      <TeleportCTA />
-      <SupportChat />
-      <SpotifyPlayer />
-      <Footer />
-    </div>
+    <ResidentProvider>
+      <div className="min-h-screen selection:bg-amber-500/30 selection:text-amber-200 bg-background-dark text-white">
+        <ScrollToTop />
+        <Navbar />
+        <main>
+          <Routes>
+            <Route path="/" element={
+              <>
+                <Hero />
+                <Properties />
+                <Gallery />
+                <QuoteSection />
+                <AboutUs />
+                <Decoration />
+                <Pricing />
+                <Team />
+              </>
+            } />
+            <Route path="/admin/*" element={<AdminArea />} />
+            <Route path="/resident/*" element={<ResidentDashboard />} />
+            <Route path="/properties" element={
+              <div className="pt-20">
+                <Properties />
+              </div>
+            } />
+            <Route path="/covenant" element={<Covenant />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+        <TeleportCTA />
+        <SupportChat />
+        <SpotifyPlayer />
+        <Footer />
+      </div>
+    </ResidentProvider>
   );
 }
