@@ -713,9 +713,50 @@ export default function SupportChat() {
     }
     if (state === 'open_support_ticket') {
         const sendTicket = async () => {
-          // Placeholder action
-          setChatState('menu');
-          setTicketMsg('');
+          const sessionUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+          const sessionName = residentData?.avatar_name || localStorage.getItem('sl_resident_name') || 'Resident';
+
+          if (!sessionUuid) {
+            setInviteResult({
+              success: false,
+              message: safeT('support.responses.ticket_login_required', 'Please log in as a resident before opening a support ticket.')
+            });
+            setChatState('invite_sent');
+            return;
+          }
+
+          if (!ticketMsg.trim()) {
+            return;
+          }
+
+          try {
+            const { error } = await supabase
+              .from('support_tickets')
+              .insert({
+                user_id: sessionUuid.trim(),
+                avatar_name: sessionName.trim(),
+                subject: 'Support request from Resident Assistant',
+                category: 'Others',
+                message: ticketMsg.trim(),
+                status: 'open'
+              });
+
+            if (error) throw error;
+
+            setTicketMsg('');
+            setInviteResult({
+              success: true,
+              message: safeT('support.responses.ticket_created', 'Your support ticket has been created. Our team will review it soon.')
+            });
+            setChatState('invite_sent');
+          } catch (error) {
+            console.error('[SupportChat] Ticket creation error:', error);
+            setInviteResult({
+              success: false,
+              message: safeT('support.responses.ticket_error', 'I could not create the ticket. Please try again or contact live support.')
+            });
+            setChatState('invite_sent');
+          }
         };
         return (
             <div className="space-y-3">
