@@ -819,8 +819,25 @@ export default function SupportChat() {
     if (state === 'talk_to_support') {
         return <div className="p-4 text-white/80 text-sm">{safeT('support.responses.talk_to_support', 'Opening live support...')}</div>
     }
-    // ... other states
-    const response = t(`support.responses.${state}`, { returnObjects: true }) as any;
+    if (state === 'security_logs') {
+        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (!Array.isArray(securityLogs) || securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_logs', 'No recent security events.')}</div>
+        return (
+            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
+                {(securityLogs || []).map((log: any, i: number) => (
+                    <p key={i}>
+                        {log.created_at ? new Date(log.created_at).toLocaleString() : ''}
+                        {log.avatar_name ? ` - ${log.avatar_name}` : ''}
+                        {': '}
+                        <span className="text-amber-500">
+                            {log.action || safeT('Action', 'Action')}
+                        </span>
+                    </p>
+                ))}
+            </div>
+        );
+    }
+
     
     if (typeof response === 'string') {
       return response.split('[split]').map((msg, i) => (
