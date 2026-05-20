@@ -40,6 +40,10 @@ export default function SupportChat() {
     return html.replace(/<[^>]*>?/gm, '');
   };
 
+  const getCovenantPath = () => {
+    return '/covenant';
+  };
+
   const fetchAvailableRentals = async () => {
     setRentalsLoading(true);
     setRentalsError(null);
@@ -875,6 +879,22 @@ export default function SupportChat() {
         );
     }
 
+    if (state === 'rules') {
+      return (
+        <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-4">
+          <p>{t('support.rules.summary')}</p>
+          <button
+            onClick={() => {
+              window.location.href = getCovenantPath();
+            }}
+            className="w-full py-3 bg-amber-500 text-black font-black uppercase rounded-xl text-[10px] tracking-widest"
+          >
+            {t('support.rules.view_full')}
+          </button>
+        </div>
+      );
+    }
+ 
     
     if (typeof response === 'string') {
       return response.split('[split]').map((msg, i) => (

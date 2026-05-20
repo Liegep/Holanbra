@@ -124,9 +124,13 @@ const resources = {
           "step_5": "Join the rental group if the system asks you to.",
           "step_6": "After payment, use the resident portal or assistant for support.",
           "help": "If you need help choosing a rental, contact live support."
+        },
+        "rules": {
+          "summary": "The island covenant contains the full rules for residents, rentals, security, building, prims, payments, and permitted use. Please read the complete covenant before making changes to your rental.",
+          "view_full": "Open Full Covenant"
         }
-
       },
+
       "about": {
         "history": "History",
         "title1": "ABOUT",
@@ -907,7 +911,12 @@ const resources = {
           "step_5": "Entre no grupo da rental se o sistema solicitar.",
           "step_6": "Depois do pagamento, use o portal do residente ou o assistente para suporte.",
           "help": "Se precisar de ajuda para escolher uma rental, fale com o suporte ao vivo."
+        },
+        "rules": {
+          "summary": "O covenant da ilha contém as regras completas para residentes, rentals, segurança, construção, prims, pagamentos e uso permitido. Leia o covenant completo antes de fazer mudanças na sua rental.",
+          "view_full": "Abrir covenant completo"
         }
+
       },
       "about": {
         "history": "História",
@@ -1693,7 +1702,12 @@ const resources = {
           "step_5": "Únete al grupo del rental si el sistema te lo solicita.",
           "step_6": "Después del pago, usa el portal de residentes o el asistente para soporte.",
           "help": "Si necesitas ayuda para elegir un rental, contacta al soporte en vivo."
+        },
+        "rules": {
+          "summary": "El covenant de la isla contiene las reglas completas para residentes, rentals, seguridad, construcción, prims, pagos y uso permitido. Lee el covenant completo antes de hacer cambios en tu rental.",
+          "view_full": "Abrir covenant completo"
         }
+
       },
       "about": {
         "history": "Historia",
@@ -2435,7 +2449,12 @@ const resources = {
           "step_5": "Word lid van de rental group als het systeem daarom vraagt.",
           "step_6": "Gebruik na betaling het resident portal of de assistent voor support.",
           "help": "Als je hulp nodig hebt bij het kiezen van een rental, neem contact op met live support."
+        },
+        "rules": {
+          "summary": "Het island covenant bevat de volledige regels voor residents, rentals, security, bouwen, prims, betalingen en toegestaan gebruik. Lees het volledige covenant voordat je wijzigingen aan je rental maakt.",
+          "view_full": "Volledig covenant openen"
         }
+
       },
       "about": {
         "history": "Geschiedenis",
