@@ -115,6 +115,15 @@ const resources = {
           "invite_login_required": "Please log in as a resident to request a group invite.",
           "sending": "Sending...",
           "send_invite": "Send Invite"
+        },
+        "how_to_rent": {
+          "step_1": "Choose an available rental from the list.",
+          "step_2": "Click Teleport to visit it in Second Life.",
+          "step_3": "Pay the rental box at the property.",
+          "step_4": "Wait a few moments for the rental system to update your access.",
+          "step_5": "Join the rental group if the system asks you to.",
+          "step_6": "After payment, use the resident portal or assistant for support.",
+          "help": "If you need help choosing a rental, contact live support."
         }
 
       },
@@ -889,6 +898,15 @@ const resources = {
           "invite_login_required": "Faça login como residente para pedir o convite do grupo.",
           "sending": "Enviando...",
           "send_invite": "Enviar Convite"
+        },
+        "how_to_rent": {
+          "step_1": "Escolha uma rental disponível na lista.",
+          "step_2": "Clique em Teleport para visitar no Second Life.",
+          "step_3": "Pague na rental box da propriedade.",
+          "step_4": "Aguarde alguns instantes para o sistema atualizar seu acesso.",
+          "step_5": "Entre no grupo da rental se o sistema solicitar.",
+          "step_6": "Depois do pagamento, use o portal do residente ou o assistente para suporte.",
+          "help": "Se precisar de ajuda para escolher uma rental, fale com o suporte ao vivo."
         }
       },
       "about": {
@@ -1666,6 +1684,15 @@ const resources = {
           "invite_login_required": "Inicia sesión como residente para solicitar la invitación al grupo.",
           "sending": "Enviando...",
           "send_invite": "Enviar Invitación"
+        },
+        "how_to_rent": {
+          "step_1": "Elige un rental disponible de la lista.",
+          "step_2": "Haz clic en Teleport para visitarlo en Second Life.",
+          "step_3": "Paga en la rental box de la propiedad.",
+          "step_4": "Espera unos momentos para que el sistema actualice tu acceso.",
+          "step_5": "Únete al grupo del rental si el sistema te lo solicita.",
+          "step_6": "Después del pago, usa el portal de residentes o el asistente para soporte.",
+          "help": "Si necesitas ayuda para elegir un rental, contacta al soporte en vivo."
         }
       },
       "about": {
@@ -2399,6 +2426,15 @@ const resources = {
           "invite_login_required": "Log in als bewoner om een groepsuitnodiging aan te vragen.",
           "sending": "Verzenden...",
           "send_invite": "Uitnodiging Verzenden"
+        },
+        "how_to_rent": {
+          "step_1": "Kies een beschikbare rental uit de lijst.",
+          "step_2": "Klik op Teleport om deze in Second Life te bezoeken.",
+          "step_3": "Betaal bij de rental box op de property.",
+          "step_4": "Wacht een paar momenten terwijl het systeem je toegang bijwerkt.",
+          "step_5": "Word lid van de rental group als het systeem daarom vraagt.",
+          "step_6": "Gebruik na betaling het resident portal of de assistent voor support.",
+          "help": "Als je hulp nodig hebt bij het kiezen van een rental, neem contact op met live support."
         }
       },
       "about": {

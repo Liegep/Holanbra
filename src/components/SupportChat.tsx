@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
-type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket' | 'talk_to_support' | 'my_support_tickets';
+type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket' | 'talk_to_support' | 'my_support_tickets' | 'how_to_rent';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,6 +25,8 @@ export default function SupportChat() {
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isLiveChatOpen, setIsLiveChatOpen] = useState(false);
   const [availableRentals, setAvailableRentals] = useState<any[]>([]);
+  const [rentalsLoading, setRentalsLoading] = useState(false);
+  const [rentalsError, setRentalsError] = useState<string | null>(null);
   const [supportTickets, setSupportTickets] = useState<any[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [rentalsPage, setRentalsPage] = useState(1);
@@ -40,6 +42,8 @@ export default function SupportChat() {
 
   const fetchAvailableRentals = async () => {
     setRentalsLoading(true);
+    setRentalsError(null);
+
     try {
       const { data, error } = await supabase
         .from('properties')
@@ -48,12 +52,40 @@ export default function SupportChat() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAvailableRentals(data || []);
-    } catch (e) {
+      setAvailableRentals(Array.isArray(data) ? data : []);
+    } catch (e: any) {
       console.error('[SupportChat] Error fetching rentals:', e);
+      setAvailableRentals([]);
+      setRentalsError(e?.message || 'Could not load available rentals.');
     } finally {
       setRentalsLoading(false);
     }
+  };
+
+  const getSafeText = (value: any, fallback = '') => {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number') return String(value);
+    return fallback;
+  };
+
+  const getSafeImageUrl = (url?: string | null) => {
+    if (!url) return null;
+    const cleanUrl = String(url).trim();
+    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) return cleanUrl;
+    return null;
+  };
+
+  const getPropertyDescription = (property: any) => {
+    const lang = i18n.language?.slice(0, 2) || 'en';
+    const raw =
+      property?.[`description_${lang}`] ||
+      property?.description ||
+      property?.description_en ||
+      property?.description_pt ||
+      'Luxury property in Holanbra.';
+
+    return stripHtml(getSafeText(raw, 'Luxury property in Holanbra.'));
   };
 
   const fetchSupportTickets = async () => {
@@ -469,9 +501,6 @@ export default function SupportChat() {
   const visitorActions = useMemo(() => [
     { id: 'available_rentals', label: t('support.menu.available_rentals', {defaultValue: 'Available Rentals'}), icon: Home },
     { id: 'how_to_rent', label: t('support.menu.how_to_rent', {defaultValue: 'How to Rent'}), icon: Scroll },
-    { id: 'visit_properties', label: t('support.menu.visit_properties', {defaultValue: 'Visit Properties'}), icon: MapPin },
-    { id: 'join_group', label: t('support.menu.join_group', {defaultValue: 'Join Group'}), icon: UserPlus },
-    { id: 'rules', label: t('support.menu.rules', {defaultValue: 'Rules'}), icon: Scroll },
     { id: 'talk_to_support', label: t('support.menu.talk_to_support', {defaultValue: 'Talk to Support'}), icon: LifeBuoy }
   ], [t]);
 
@@ -480,7 +509,8 @@ export default function SupportChat() {
     { id: 'prim_usage', label: t('support.menu.prim_usage', {defaultValue: 'Prim Usage'}), icon: Layout },
     { id: 'security_access', label: t('support.menu.security_access', {defaultValue: 'Security Access'}), icon: Shield },
     { id: 'security_logs', label: t('support.menu.security_logs', {defaultValue: 'Security Logs'}), icon: Scroll },
-    { id: 'group_invite', label: t('support.menu.invite', {defaultValue: 'Join Group'}), icon: UserPlus },
+    { id: 'rules', label: t('support.menu.rules', {defaultValue: 'Rules'}), icon: Scroll },
+    { id: 'group_invite', label: t('support.menu.invite', {defaultValue: 'Group Invite'}), icon: UserPlus },
     { id: 'open_support_ticket', label: t('support.menu.open_support_ticket', {defaultValue: 'Open Support Ticket'}), icon: LifeBuoy },
     { 
       id: 'my_support_tickets', 
@@ -812,6 +842,20 @@ export default function SupportChat() {
     if (state === 'talk_to_support') {
         return <div className="p-4 text-white/80 text-sm">{safeT('support.responses.talk_to_support', 'Opening live support...')}</div>
     }
+
+    if (state === 'how_to_rent') {
+      return (
+        <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-3">
+          <p><strong>1.</strong> {t('support.how_to_rent.step_1')}</p>
+          <p><strong>2.</strong> {t('support.how_to_rent.step_2')}</p>
+          <p><strong>3.</strong> {t('support.how_to_rent.step_3')}</p>
+          <p><strong>4.</strong> {t('support.how_to_rent.step_4')}</p>
+          <p><strong>5.</strong> {t('support.how_to_rent.step_5')}</p>
+          <p><strong>6.</strong> {t('support.how_to_rent.step_6')}</p>
+          <p className="text-white/50 text-xs">{t('support.how_to_rent.help')}</p>
+        </div>
+      );
+    }
     if (state === 'security_logs') {
         if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
         if (!Array.isArray(securityLogs) || securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_logs', 'No recent security events.')}</div>
@@ -969,7 +1013,7 @@ export default function SupportChat() {
               )}
 
               {/* Response State */}
-              {(['security', 'prims', 'rentals', 'rules', 'faq', 'my_rental', 'prim_usage', 'security_access', 'security_logs', 'open_support_ticket', 'my_support_tickets'].includes(chatState)) && (
+              {(['security', 'prims', 'rentals', 'rules', 'faq', 'my_rental', 'prim_usage', 'security_access', 'security_logs', 'open_support_ticket', 'my_support_tickets', 'how_to_rent'].includes(chatState)) && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1018,96 +1062,87 @@ export default function SupportChat() {
                         <Loader2 size={24} className="text-amber-500 animate-spin" />
                         <span className="text-[10px] text-white/40 font-black uppercase tracking-widest">Searching properties...</span>
                       </div>
-                    ) : availableRentals.length === 0 ? (
+                    ) : rentalsError ? (
+                      <div className="bg-red-500/10 rounded-2xl p-6 border border-red-500/20 text-center text-white/80 text-sm">
+                        I couldn’t load available rentals right now. Please try again or contact support.
+                      </div>
+                    ) : (
+                      (() => {
+                        console.log('[SupportChat] Rendering available_rentals. Length:', availableRentals.length);
+                        return availableRentals.length === 0 ? (
                       <div className="bg-white/5 rounded-2xl p-6 border border-white/5 text-center space-y-4">
                         <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-white/20 mx-auto">
                           <Home size={20} />
                         </div>
                         <p className="text-white/80 text-sm font-medium leading-relaxed">
-                          {t('support.responses.no_available_rentals')}
+                          No available rentals right now.
                         </p>
                       </div>
                     ) : (
                       <>
                         <div className="space-y-3">
-                          {availableRentals.slice(0, rentalsPage * 5).map((property) => (
-                            <div key={property.id} className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
-                              {property.image_url && (
-                                <div className="h-32 w-full relative">
-                                  <img
-                                    src={property.image_url}
-                                    alt={property.name}
-                                    className="w-full h-full object-cover"
-                                    referrerPolicy="no-referrer"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                  <div className="absolute top-3 left-3 bg-amber-500 text-black text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded">
-                                    {t('properties.status_available')}
+                          {availableRentals.slice(0, rentalsPage * 5).map((property) => {
+                            console.log('[SupportChat] Mapping property:', property.id);
+                             const imageUrl = getSafeImageUrl(property.image_url);
+                             const propertyName = getSafeText(property.name, 'Available Rental');
+                             const price = getSafeText(property.rental_price || property.price, '---');
+                             const prims = getSafeText(property.prims_allowed || property.prim_limit || property.prim_allowance, '---');
+                             const size = getSafeText(property.size, '---');
+                             const description = getPropertyDescription(property);
+                             const teleportUrl = getSafeImageUrl(property.teleport_url || property.slurl);
+
+                             return (
+                              <div key={property.id} className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
+                                {imageUrl && (
+                                  <div className="h-32 w-full relative">
+                                    <img
+                                      src={imageUrl}
+                                      alt={propertyName}
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                    <div className="absolute top-3 left-3 bg-amber-500 text-black text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded">
+                                      {t('properties.status_available')}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
-                              <div className="p-4 space-y-3">
-                                <div className="flex justify-between items-start">
-                                  <h4 className="text-white font-bold text-sm">{property.name}</h4>
-                                  <div className="text-amber-500 text-xs font-bold">L$ {property.rental_price || property.price}</div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="flex items-center gap-2 text-[10px] text-white/40">
-                                    <Layers size={12} />
-                                    <span>{property.prims_allowed} {t('properties.prims_allowed')}</span>
+                                )}
+                                <div className="p-4 space-y-3">
+                                  <div className="flex justify-between items-start">
+                                    <h4 className="text-white font-bold text-sm">{propertyName}</h4>
+                                    <div className="text-amber-500 text-xs font-bold">L$ {price}</div>
                                   </div>
-                                  <div className="flex items-center gap-2 text-[10px] text-white/40">
-                                    <Layout size={12} />
-                                    <span>{property.size || '3410m²'}</span>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="flex items-center gap-2 text-[10px] text-white/40">
+                                      <Layers size={12} />
+                                      <span>{prims} {t('properties.prims_allowed')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] text-white/40">
+                                      <Layout size={12} />
+                                      <span>{size}</span>
+                                    </div>
                                   </div>
-                                </div>
-                                <p className="text-[10px] text-white/60 line-clamp-2">
-                                  <span dangerouslySetInnerHTML={{ __html: (property[`description_${i18n.language.slice(0, 2)}`] || property.description || "Luxury property in Holanbra.") }} />
-                                </p>
-                                <div className="grid grid-cols-2 gap-2 pt-2">
-                                  <button 
-                                    onClick={() => {
-                                      window.location.href = '#properties';
-                                      setIsOpen(false);
-                                    }}
-                                    className="flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 text-white/60 text-[8px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5"
-                                  >
-                                    <Eye size={12} />
-                                    {t('hero.tour')}
-                                  </button>
-                                  <button 
-                                    onClick={() => window.open(property.teleport_url || property.slurl, '_blank')}
-                                    className="flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-500 text-black text-[8px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
-                                  >
-                                    <MapPin size={12} />
-                                    {t('properties.teleport')}
-                                  </button>
-                                  {property.virtual_tour_url && (
-                                    <button 
-                                      onClick={() => window.open(property.virtual_tour_url, '_blank')}
-                                      className="col-span-2 flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 text-white/60 text-[8px] font-black uppercase tracking-widest hover:bg-white/10 transition-all border border-white/5"
-                                    >
-                                      <ExternalLink size={12} />
-                                      {t('hero.tour')}
-                                    </button>
+                                  <p className="text-[10px] text-white/60 line-clamp-2">{description}</p>
+                                  {teleportUrl && (
+                                    <div className="pt-2">
+                                      <button 
+                                        onClick={() => window.open(teleportUrl, '_blank')}
+                                        className="w-full py-2 bg-amber-500 text-black font-bold uppercase rounded-lg text-xs"
+                                      >
+                                        Teleport
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
-
-                        {availableRentals.length > rentalsPage * 5 && (
-                          <button 
-                             onClick={() => setRentalsPage(prev => prev + 1)}
-                             className="w-full py-4 rounded-xl bg-white/5 text-white/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all font-display flex items-center justify-center gap-2"
-                          >
-                             {t('properties.view_all')} <ChevronRight size={14} />
-                          </button>
-                        )}
                       </>
+                    );
+                    })()
                     )}
                   </div>
 
