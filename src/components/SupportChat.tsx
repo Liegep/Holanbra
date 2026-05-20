@@ -314,7 +314,7 @@ export default function SupportChat() {
       // 2. Try to find property directly via properties.tenant_id
       let { data: property } = await supabase
         .from('properties')
-        .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
+        .select('*')
         .eq('tenant_id', residentUuid)
         .maybeSingle();
 
@@ -329,7 +329,7 @@ export default function SupportChat() {
         if (mapping && mapping.property_id) {
             const { data: propData } = await supabase
                 .from('properties')
-                .select('id, name, status, teleport_url, casperlet_id, tenant_id, rented_until, prim_limit, slurl, prims_allowed, prim_allowance')
+                .select('*')
                 .eq('id', mapping.property_id)
                 .maybeSingle();
             property = propData;
