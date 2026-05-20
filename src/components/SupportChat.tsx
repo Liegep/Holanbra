@@ -299,19 +299,7 @@ export default function SupportChat() {
     try {
       if (!residentUuid) return { residentUuid, property: null, casperletId: null, propertyName: null, primData: null };
 
-      // 1. Use prop as primary if available and matches tenant
-      if (residentProperty && residentProperty.tenant_id === residentUuid) {
-        console.log('[ResidentAssistant] Using prop as property source');
-        return {
-          residentUuid,
-          property: residentProperty,
-          casperletId: residentProperty.casperlet_id || null,
-          propertyName: residentProperty.name || null,
-          primData: null // Need to be careful here: prop doesn't have prim data
-        };
-      }
-
-      // 2. Try to find property directly via properties.tenant_id
+      // 1. Try to find property directly via properties.tenant_id
       let { data: property } = await supabase
         .from('properties')
         .select('*')
@@ -334,6 +322,11 @@ export default function SupportChat() {
                 .maybeSingle();
             property = propData;
         }
+      }
+
+      if (!property && residentProperty?.tenant_id === residentUuid) {
+        console.log('[ResidentAssistant] Using residentProperty as fallback only');
+        property = residentProperty;
       }
 
       // 3. Supplement: Get prim record (prims_used, prim_limit)
