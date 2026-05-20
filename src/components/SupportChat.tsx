@@ -23,6 +23,7 @@ export default function SupportChat() {
   const [ticketMsg, setTicketMsg] = useState('');
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isLiveChatOpen, setIsLiveChatOpen] = useState(false);
   const [availableRentals, setAvailableRentals] = useState<any[]>([]);
   const [rentalsLoading, setRentalsLoading] = useState(false);
   const [rentalsPage, setRentalsPage] = useState(1);
@@ -154,12 +155,27 @@ export default function SupportChat() {
   const openTawk = () => {
     // @ts-ignore
     if (window.Tawk_API && typeof window.Tawk_API.toggle === 'function') {
-      // @ts-ignore
       window.Tawk_API.showWidget();
-      // @ts-ignore
       window.Tawk_API.maximize();
       setIsOpen(false);
+      setIsLiveChatOpen(true);
     }
+  };
+
+  const backToAssistant = () => {
+    try {
+      // @ts-ignore
+      if (window.Tawk_API) {
+        // @ts-ignore
+        if (typeof window.Tawk_API.minimize === 'function') window.Tawk_API.minimize();
+        // @ts-ignore
+        if (typeof window.Tawk_API.hideWidget === 'function') window.Tawk_API.hideWidget();
+      }
+    } catch (e) {}
+
+    setIsLiveChatOpen(false);
+    setIsOpen(true);
+    setChatState('menu');
   };
 
   const handleInvite = async (forcedUuid?: string) => {
@@ -787,6 +803,14 @@ export default function SupportChat() {
             exit={{ opacity: 0, scale: 0.95, y: 50 }}
             className="fixed inset-0 sm:inset-auto sm:bottom-28 sm:right-8 z-[110] w-full sm:w-[400px] h-full sm:h-[550px] bg-zinc-950 sm:border sm:border-white/10 sm:rounded-[2.5rem] sm:shadow-[0_30px_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden backdrop-blur-3xl"
           >
+            {isLiveChatOpen && (
+              <button
+                onClick={backToAssistant}
+                className="fixed bottom-6 left-4 right-4 sm:bottom-8 sm:right-8 sm:w-auto z-[120] py-4 bg-amber-500 text-black font-black uppercase tracking-[0.2em] rounded-2xl text-xs hover:scale-[1.01] transition-all shadow-xl shadow-amber-500/20"
+              >
+                Back to Assistant
+              </button>
+            )}
             {/* Header */}
             <div className="p-6 bg-gradient-to-b from-amber-500/10 to-transparent border-b border-white/5 flex items-center justify-between z-20">
               <div className="flex items-center gap-4">
@@ -830,23 +854,22 @@ export default function SupportChat() {
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="chat-quick-actions grid grid-cols-1 gap-2"
-                  style={{ display: 'block', opacity: 1, visibility: 'visible' }}
+                  className="chat-quick-actions flex flex-col gap-2 w-full"
                 >
-                  <p className="text-white/20 text-[8px] uppercase tracking-widest pl-2">DEBUG: {actions.length} actions</p>
+                  <p className="text-white/20 text-[8px] uppercase tracking-widest pl-2">ACTIONS</p>
                   {actions.map((action) => (
                     <motion.button
                       key={action.id}
                       type="button"
-                      whileHover={{ scale: 1.02, backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ scale: 1.01, backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }}
+                      whileTap={{ scale: 0.99 }}
                       onClick={() => handleAction(action.id)}
-                      className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 transition-all text-left group cursor-pointer relative z-10"
+                      className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 transition-all text-left group cursor-pointer relative z-10"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                         <action.icon size={18} />
                       </div>
-                      <span className="text-xs font-black uppercase tracking-widest">{action.label}</span>
+                      <span className="text-xs font-black uppercase tracking-[0.2em]">{action.label}</span>
                     </motion.button>
                   ))}
                 </motion.div>
