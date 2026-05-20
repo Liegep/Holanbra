@@ -69,6 +69,9 @@ const ResidentDashboard:FC = () => {
   const [properties, setProperties] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'rentals' | 'support' | 'help'>('rentals');
+  const [hasNewReply, setHasNewReply] = useState(false);
+  const [error, setError] = useState('');
+  const [slAvatarUrl, setSlAvatarUrl] = useState<string | null>(null);
   const [primInfo, setPrimInfo] = useState<{ prims_used: number, prim_limit: number, casperlet_id?: string } | null>(null);
   const [groupPrims, setGroupPrims] = useState<any[]>([]);
 

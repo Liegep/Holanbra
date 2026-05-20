@@ -35,16 +35,6 @@ export default function SupportChat() {
   const stripHtml = (html: string) => {
     return html.replace(/<[^>]*>?/gm, '');
   };
-  const getSafeImageUrl = (url?: string | null) => {
-    if (!url) return null;
-    const cleanUrl = String(url).trim();
-
-    if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-      return cleanUrl;
-    }
-
-    return null;
-  };
 
   const fetchAvailableRentals = async () => {
     setRentalsLoading(true);
@@ -742,7 +732,15 @@ export default function SupportChat() {
                             <div key={property.id} className="bg-white/5 rounded-2xl border border-white/5 overflow-hidden">
                               {property.image_url && (
                                 <div className="h-32 w-full relative">
-                                  <img src={property.image_url} alt={property.name} className="w-full h-full object-cover" />
+                                  <img
+                                    src={property.image_url}
+                                    alt={property.name}
+                                    className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
                                   <div className="absolute top-3 left-3 bg-amber-500 text-black text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded">
                                     {t('properties.status_available')}
                                   </div>
