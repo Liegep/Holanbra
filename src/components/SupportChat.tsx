@@ -959,7 +959,7 @@ export default function SupportChat() {
               )}
 
               {/* Response State */}
-              {(['security', 'prims', 'rentals', 'rules', 'faq', 'my_rental', 'prim_usage', 'security_access', 'security_logs', 'open_support_ticket'].includes(chatState)) && (
+              {(['security', 'prims', 'rentals', 'rules', 'faq', 'my_rental', 'prim_usage', 'security_access', 'security_logs', 'open_support_ticket', 'my_support_tickets'].includes(chatState)) && (
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
