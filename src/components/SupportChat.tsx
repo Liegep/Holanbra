@@ -450,9 +450,58 @@ export default function SupportChat() {
                 <p><strong>{safeT('support.rental.name', 'Property')}:</strong> {rentalData.property?.name ?? rentalData.propertyName ?? safeT('support.rental.unknown', 'Unknown')}</p>
                 <p><strong>{safeT('support.rental.status', 'Status')}:</strong> {rentalData.property?.status ? rentalData.property.status.charAt(0).toUpperCase() + rentalData.property.status.slice(1) : safeT('support.rental.unknown', 'Unknown')}</p>
                 
-                {rentalData.property?.rented_until 
-                   ? <p><strong>{safeT('support.rental.expires', 'Expires')}:</strong> {new Date(rentalData.property.rented_until).toLocaleDateString()}</p>
-                   : null}
+                {(() => {
+                  const expiresAt =
+                    rentalData.property?.rented_until ||
+                    rentalData.property?.expiry_date ||
+                    rentalData.property?.expiry ||
+                    rentalData.property?.expires_at ||
+                    rentalData.property?.next_payment;
+
+                  if (!expiresAt) return null;
+
+                  const expiryDate = new Date(expiresAt);
+                  if (isNaN(expiryDate.getTime())) return null;
+
+                  const now = new Date();
+                  const diffInMs = expiryDate.getTime() - now.getTime();
+                  const locale = i18n.language?.startsWith('pt') ? 'pt-BR' : 'en-US';
+
+                  const dateLabel = expiryDate.toLocaleDateString(locale, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  });
+
+                  const timeLabel = expiryDate.toLocaleTimeString(locale, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
+
+                  if (diffInMs <= 0) {
+                    return (
+                      <p>
+                        <strong>{safeT('support.rental.expires', 'Expires')}:</strong> {dateLabel} {timeLabel}
+                        <br />
+                        <span className="text-red-400">{safeT('resident.expired', 'Expired')}</span>
+                      </p>
+                    );
+                  }
+
+                  const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((diffInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                  return (
+                    <>
+                      <p>
+                        <strong>{safeT('support.rental.expires', 'Expires')}:</strong> {dateLabel} {timeLabel}
+                      </p>
+                      <p>
+                        <strong>{safeT('resident.remaining', 'Remaining')}:</strong> {days} days and {hours} hours
+                      </p>
+                    </>
+                  );
+                })()}
                    
                 {rentalData.property?.prim_limit 
                    ? <p><strong>{safeT('support.rental.prim_limit', 'Prim limit')}:</strong> {rentalData.property.prim_limit}</p>
