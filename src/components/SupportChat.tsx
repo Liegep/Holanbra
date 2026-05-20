@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../lib/utils';
 import { supabase } from '../lib/supabase';
 
-type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket' | 'talk_to_support';
+type ChatState = 'idle' | 'menu' | 'security' | 'prims' | 'rentals' | 'rules' | 'faq' | 'available_rentals' | 'contact_esc' | 'invite_confirm' | 'invite_prompt' | 'invite_sent' | 'my_rental' | 'prim_usage' | 'security_access' | 'security_logs' | 'open_support_ticket' | 'talk_to_support' | 'my_support_tickets';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,7 +25,8 @@ export default function SupportChat() {
   const [inviteResult, setInviteResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isLiveChatOpen, setIsLiveChatOpen] = useState(false);
   const [availableRentals, setAvailableRentals] = useState<any[]>([]);
-  const [rentalsLoading, setRentalsLoading] = useState(false);
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
   const [rentalsPage, setRentalsPage] = useState(1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +54,23 @@ export default function SupportChat() {
     } finally {
       setRentalsLoading(false);
     }
+  };
+
+  const fetchSupportTickets = async () => {
+    setTicketsLoading(true);
+    const sessionUuid = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
+    if (!sessionUuid) {
+      setSupportTickets([]);
+      setTicketsLoading(false);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('support_tickets')
+      .select('*')
+      .eq('user_id', sessionUuid.trim())
+      .order('created_at', { ascending: false });
+    if (!error && data) setSupportTickets(data);
+    setTicketsLoading(false);
   };
 
   useEffect(() => {
@@ -386,13 +404,19 @@ export default function SupportChat() {
 
 
   useEffect(() => {
-    if (['my_rental', 'prim_usage', 'security_access', 'security_logs'].includes(chatState) && isResident) {
+    if (['my_rental', 'prim_usage', 'security_access', 'security_logs', 'my_support_tickets'].includes(chatState) && isResident) {
       const fetchData = async () => {
         setLoadingData(true);
         try {
           const residentId = residentData?.avatar_uuid || localStorage.getItem('sl_resident_uuid');
           if (!residentId) return;
           
+          if (chatState === 'my_support_tickets') {
+            await fetchSupportTickets();
+            setLoadingData(false);
+            return;
+          }
+
           const context = await getResidentPropertyContext(residentId);
           console.log('[ResidentAssistant Action]', chatState, context);
           
@@ -465,8 +489,14 @@ export default function SupportChat() {
     { id: 'security_logs', label: t('support.menu.security_logs', {defaultValue: 'Security Logs'}), icon: Scroll },
     { id: 'group_invite', label: t('support.menu.invite', {defaultValue: 'Join Group'}), icon: UserPlus },
     { id: 'open_support_ticket', label: t('support.menu.open_support_ticket', {defaultValue: 'Open Support Ticket'}), icon: LifeBuoy },
+    { 
+      id: 'my_support_tickets', 
+      label: t('support.menu.my_support_tickets', {defaultValue: 'My Support Tickets'}), 
+      icon: MessageCircle,
+      hasBadge: supportTickets.some(t => t.status === 'open' && t.admin_reply)
+    },
     { id: 'talk_to_support', label: t('support.menu.talk_to_support', {defaultValue: 'Talk to Support'}), icon: LifeBuoy }
-  ], [t]);
+  ], [t, supportTickets]);
 
   const actions = isResident ? residentActions : visitorActions;
   
@@ -698,15 +728,24 @@ export default function SupportChat() {
             </div>
         );
     }
-    if (state === 'security_logs') {
-        if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
-        if (!Array.isArray(securityLogs) || securityLogs.length === 0) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_logs', 'No recent security events.')}</div>
+    if (state === 'my_support_tickets') {
+        if (ticketsLoading) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
+        if (supportTickets.length === 0) return <div className="p-4 text-white/50 text-sm">{safeT('You don’t have any support tickets yet.', 'You don’t have any support tickets yet.')}</div>
         return (
-            <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
-                {(securityLogs || []).map((log: any, i: number) => (
-                    <p key={i}>
-                        {log.created_at?.substring(0,10)} - {log.avatar_name}: <span className="text-amber-500">{log.action || safeT('Action', 'Action')}</span>
-                    </p>
+            <div className="space-y-4">
+                {supportTickets.map((ticket) => (
+                    <div key={ticket.id} className="bg-white/5 rounded-2xl p-4 text-white/80 text-sm leading-relaxed border border-white/5">
+                        <p><strong>{safeT('Subject', 'Subject')}:</strong> {ticket.subject}</p>
+                        <p><strong>{safeT('Status', 'Status')}:</strong> {ticket.status}</p>
+                        <p className="text-white/60 text-xs mt-2">{ticket.message}</p>
+                        {ticket.admin_reply && (
+                            <div className="mt-3 p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                                <p className="text-amber-500 text-xs font-bold">{safeT('Staff response', 'Staff response')}:</p>
+                                <p className="text-white text-xs">{ticket.admin_reply}</p>
+                            </div>
+                        )}
+                        <p className="text-white/30 text-[10px] mt-2">{new Date(ticket.created_at).toLocaleDateString()}</p>
+                    </div>
                 ))}
             </div>
         );
@@ -746,7 +785,7 @@ export default function SupportChat() {
             setTicketMsg('');
             setInviteResult({
               success: true,
-              message: safeT('support.responses.ticket_created', 'Your support ticket has been created. Our team will review it soon.')
+              message: safeT('support.responses.ticket_created', 'Your support ticket has been created. You can check replies anytime from My Support Tickets.')
             });
             setChatState('invite_sent');
           } catch (error) {
@@ -907,8 +946,11 @@ export default function SupportChat() {
                       onClick={() => handleAction(action.id)}
                       className="w-full flex items-center gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-white/60 hover:text-amber-500 transition-all text-left group cursor-pointer relative z-10"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                      <div className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                         <action.icon size={18} />
+                        {action.hasBadge && (
+                          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                        )}
                       </div>
                       <span className="text-xs font-black uppercase tracking-[0.2em]">{action.label}</span>
                     </motion.button>
