@@ -303,18 +303,57 @@ export default function SupportChat() {
       }
 
       // 3. Supplement: Get prim record (prims_used, prim_limit)
-      const { data: primRes } = await supabase
+      let primRes: any = null;
+      let groupedPrimRows: any[] = [];
+
+      const { data: directPrimRes } = await supabase
         .from('prim_residents')
-        .select('casperlet_id, prims_used, prim_limit')
+        .select('casperlet_id, prims_used, prim_limit, resident_name, resident_key')
         .eq('resident_key', residentUuid)
         .maybeSingle();
 
-      const context = { 
-        residentUuid, 
-        property, 
-        casperletId: property?.casperlet_id || null, 
+      if (directPrimRes) {
+        primRes = directPrimRes;
+      }
+
+      const casperletId = property?.casperlet_id || primRes?.casperlet_id || null;
+
+      if (casperletId) {
+        const { data: groupRows } = await supabase
+          .from('prim_residents')
+          .select('casperlet_id, prims_used, prim_limit, resident_name, resident_key')
+          .eq('casperlet_id', casperletId);
+
+        groupedPrimRows = groupRows || [];
+
+        if (!primRes && groupedPrimRows.length > 0) {
+          primRes = groupedPrimRows.find(row => row.resident_key === residentUuid) || groupedPrimRows[0];
+        }
+      }
+
+      const totalPrimsUsed = groupedPrimRows.length > 0
+        ? groupedPrimRows.reduce((sum, row) => sum + Number(row.prims_used || 0), 0)
+        : Number(primRes?.prims_used || 0);
+
+      const primLimit =
+        Number(primRes?.prim_limit || 0) ||
+        Number(groupedPrimRows.find(row => row.prim_limit)?.prim_limit || 0) ||
+        Number(property?.prim_limit || 0) ||
+        Number(property?.prims_allowed || 0) ||
+        Number(property?.prim_allowance || 0);
+
+      const context = {
+        residentUuid,
+        property,
+        casperletId,
         propertyName: property?.name || null,
-        primData: primRes ? { prims_used: primRes.prims_used, prim_limit: primRes.prim_limit } : null
+        primData: primRes || groupedPrimRows.length > 0 || primLimit
+          ? {
+              prims_used: totalPrimsUsed,
+              prim_limit: primLimit,
+              casperlet_id: casperletId
+            }
+          : null
       };
 
       console.log('[ResidentAssistant property source]', {
@@ -347,13 +386,26 @@ export default function SupportChat() {
             setPrimData(context.primData || null);
           } else if (context.casperletId) {
             if (chatState === 'security_access') {
-              const { data } = await supabase
-                .from('security_parcels')
-                .select('active, radius, warning_time, warn_before_ejecting, access_list, ban_list')
-                .eq('casperlet_id', context.casperletId)
-                .maybeSingle();
-
-              setSecurityData(data);
+              try {
+                const response = await fetch('/api/security/access', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'status',
+                    resident_uuid: residentId,
+                    parcel_ids: [context.casperletId]
+                  })
+                });
+                const result = await response.json();
+                if (result.success && result.data && result.data.length > 0) {
+                  setSecurityData(result.data[0]);
+                } else {
+                  setSecurityData(null);
+                }
+              } catch (err) {
+                console.error('[SupportChat] Error fetching security data:', err);
+                setSecurityData(null);
+              }
             } else if (chatState === 'security_logs') {
               try {
                 const { data } = await supabase
@@ -535,13 +587,98 @@ export default function SupportChat() {
     if (state === 'security_access') {
         if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
         if (!securityData) return <div className="p-4 text-white/50 text-sm">{safeT('support.responses.no_security_data', 'I found your rental, but I couldn’t find a Security Orb linked to it.')}</div>
+
+        const normalizeSecurityList = (value: any) => {
+          if (!value) return [];
+
+          if (Array.isArray(value)) {
+            return value
+              .map((item) => {
+                if (typeof item === 'string') return item;
+                return item?.name || item?.avatar_name || item?.display_name || item?.uuid || item?.id || '';
+              })
+              .filter(Boolean);
+          }
+
+          if (typeof value === 'string') {
+            try {
+              const parsed = JSON.parse(value);
+              if (Array.isArray(parsed)) {
+                return parsed
+                  .map((item) => {
+                    if (typeof item === 'string') return item;
+                    return item?.name || item?.avatar_name || item?.display_name || item?.uuid || item?.id || '';
+                  })
+                  .filter(Boolean);
+              }
+            } catch (e) {}
+
+            return value
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean);
+          }
+
+          return [];
+        };
+
+        const allowedAvatars = normalizeSecurityList(securityData.access_list);
+        const bannedAvatars = normalizeSecurityList(securityData.ban_list);
+
+        console.log('[ResidentAssistant] Security data fields', securityData);
+
+        const warningTime =
+          securityData.warning_time ??
+          securityData.warningTime ??
+          securityData.warning_seconds ??
+          securityData.warningSeconds ??
+          securityData.warn_time ??
+          securityData.warnTime ??
+          securityData.eject_warning ??
+          securityData.ejectWarning ??
+          securityData.warning ??
+          null;
+
         return (
             <div className="bg-white/5 rounded-2xl rounded-tl-none p-4 text-white/80 text-sm leading-relaxed border border-white/5 font-medium space-y-2">
                 <p><strong>{safeT('Status', 'Status')}:</strong> {securityData.active ? 'ON' : 'OFF'}</p>
-                <p><strong>{safeT('Radius', 'Radius')}:</strong> {securityData.radius}m</p>
-                <p><strong>{safeT('Warning time', 'Warning time')}:</strong> {securityData.warning_time}s</p>
-                <p><strong>{safeT('Allowed avatars', 'Allowed avatars')}:</strong> {securityData.access_list?.length || 0}</p>
-                <p><strong>{safeT('Banned avatars', 'Banned avatars')}:</strong> {securityData.ban_list?.length || 0}</p>
+                <p><strong>{safeT('Radius', 'Radius')}:</strong> {securityData.radius ? `${securityData.radius}m` : safeT('support.security.not_set', 'Not set')}</p>
+
+                {warningTime !== null && warningTime !== undefined && warningTime !== '' ? (
+                  <p>
+                    <strong>{safeT('Warning time', 'Warning time')}:</strong> {warningTime}s
+                  </p>
+                ) : (
+                  <p>
+                    <strong>{safeT('Warning time', 'Warning time')}:</strong> {safeT('support.security.not_set', 'Not set')}
+                  </p>
+                )}
+
+                <p><strong>{safeT('Allowed avatars', 'Allowed avatars')}:</strong> {allowedAvatars.length}</p>
+                {allowedAvatars.length > 0 ? (
+                  <ul className="pl-4 list-disc text-white/70 space-y-1">
+                    {allowedAvatars.map((name, idx) => (
+                      <li key={`allowed-${idx}`}>{name}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-white/50 text-xs italic pl-2">
+                    No resident guests added. Estate managers may still have staff access.
+                  </p>
+                )}
+
+                <p><strong>{safeT('Banned avatars', 'Banned avatars')}:</strong> {bannedAvatars.length}</p>
+                {bannedAvatars.length > 0 ? (
+                  <ul className="pl-4 list-disc text-white/70 space-y-1">
+                    {bannedAvatars.map((name, idx) => (
+                      <li key={`banned-${idx}`}>{name}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-white/50 text-xs italic pl-2">
+                    No banned avatars added.
+                  </p>
+                )}
             </div>
         );
     }
