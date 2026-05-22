@@ -58,7 +58,8 @@ const resources = {
           "beach_front": "Beach Front",
           "tv": "TV",
           "security_orb": "Security Orb",
-          "full_owner_rights": "Full Owner Rights"
+          "full_owner_rights": "Full Owner Rights",
+          "home_management_system": "Holanbra Home Management System online"
         },
         "how_to_rent": {
           "button": "How to rent",
@@ -845,7 +846,8 @@ const resources = {
           "beach_front": "Beira Mar",
           "tv": "TV",
           "security_orb": "Orb de Segurança",
-          "full_owner_rights": "Direitos de Proprietário Total"
+          "full_owner_rights": "Direitos de Proprietário Total",
+          "home_management_system": "Holanbra Home Management System online"
         },
         "how_to_rent": {
           "button": "Como alugar",
@@ -1636,7 +1638,8 @@ const resources = {
           "beach_front": "Frente al Mar",
           "tv": "TV",
           "security_orb": "Orb de Seguridad",
-          "full_owner_rights": "Derechos Totales de Propietario"
+          "full_owner_rights": "Derechos Totales de Propietario",
+          "home_management_system": "Holanbra Home Management System online"
         },
         "how_to_rent": {
           "button": "Cómo alquilar",
@@ -2383,7 +2386,8 @@ const resources = {
           "beach_front": "Aan het Strand",
           "tv": "TV",
           "security_orb": "Beveiligings Orb",
-          "full_owner_rights": "Volledige Eigenaarsrechten"
+          "full_owner_rights": "Volledige Eigenaarsrechten",
+          "home_management_system": "Holanbra Home Management System online"
         },
         "how_to_rent": {
           "button": "Hoe huren",

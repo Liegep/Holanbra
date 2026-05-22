@@ -45,7 +45,7 @@ export function AdminPropertyForm({
 }: AdminPropertyFormProps) {
   const { t } = useTranslation();
   const propertyTypeOptions = ['Land', 'Furnished', 'Not Furnished', 'Skybox', 'Shop', 'House'];
-  const perkOptions = ['radio', 'beach_front', 'tv', 'security_orb', 'full_owner_rights'] as const;
+  const perkOptions = ['radio', 'beach_front', 'tv', 'security_orb', 'full_owner_rights', 'home_management_system'] as const;
 
   const togglePropertyType = (type: string) => {
     const currentTypes = formData.property_type || [];

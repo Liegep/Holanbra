@@ -17,7 +17,8 @@ import {
   Tv,
   Shield,
   UserCheck,
-  HelpCircle
+  HelpCircle,
+  Cpu
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -599,7 +600,8 @@ export default function Properties() {
                               beach_front: Sun,
                               tv: Tv,
                               security_orb: Shield,
-                              full_owner_rights: UserCheck
+                              full_owner_rights: UserCheck,
+                              home_management_system: Cpu
                             };
                             const Icon = perkIcons[perk] || Key;
                             return (
