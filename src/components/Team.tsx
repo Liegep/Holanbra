@@ -145,7 +145,7 @@ export default function Team() {
     <section id="team" className="py-32 px-6 bg-background-light relative overflow-hidden scroll-mt-32">
       {/* Quick Notice Overlay */}
       {notice && (
-        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-black text-white rounded-2xl shadow-2xl font-black text-[10px] uppercase tracking-widest border border-white/10 animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[150] px-6 py-3 bg-black text-white rounded-2xl shadow-2xl font-black text-[10px] uppercase tracking-widest border border-white/10 animate-in fade-in slide-in-from-top-4">
           ✨ {notice}
         </div>
       )}

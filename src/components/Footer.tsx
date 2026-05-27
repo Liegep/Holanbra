@@ -200,7 +200,10 @@ export default function Footer() {
                     className="w-full bg-amber-500 text-black py-4 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:bg-white transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <Loader2 size={16} className="animate-spin" />
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        {t('footer.sending', 'Sending...')}
+                      </>
                     ) : (
                       <>
                         <Send size={16} /> 
