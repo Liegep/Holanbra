@@ -207,10 +207,10 @@ export default function SupportChat() {
   };
 
   const openTawk = () => {
-    // @ts-ignore
-    if (window.Tawk_API && typeof window.Tawk_API.toggle === 'function') {
-      window.Tawk_API.showWidget();
-      window.Tawk_API.maximize();
+    const tawkApi = (window as any).Tawk_API;
+    if (tawkApi && typeof tawkApi.toggle === 'function') {
+      tawkApi.showWidget();
+      tawkApi.maximize();
       setIsOpen(false);
       setIsLiveChatOpen(true);
     }
@@ -218,12 +218,10 @@ export default function SupportChat() {
 
   const backToAssistant = () => {
     try {
-      // @ts-ignore
-      if (window.Tawk_API) {
-        // @ts-ignore
-        if (typeof window.Tawk_API.minimize === 'function') window.Tawk_API.minimize();
-        // @ts-ignore
-        if (typeof window.Tawk_API.hideWidget === 'function') window.Tawk_API.hideWidget();
+      const tawkApi = (window as any).Tawk_API;
+      if (tawkApi) {
+        if (typeof tawkApi.minimize === 'function') tawkApi.minimize();
+        if (typeof tawkApi.hideWidget === 'function') tawkApi.hideWidget();
       }
     } catch (e) {}
 
@@ -538,10 +536,10 @@ export default function SupportChat() {
   const handleAction = (id: string) => {
     console.log('[SupportChat Action Click]', { actionId: id, chatMode: isResident ? 'resident' : 'visitor', residentUuid: residentData?.avatar_uuid });
     if (id === 'talk_to_support') {
-        // @ts-ignore
-        if (window.Tawk_API && typeof window.Tawk_API.toggle === 'function') {
-            window.Tawk_API.showWidget();
-            window.Tawk_API.maximize();
+        const tawkApi = (window as any).Tawk_API;
+        if (tawkApi && typeof tawkApi.toggle === 'function') {
+            tawkApi.showWidget();
+            tawkApi.maximize();
             setIsOpen(false);
         } else {
             setChatState('talk_to_support'); // Show fallback
@@ -563,6 +561,9 @@ export default function SupportChat() {
   };
 
   const renderExpandedContent = (state: ChatState) => {
+    const responses = t('support.responses', { returnObjects: true }) as any;
+    const response = responses?.[state];
+
     if (state === 'my_rental') {
         if (loadingData) return <div className="p-4 text-white/50 text-sm">{safeT('common.loading', 'Loading...')}</div>
         if (!rentalData) return (

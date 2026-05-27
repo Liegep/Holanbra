@@ -60,6 +60,7 @@ export default function Footer() {
     
     setIsSubmitting(true);
     try {
+      // Ensure NO .select() is used to avoid RLS failures when SELECT is denied
       const { error } = await supabase.from('contact_messages').insert([{
         visitor_name: messageForm.visitor_name,
         recipient_name: 'Admin', // Default recipient
@@ -69,12 +70,12 @@ export default function Footer() {
 
       if (error) throw error;
       
-      showToast(t('footer.msg_sent'));
+      showToast(t('footer.msg_sent_long', 'Message sent successfully. Our team will respond as soon as possible.'));
       setMessageForm({ visitor_name: '', message: '' });
       setIsMessageModalOpen(false);
     } catch (err: any) {
       console.error('Error sending message:', err);
-      showToast(err.message || 'Failed to send message', 'error');
+      showToast(t('footer.msg_error', 'Could not send your message. Please try again.'), 'error');
     } finally {
       setIsSubmitting(false);
     }

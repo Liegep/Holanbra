@@ -112,6 +112,7 @@ export default function Team() {
 
     setIsSending(true);
     try {
+      // Ensure NO .select() is used to avoid RLS failures when SELECT is denied
       const { error: supabaseError } = await supabase.from('contact_messages').insert([{
         visitor_name: visitorData.name,
         message: visitorData.message,
@@ -126,7 +127,8 @@ export default function Team() {
       setTimeout(() => setNotice(null), 5000);
     } catch (err: any) {
       console.error("CRITICAL ERROR SENDING MESSAGE:", err);
-      window.alert("Error sending message: " + (err.message || ""));
+      setNotice(t('team.message_error', 'Could not send your message. Please try again.'));
+      setTimeout(() => setNotice(null), 5000);
     } finally {
       setIsSending(false);
     }
