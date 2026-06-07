@@ -683,7 +683,7 @@ export default function AdminArea() {
         description_nl: formData.description_nl?.trim() || null,
         description_es: formData.description_es?.trim() || null,
         price: parseFloat(formData.price) || 0,
-        rental_price: parseFloat(formData.rental_price) || parseFloat(formData.price) || 0,
+        rental_price: parseFloat(formData.price) || 0,
         casperlet_id: formData.casperletId?.trim() || null,
         image_url: formData.imageUrl?.trim() || null, 
         gallery_image_1: formData.gallery_image_1?.trim() || null,
