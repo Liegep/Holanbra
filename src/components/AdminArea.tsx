@@ -879,27 +879,60 @@ export default function AdminArea() {
     console.log(`Command: DELETE FROM renters WHERE avatar_uuid = '${cleanUuid}'`);
     
     try {
-      // Step 1: Sweep properties and shared links first
-      await supabase
-        .from('properties')
-        .update({ tenant_id: null, tenant_name: null, status: 'available' })
-        .eq('tenant_id', cleanUuid);
+      // Step 1: Attempt secure backend delete with service_role privileges first
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      let apiSuccess = false;
+      let apiErrorMsg = '';
+
+      try {
+        const response = await fetch(`/api/admin/delete-renter/${cleanUuid}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token || ''}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const result = await response.json();
+        if (response.ok && result?.success) {
+          apiSuccess = true;
+        } else {
+          apiErrorMsg = result?.error || response.statusText || 'Unknown backend error';
+        }
+      } catch (fetchErr: any) {
+        console.warn('Backend delete fetch failed, will try client-side fallback:', fetchErr);
+        apiErrorMsg = fetchErr.message || 'Fetch failed';
+      }
+
+      if (apiSuccess) {
+        console.log(`[Admin] Successfully deleted resident ${cleanUuid} via Backend API`);
+      } else {
+        console.warn(`[Admin] Backend delete returned error (${apiErrorMsg}), trying direct client-side fallback...`);
         
-      await supabase
-        .from('property_tenants')
-        .delete()
-        .eq('tenant_id', cleanUuid);
+        // Fallback: Sweep properties and shared links first (client-side)
+        await supabase
+          .from('properties')
+          .update({ tenant_id: null, tenant_name: null, status: 'available' })
+          .eq('tenant_id', cleanUuid);
+          
+        await supabase
+          .from('property_tenants')
+          .delete()
+          .eq('tenant_id', cleanUuid);
 
-      // Step 2: Delete from renters table using avatar_uuid
-      const { error } = await supabase
-        .from('renters')
-        .delete()
-        .eq('avatar_uuid', cleanUuid);
+        // Fallback: Delete from renters table using avatar_uuid (client-side)
+        const { error } = await supabase
+          .from('renters')
+          .delete()
+          .eq('avatar_uuid', cleanUuid);
 
-      if (error) {
-        alert('Supabase Error (Delete Renter): ' + error.message);
-        console.error('Error details:', error);
-        return;
+        if (error) {
+          alert('Supabase Error (Delete Renter Fallback): ' + error.message + '\nPrimary issue: ' + apiErrorMsg);
+          console.error('Error details:', error);
+          return;
+        }
       }
       
       // Clean screen

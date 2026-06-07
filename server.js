@@ -284,6 +284,87 @@ async function startServer() {
   }
 
   // Other API Routes
+  app.delete('/api/admin/delete-renter/:uuid', async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ error: 'Unauthorized: No authorization token provided' });
+      }
+
+      const token = authHeader.replace('Bearer ', '').trim();
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+      if (authError || !user) {
+        return res.status(401).json({ error: 'Unauthorized: Invalid session or authentication token' });
+      }
+
+      const userEmail = user.email?.toLowerCase();
+      const hardcodedAdmins = [
+        'hello@liegepaschoalini.design', 
+        'slmariew@gmail.com', 
+        'victoriaholanbra@gmail.com',
+        'meiga1975@gmail.com'
+      ];
+
+      let isAuthorized = userEmail && hardcodedAdmins.includes(userEmail);
+
+      if (!isAuthorized && userEmail) {
+        const { data: dbAdmin } = await supabase
+          .from('admins')
+          .select('email')
+          .eq('email', userEmail)
+          .maybeSingle();
+        if (dbAdmin) isAuthorized = true;
+      }
+
+      if (!isAuthorized && !user.app_metadata?.is_admin) {
+        return res.status(403).json({ error: 'Forbidden: Admin privileges required' });
+      }
+
+      const { uuid } = req.params;
+      const cleanUuid = String(uuid).trim();
+
+      if (!cleanUuid) {
+        return res.status(400).json({ error: 'Missing resident UUID parameter' });
+      }
+
+      console.log(`[Admin-Delete-Resident] Starting service_role delete for: ${cleanUuid}`);
+
+      // 1. Sweep properties and shared links first
+      const { error: propError } = await supabase
+        .from('properties')
+        .update({ tenant_id: null, tenant_name: null, status: 'available' })
+        .eq('tenant_id', cleanUuid);
+
+      if (propError) console.error('[Admin-Delete-Resident] Properties unlink warning:', propError.message);
+        
+      const { error: sharedError } = await supabase
+        .from('property_tenants')
+        .delete()
+        .eq('tenant_id', cleanUuid);
+
+      if (sharedError) console.error('[Admin-Delete-Resident] Shared tenants deletion warning:', sharedError.message);
+
+      // 2. Delete from renters table using service-role power
+      const { error: deleteError } = await supabase
+        .from('renters')
+        .delete()
+        .eq('avatar_uuid', cleanUuid);
+
+      if (deleteError) {
+        console.error('[Admin-Delete-Resident] Deletion failed:', deleteError.message);
+        return res.status(500).json({ error: deleteError.message });
+      }
+
+      console.log(`[Admin-Delete-Resident] Successfully removed: ${cleanUuid}`);
+      return res.status(200).json({ success: true, message: 'Resident deleted successfully' });
+
+    } catch (err) {
+      console.error('[Admin-Delete-Resident] System Error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/casperlet/sync', async (req, res) => {
     try {
       const { unit_name, price, status, tenant, casperletId } = req.body;
