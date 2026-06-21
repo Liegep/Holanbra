@@ -35,6 +35,7 @@ import Portfolio from './components/Portfolio';
 import SupportChat from './components/SupportChat';
 import TeleportCTA from './components/TeleportCTA';
 import Footer from './components/Footer';
+import LinksPage from './components/LinksPage';
 import ScrollToTop from './components/ScrollToTop';
 import { SpotifyPlayer } from './components/SpotifyPlayer';
 import { ResidentProvider } from './context/ResidentContext';
@@ -103,6 +104,7 @@ export default function App() {
             } />
             <Route path="/covenant" element={<Covenant />} />
             <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/links" element={<LinksPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

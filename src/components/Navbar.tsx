@@ -67,6 +67,7 @@ export default function Navbar() {
     { name: 'Decoration', path: '/#services', icon: Paintbrush, label: t('nav.decoration') },
     { name: 'Team', path: '/#team', icon: Users, label: t('nav.team') },
     { name: 'Covenant', path: '/covenant', icon: FileText, label: t('nav.covenant') },
+    { name: 'Links', path: '/links', icon: Globe, label: t('nav.links') },
   ];
 
   const isActive = (path: string) => {

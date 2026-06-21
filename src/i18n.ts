@@ -16,9 +16,19 @@ const resources = {
         "covenant": "Rules",
         "portfolio": "Portfolio",
         "decoration": "Decoration",
+        "links": "Links",
         "resident_portal": "Resident Login",
         "radio_open": "Open Radio",
         "radio_close": "Close Radio"
+      },
+      "links_page": {
+        "title": "Holanbra Links",
+        "site": "Official Site",
+        "facebook": "Facebook",
+        "properties": "Find your home",
+        "covenant": "Covenant",
+        "decoration": "Decoration Services",
+        "team": "Our Team"
       },
       "hero": {
         "rentals": "New Rentals Available",
@@ -808,9 +818,19 @@ const resources = {
         "covenant": "Regras",
         "portfolio": "Portfólio",
         "decoration": "Decoração",
+        "links": "Links",
         "resident_portal": "Portal do Residente",
         "radio_open": "Abrir Rádio",
         "radio_close": "Fechar Rádio"
+      },
+      "links_page": {
+        "title": "Links Holanbra",
+        "site": "Site Oficial",
+        "facebook": "Facebook",
+        "properties": "Encontre seu lar",
+        "covenant": "Regras",
+        "decoration": "Serviços de Decoração",
+        "team": "Nossa Equipe"
       },
       "hero": {
         "rentals": "Novos Aluguéis Disponíveis",
@@ -1606,7 +1626,17 @@ const resources = {
         "covenant": "Reglas",
         "portfolio": "Portafolio",
         "decoration": "Decoración",
+        "links": "Enlaces",
         "resident_portal": "Portal del Residente"
+      },
+      "links_page": {
+        "title": "Holanbra Enlaces",
+        "site": "Sitio Oficial",
+        "facebook": "Facebook",
+        "properties": "Encuentra tu hogar",
+        "covenant": "Reglas",
+        "decoration": "Servicios de Decoración",
+        "team": "Nuestro Equipo"
       },
       "hero": {
         "tour": "Tour Virtual",
@@ -2358,7 +2388,17 @@ const resources = {
         "covenant": "Regels",
         "portfolio": "Portfolio",
         "decoration": "Decoratie",
+        "links": "Links",
         "resident_portal": "Bewonersportaal"
+      },
+      "links_page": {
+        "title": "Holanbra Links",
+        "site": "Officiële Site",
+        "facebook": "Facebook",
+        "properties": "Vind je woning",
+        "covenant": "Regels",
+        "decoration": "Decoratie Services",
+        "team": "Ons Team"
       },
       "hero": {
         "rentals": "Nieuwe Woningen Beschikbaar",
