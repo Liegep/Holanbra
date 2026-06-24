@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -27,7 +27,7 @@ interface AdminPropertyListingsProps {
   handleEdit: (prop: any) => void;
   handleDelete: (id: string) => void;
   showToast: (msg: string, type?: any) => void;
-  fetchData: () => void;
+  fetchData: () => Promise<void>;
 }
 
 export function AdminPropertyListings({
@@ -43,6 +43,13 @@ export function AdminPropertyListings({
   fetchData
 }: AdminPropertyListingsProps) {
   const { t } = useTranslation();
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    await fetchData();
+    setIsSyncing(false);
+  };
 
   return (
     <div className="space-y-12">
@@ -91,11 +98,12 @@ default {
               Copy CasperLet Script
             </button>
             <button 
-              onClick={() => fetchData()}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white"
+              onClick={handleSync}
+              disabled={isSyncing}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white disabled:opacity-50"
             >
-              <RefreshCw size={12} className="text-amber-500" />
-              {t('admin.sync')}
+              <RefreshCw size={12} className={cn("text-amber-500", isSyncing && "animate-spin")} />
+              {isSyncing ? t('admin.syncing', 'Syncing...') : t('admin.sync')}
             </button>
           </div>
         </div>
