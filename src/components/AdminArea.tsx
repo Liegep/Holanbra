@@ -317,6 +317,8 @@ export default function AdminArea() {
   const fetchData = async () => {
     if (!user || !isAdmin) return;
 
+    await fetchProperties(); // Ensure properties are also refreshed
+
     // Fetch Covenants
     const { data: covenantData } = await supabase.from('land_covenants').select('*').limit(1).maybeSingle();
     if (covenantData) {
